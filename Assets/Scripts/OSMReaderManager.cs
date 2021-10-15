@@ -503,7 +503,7 @@ public class OSMReaderManager : MonoBehaviour
                 continue;
 
             // trees
-            //createArcTree(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width + 2);
+            createArcTree(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width + 2);
         }
 
         // new way
@@ -515,8 +515,8 @@ public class OSMReaderManager : MonoBehaviour
                 continue;
 
             // trees
-            //if (osm_reader.pathes[road_index].highway != Highway.CombineLink) // link road is in merged road
-            //    createArcTree(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width + 2);
+            if (osm_reader.pathes[road_index].highway != Highway.CombineLink) // link road is in merged road
+                createArcTree(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width + 2);
         }
 
         Debug.Log("Tree amount: " + count); // trees amount
