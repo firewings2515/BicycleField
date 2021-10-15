@@ -16,11 +16,15 @@ public class OSMReaderManager : MonoBehaviour
     public GameObject cam;
     int DIVIDE_LINE = 200;
     int count = 0;
+    GameObject point_manager;
+    GameObject house_polygon_manager;
     GameObject[] houses_polygon;
     public Material houses_polygon_mat;
     GameObject[] house_mesh;
+    GameObject road_manager;
     //GameObject[] roads_polygon;
     public Material roads_polygon_mat;
+    GameObject tree_manager;
     HierarchyControl hierarchy_c;
     int camera_path_index;
     OSMReader osm_reader;
@@ -181,6 +185,7 @@ public class OSMReaderManager : MonoBehaviour
             instance_r.GetComponent<ViewInstance>().points[0] = spawn_pos;
             instance_r.GetComponent<ViewInstance>().setup(true);
             instance_r.name = "Tree_" + path_id;
+            instance_r.transform.parent = tree_manager.transform;
             hierarchy_c.heirarchy_master[spawn_x, spawn_y].objects.Add(instance_r);
 
             spawn_pos = qt0 - cross_t;
@@ -192,6 +197,7 @@ public class OSMReaderManager : MonoBehaviour
             instance_l.GetComponent<ViewInstance>().points[0] = spawn_pos;
             instance_l.GetComponent<ViewInstance>().setup(true);
             instance_l.name = "Tree_" + path_id;
+            instance_l.transform.parent = tree_manager.transform;
             hierarchy_c.heirarchy_master[spawn_x, spawn_y].objects.Add(instance_l);
             count += 2;
             t0 = t2; //next start t
@@ -344,14 +350,16 @@ public class OSMReaderManager : MonoBehaviour
             MeshRenderer mr = road_peice.AddComponent<MeshRenderer>();
             mf.mesh = mesh;
             mr.material = roads_polygon_mat;
+            road_peice.transform.parent = road_manager.transform;
 
             GameObject instance_p = Instantiate(view_instance);
             instance_p.GetComponent<ViewInstance>().cam = cam;
             instance_p.GetComponent<ViewInstance>().points = vertex[piece_index];
             instance_p.GetComponent<ViewInstance>().instance = road_peice;
             instance_p.GetComponent<ViewInstance>().setup(false);
+            instance_p.transform.parent = road_manager.transform;
             //if (road_id == "407209896" && piece_index == 52) // 其中一片
-                //instance_p.GetComponent<ViewInstance>().finish_instance = true;
+            //instance_p.GetComponent<ViewInstance>().finish_instance = true;
             instance_p.name = "road_" + road_id + "_" + piece_index;
 
             for (int belong_index = 0; belong_index < belong_to_hier_x.Count; belong_index++)
@@ -412,6 +420,7 @@ public class OSMReaderManager : MonoBehaviour
         // create a gameobject to scene
         houses_polygon[house_index] = new GameObject();
         houses_polygon[house_index].name = "instance_" + house_id;
+        houses_polygon[house_index].transform.parent = house_polygon_manager.transform;
         MeshFilter mf = houses_polygon[house_index].AddComponent<MeshFilter>();
         MeshRenderer mr = houses_polygon[house_index].AddComponent<MeshRenderer>();
         mf.mesh = mesh;
@@ -424,6 +433,7 @@ public class OSMReaderManager : MonoBehaviour
         instance_h.GetComponent<ViewInstance>().instance = houses_polygon[house_index];
         instance_h.GetComponent<ViewInstance>().setup(false);
         instance_h.name = "housePolygon_" + house_id;
+        instance_h.transform.parent = house_polygon_manager.transform;
 
         // add to heirarchy system
         for (int belong_index = 0; belong_index < belong_to_hier_x.Count; belong_index++)
@@ -472,11 +482,16 @@ public class OSMReaderManager : MonoBehaviour
         osm_reader = new OSMReader();
         osm_reader.readOSM(Application.streamingAssetsPath + "//" + file_path, OSM_size);
 
+        house_polygon_manager = new GameObject("House Polygon Manager");
+        road_manager = new GameObject("Road Manager");
+        tree_manager = new GameObject("Tree Manager");
+
         // instance
         //roads_polygon = new GameObject[osm_reader.pathes.Count];
 
         if (show_osm_points)
         {
+            point_manager = new GameObject("Point Manager");
             foreach (KeyValuePair<string, Node> nn in osm_reader.points_lib)
             {
                 GameObject bb = Instantiate(sphere_prefab, nn.Value.position, Quaternion.identity);
@@ -484,6 +499,7 @@ public class OSMReaderManager : MonoBehaviour
                 for (int i = 0; i < nn.Value.connect_way.Count; i++)
                     ans += " & " + nn.Value.connect_way[i];
                 bb.name = nn.Key + ans;
+                bb.transform.parent = point_manager.transform;
             }
         }
 
