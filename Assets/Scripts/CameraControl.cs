@@ -17,23 +17,23 @@ public class CameraControl : MonoBehaviour
         {
             this.gameObject.transform.position += this.gameObject.transform.forward * 0.2f;
         }
-        else if (Input.GetKey(KeyCode.S))
+        if (Input.GetKey(KeyCode.S))
         {
             this.gameObject.transform.position -= this.gameObject.transform.forward * 0.2f;
         }
-        else if (Input.GetKey(KeyCode.A))
+        if (Input.GetKey(KeyCode.A))
         {
             this.gameObject.transform.position -= this.gameObject.transform.right * 0.2f;
         }
-        else if (Input.GetKey(KeyCode.D))
+        if (Input.GetKey(KeyCode.D))
         {
             this.gameObject.transform.position += this.gameObject.transform.right * 0.2f;
         }
-        else if (Input.GetKey(KeyCode.Q))
+        if (Input.GetKey(KeyCode.Q))
         {
             this.gameObject.transform.Rotate(Vector3.up, -1.0f);
         }
-        else if (Input.GetKey(KeyCode.E))
+        if (Input.GetKey(KeyCode.E))
         {
             this.gameObject.transform.Rotate(Vector3.up, 1.0f);
         }
