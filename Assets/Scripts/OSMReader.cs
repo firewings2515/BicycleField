@@ -12,29 +12,27 @@ public class OSMReader
     public List<Way> pathes = new List<Way>();
     public List<List<string>> houses = new List<List<string>>();
     public List<string> houses_id = new List<string>();
-    public Vector2 OSM_size;
+    //public Vector2 OSM_size;
     public Vector2 boundary_min = Vector2.zero;
     public Vector2 boundary_max = Vector2.zero;
     float near_distance = 0.0f;
     List<List<string>> avenue_links_ref = new List<List<string>>();
     List<string> avenue_links_to = new List<string>();
     bool debug_mode = false;
-    float x_length = 1.0f;
-    float y_length = 1.0f;
+    //float x_length = 1.0f;
+    //float y_length = 1.0f;
 
     public void toUnityLocation(float lon, float lat, out float x, out float z)
     {
         //x = (lon - boundary_min.x) / x_length * OSM_size.x;
         //z = (lat - boundary_min.y) / y_length * OSM_size.y;
-        x = (float)MercatorProjection.lonToX(lon) - (float)MercatorProjection.lonToX(boundary_min.x);
-        x /= 2.5f;
-        z = (float)MercatorProjection.latToY(lat) - (float)MercatorProjection.latToY(boundary_min.y);
-        z /= 2.5f;
+        x = (float)MercatorProjection.lonToX(lon) - boundary_min.x;
+        z = (float)MercatorProjection.latToY(lat) - boundary_min.y;
     }
 
-    public void readOSM(string file_path, Vector2 _OSM_size)
+    public void readOSM(string file_path) //, Vector2 _OSM_size
     {
-        OSM_size = _OSM_size;
+        //OSM_size = _OSM_size;
         XmlReader reader = XmlReader.Create(file_path);
         reader.MoveToContent();
         List<Node> points = new List<Node>();
@@ -176,9 +174,11 @@ public class OSMReader
         }
 
         // normalize points
-        x_length = boundary_max.x - boundary_min.x;
-        y_length = boundary_max.y - boundary_min.y;
-        near_distance = 0.0002f / x_length * OSM_size.x;
+        boundary_min = new Vector2((float)MercatorProjection.lonToX(boundary_min.x), (float)MercatorProjection.lonToX(boundary_min.y));
+        boundary_max = new Vector2((float)MercatorProjection.lonToX(boundary_max.x), (float)MercatorProjection.lonToX(boundary_max.y));
+        //x_length = boundary_max.x - boundary_min.x;
+        //y_length = boundary_max.y - boundary_min.y;
+        near_distance = 2; // 0.0002f / x_length * OSM_size.x
         for (int point_index = 0; point_index < points.Count; point_index++)
         {
             float unity_x, unity_z;

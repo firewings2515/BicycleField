@@ -477,10 +477,10 @@ public class OSMReaderManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        hierarchy_c = new HierarchyControl();
-        hierarchy_c.setup(100, 100, OSM_size.x, OSM_size.y);
         osm_reader = new OSMReader();
-        osm_reader.readOSM(Application.streamingAssetsPath + "//" + file_path, OSM_size);
+        osm_reader.readOSM(Application.streamingAssetsPath + "//" + file_path); //, OSM_size
+        hierarchy_c = new HierarchyControl();
+        hierarchy_c.setup(100, 100, osm_reader.boundary_max.x, osm_reader.boundary_max.y);
 
         house_polygon_manager = new GameObject("House Polygon Manager");
         road_manager = new GameObject("Road Manager");
