@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Text.RegularExpressions;
 using System.Xml;
 
+
 public class OSMReader
 {
     List<string> points_id = new List<string>();
@@ -23,8 +24,12 @@ public class OSMReader
 
     public void toUnityLocation(float lon, float lat, out float x, out float z)
     {
-        x = (lon - boundary_min.x) / x_length * OSM_size.x;
-        z = (lat - boundary_min.y) / y_length * OSM_size.y;
+        //x = (lon - boundary_min.x) / x_length * OSM_size.x;
+        //z = (lat - boundary_min.y) / y_length * OSM_size.y;
+        x = (float)MercatorProjection.lonToX(lon) - (float)MercatorProjection.lonToX(boundary_min.x);
+        x /= 2.5f;
+        z = (float)MercatorProjection.latToY(lat) - (float)MercatorProjection.latToY(boundary_min.y);
+        z /= 2.5f;
     }
 
     public void readOSM(string file_path, Vector2 _OSM_size)
