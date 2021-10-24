@@ -32,6 +32,8 @@ public class OSMReaderManager : MonoBehaviour
     //CinemachineVirtualCamera virtualCamera;
     bool show_osm_points = false; // show all points in OSM data
 
+    bool finish_create = false;
+
     string getDigits(string s) // for parser
     {
         return Regex.Match(s, "[+-]?([0-9]*[.])?[0-9]+").ToString();
@@ -475,10 +477,10 @@ public class OSMReaderManager : MonoBehaviour
     }
 
     // Start is called before the first frame update
-    void Start()
+    IEnumerator Start()
     {
         osm_reader = new OSMReader();
-        osm_reader.readOSM(Application.streamingAssetsPath + "//" + file_path); //, OSM_size
+        yield return StartCoroutine(osm_reader.readOSM(Application.streamingAssetsPath + "//" + file_path,this)); //, OSM_size
         hierarchy_c = new HierarchyControl();
         hierarchy_c.setup(100, 100, osm_reader.boundary_max.x, osm_reader.boundary_max.y);
 
@@ -549,15 +551,19 @@ public class OSMReaderManager : MonoBehaviour
         setCam();
 
         hierarchy_c.beginHierarchy();
+
+        finish_create = true;
     }
 
     // Update is called once per frame
     void Update()
     {
-        int x = 0, y = 0;
-        hierarchy_c.calcLocation(cam.transform.position.x, cam.transform.position.z, ref x, ref y);
-        hierarchy_c.lookHierarchy();
-
+        if (finish_create)
+        {
+            int x = 0, y = 0;
+            hierarchy_c.calcLocation(cam.transform.position.x, cam.transform.position.z, ref x, ref y);
+            hierarchy_c.lookHierarchy();
+        }
         //createVisibleHouse();
     }
 

@@ -21,7 +21,6 @@ public class OSMReader
     bool debug_mode = false;
     //float x_length = 1.0f;
     //float y_length = 1.0f;
-
     public void toUnityLocation(float lon, float lat, out float x, out float z)
     {
         //x = (lon - boundary_min.x) / x_length * OSM_size.x;
@@ -30,7 +29,7 @@ public class OSMReader
         z = (float)MercatorProjection.latToY(lat) - boundary_min.y;
     }
 
-    public void readOSM(string file_path) //, Vector2 _OSM_size
+    public IEnumerator readOSM(string file_path, MonoBehaviour mono) //, Vector2 _OSM_size
     {
         //OSM_size = _OSM_size;
         XmlReader reader = XmlReader.Create(file_path);
@@ -174,16 +173,40 @@ public class OSMReader
         }
 
         // normalize points
-        boundary_min = new Vector2((float)MercatorProjection.lonToX(boundary_min.x), (float)MercatorProjection.lonToX(boundary_min.y));
-        boundary_max = new Vector2((float)MercatorProjection.lonToX(boundary_max.x), (float)MercatorProjection.lonToX(boundary_max.y));
+        boundary_min = new Vector2((float)MercatorProjection.lonToX(boundary_min.x), (float)MercatorProjection.latToY(boundary_min.y));
+        boundary_max = new Vector2((float)MercatorProjection.lonToX(boundary_max.x), (float)MercatorProjection.latToY(boundary_max.y));
         //x_length = boundary_max.x - boundary_min.x;
         //y_length = boundary_max.y - boundary_min.y;
         near_distance = 2; // 0.0002f / x_length * OSM_size.x
+
+        //////////////////////////////get elevations/////////////////////////////////////////
+        int coord_count = 0;
+        List<float> all_elevations = new List<float>();
+        List<EarthCoord> coord_collect = new List<EarthCoord>();
+        GameObject ele_obj = new GameObject("get elevations");
+        GetElevations ele = ele_obj.AddComponent<GetElevations>();
+        for (int point_index = 0; point_index < points.Count; point_index++)
+        {
+            coord_count++;
+            coord_collect.Add(new EarthCoord(points[point_index].position.x, points[point_index].position.z));
+            if (coord_count == 80)
+            {
+                yield return mono.StartCoroutine(ele.get_elevation_list(coord_collect));
+                all_elevations.AddRange(ele.elevations);
+                coord_count = 0;
+                coord_collect.Clear();
+            }
+        }
+        yield return mono.StartCoroutine(ele.get_elevation_list(coord_collect));
+        all_elevations.AddRange(ele.elevations);
+        //mono.StopCoroutine(ele.get_elevation_list(coord_collect));
+        ///////////////////////////////////////////////////////////////////////////////////
+
         for (int point_index = 0; point_index < points.Count; point_index++)
         {
             float unity_x, unity_z;
             toUnityLocation(points[point_index].position.x, points[point_index].position.z, out unity_x, out unity_z);
-            points[point_index].position = new Vector3(unity_x, points[point_index].position.y, unity_z);
+            points[point_index].position = new Vector3(unity_x, all_elevations[point_index], unity_z);
             points[point_index].connect_way = new List<string>(connect_points[points_id[point_index]]);
             points_lib.Add(points_id[point_index], points[point_index]);
         }
@@ -194,6 +217,7 @@ public class OSMReader
         }
 
         mergeRoad();
+        //yield return 0;
     }
 
     private void mergeRoad()
