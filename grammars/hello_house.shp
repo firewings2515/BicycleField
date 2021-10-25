@@ -1,0 +1,100 @@
+// Shape Modeling Language (ShapeML)
+// Copyright (C) 2019  Stefan Lienhard
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+const facade_color = "#dddddd";
+const tex_size = 3.0;
+
+param height = 10;             // Parameters, unlike constants, can be set by the
+param roof_color = "#ad7859";  // user via cmd or modified interactively in the GUI.
+
+param splitfacade = 3;
+param splitfloor = 3;
+
+param roofdeg = 40;
+param rooffactor = 0.5;
+
+param maxSize = 12;
+
+rule Axiom = {
+  size(maxSize, 0, maxSize)  // Set the shape size to 8x11 m.
+  ADD_POLYGON_001_
+  polygon(0.0, 0.0, 5.0, 0.0, 5.0, 5.0, -5.0,  5.0, -5.0, 2.5, 0.0, 2.5)
+  House           // Apply 'House' rule.
+};
+
+rule House = {
+  extrude(height)           // Extrude the building lot up to 10 m.
+  splitFace(                // Split the box mass model into faces.
+    "top",      { uvSetupProjectionXY(tex_size, tex_size) Roof },   // Apply rule 'Roof' to the top face.
+    "vertical", { uvSetupProjectionXY(tex_size, tex_size) Facade }  // Apply rule 'Facade' to all side faces.
+  )
+};
+
+rule Roof = {
+  color(roof_color)
+  ADD_TEXTURE_002_
+  texture("assets/farm_wood_planks.jpg")
+  uvProject
+  Roof_             // Create terminal shape with suffix _.
+};
+
+
+rule Facade = {
+  splitRepeatY(splitfacade, {    // Split the facade into stretchable floors of ~3 m each.
+    splitRepeatX(splitfloor, {  // Split the floor into stretchable window tiles of ~3 m each.
+      WindowTile
+    })
+  })
+};
+
+rule WindowTile = {
+  color("#dddddd")
+  splitY("sfs",          // Vertically split the tile into 's'tretchable (proportionally
+    1.0, { WallMaterial },      // sized) 'Wall_' terminals and a 'fixed' sized row with 1.2 m height.
+    1.2, {
+      splitX("sss",    // Horizontally split the row into 'Wall_', 'Shutter', and 'Window' shapes.
+        1.0, { WallMaterial },
+        0.8, { Window },
+        1.0, { WallMaterial }
+      )
+    },
+    1.0, { WallMaterial }
+  )
+};
+
+rule WallMaterial = {
+  color("#dddddd")
+  ADD_TEXTURE_001_
+  texture("assets/castle_brick_wall.jpg")
+  uvProject
+  WallMaterial_
+};
+
+rule Window = {
+  [                   // Push current shape onto the stack.
+    color("#aec3d8")
+    roughness(0.1)    // Make the glass more glossy/relfective.
+    Glass_
+  ]                   // Pop material adjustments off the stack again.
+
+  // Load OBJ mesh for window frame and grill. The asset path is relative to the grammar file.
+  // The OBJ itself was generated with 'grammars/hello_house_window_frame.shp'.
+
+  FrameAndGrill_
+};
+
+// Adding doors to the house is left as exercise to the reader.
+

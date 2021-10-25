@@ -4,6 +4,8 @@ using UnityEngine;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml;
+using System.Threading;
+
 //using Cinemachine;
 
 public class OSMReaderManager : MonoBehaviour
@@ -33,6 +35,8 @@ public class OSMReaderManager : MonoBehaviour
     //CinemachineVirtualCamera virtualCamera;
     bool show_osm_points = false; // show all points in OSM data
     bool finish_create = false;
+    [Header("Procedural Modeling of house")]
+    public bool build_house = false;
 
     string getDigits(string s) // for parser
     {
@@ -285,7 +289,7 @@ public class OSMReaderManager : MonoBehaviour
         belong_to_hier_y.Clear();
         int belong_x = 0;
         int belong_y = 0;
-        
+
         Vector3[][] vertex = new Vector3[(road.Count - 1) * 2][];
         Vector3 f = new Vector3();
         Vector3 up = new Vector3();
@@ -427,7 +431,7 @@ public class OSMReaderManager : MonoBehaviour
         MeshRenderer mr = houses_polygon[house_index].AddComponent<MeshRenderer>();
         mf.mesh = mesh;
         mr.material = houses_polygon_mat;
-        
+
         // managed by heirarchy
         GameObject instance_h = Instantiate(view_instance);
         instance_h.GetComponent<ViewInstance>().cam = cam;
@@ -445,6 +449,150 @@ public class OSMReaderManager : MonoBehaviour
 
         //Return the points
         return mesh;
+    }
+
+    IEnumerator createHousePolygon(List<string> house_point_ids, int house_index, string house_id, int context_id) // generate a house polygon
+    {
+        List<int> belong_to_hier_x = new List<int>();
+        List<int> belong_to_hier_y = new List<int>();
+        belong_to_hier_x.Clear();
+        belong_to_hier_y.Clear();
+        int belong_x = 0;
+        int belong_y = 0;
+
+        Mesh mesh = new Mesh();
+        // generate polygon vertex
+        Vector3[] vertex = new Vector3[house_point_ids.Count - 1];
+        for (int index = 0; index<house_point_ids.Count - 1; index++)
+        {
+            vertex[index] = osm_reader.points_lib[house_point_ids[index]].position;
+        }
+
+        // classification hierarchy area
+        for (int index = 0; index<vertex.Length; index++)
+        {
+            hierarchy_c.calcLocation(vertex[index].x, vertex[index].z, ref belong_x, ref belong_y);
+            belong_to_hier_x.Add(belong_x);
+            belong_to_hier_y.Add(belong_y);
+        }
+
+        // for shape grammar
+        Vector2[] vertex2D = new Vector2[house_point_ids.Count - 1];
+        for (int index = 0; index<house_point_ids.Count - 1; index++)
+        {
+            vertex2D[index] = new Vector2(osm_reader.points_lib[house_point_ids[index]].position.x, osm_reader.points_lib[house_point_ids[index]].position.z);
+        }
+
+        // Use the triangulator to get indices for creating triangles
+        Triangulator tr = new Triangulator(vertex2D);
+        int[] indices = tr.Triangulate();
+
+        //Assign data to mesh
+        mesh.vertices = vertex;
+        mesh.triangles = indices;
+
+        //Recalculations
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        mesh.Optimize();
+
+        //Name the mesh
+        mesh.name = house_id;
+
+        // create a gameobject to scene
+        houses_polygon[house_index] = new GameObject();
+        houses_polygon[house_index].name = "instance_" + house_id;
+        houses_polygon[house_index].transform.parent = house_polygon_manager.transform;
+        MeshFilter mf = houses_polygon[house_index].AddComponent<MeshFilter>();
+        MeshRenderer mr = houses_polygon[house_index].AddComponent<MeshRenderer>();
+        mf.mesh = mesh;
+        mr.material = houses_polygon_mat;
+        
+        // ======================================================
+        // Procedural Modeling of house
+        List<Vector2> polygon = new List<Vector2>(vertex2D);
+        Vector2 maxLen = Vector2.zero;
+        Vector2 minLen = polygon[0];
+        
+        // bound record
+        for (int i = 0; i<polygon.Count; i++)
+        {
+            if (polygon[i].x > maxLen.x)
+                maxLen.x = polygon[i].x;
+            if (polygon[i].y > maxLen.y)
+                maxLen.y = polygon[i].y;
+            if (polygon[i].x<minLen.x)
+                minLen.x = polygon[i].x;
+            if (polygon[i].y<minLen.y)
+                minLen.y = polygon[i].y;
+        }
+        Vector2 maxSize = maxLen - minLen;
+        Vector2 center = (maxLen + minLen) / 2;
+
+        // Init house and set parameters
+        ShapeGrammarBuilder.InitObject(context_id);
+        ShapeGrammarBuilder.setIdLength(3, context_id);
+        ShapeGrammarBuilder.AddPolygon("001", polygon, context_id);
+        string filename = ".\\grammars\\hello_house.shp";
+        ShapeGrammarBuilder.loadShape(filename, context_id);
+        ShapeGrammarBuilder.setParam("height", Random.Range(10, 20).ToString(), context_id);
+        ShapeGrammarBuilder.setParam("splitfacade", Random.Range(2, 6).ToString(), context_id);
+        ShapeGrammarBuilder.setParam("maxSize", Mathf.Max(Mathf.Abs(maxSize.x), Mathf.Abs(maxSize.y)).ToString(), context_id);
+
+        // build the house mesh
+        bool done = false;
+        //Debug.Log("Start Thread: " + id.ToString());
+        Thread thread = new Thread(() =>
+        {
+            ShapeGrammarBuilder.buildShape(context_id);
+            done = true;
+        });
+        thread.Start();
+
+        // wait until function finish
+        while (!done)
+        {
+            yield return null;
+        }
+        Debug.Log("Finished Thread: " + house_index.ToString());
+
+        // record the mesh in obj and mtl format
+        string obj = "", mtl = "";
+        ShapeGrammarBuilder.buildMesh(ref obj, ref mtl, context_id);
+        ShapeGrammarBuilder.destroyContext(context_id);
+        // Procedural Modeling of house
+        // ======================================================
+
+        // managed by heirarchy
+        GameObject instance_h = Instantiate(view_instance);
+        instance_h.GetComponent<ViewInstance>().cam = cam;
+        instance_h.GetComponent<ViewInstance>().points = vertex;
+        instance_h.GetComponent<ViewInstance>().instance = houses_polygon[house_index];
+        instance_h.GetComponent<ViewInstance>().setup(false);
+
+        // bind the house information to ViewInstance
+        instance_h.GetComponent<ViewInstance>().setHouse(house_id, obj, mtl, center);
+
+        instance_h.name = "housePolygon_" + house_id;
+        instance_h.transform.parent = house_polygon_manager.transform;
+
+        // add to heirarchy system
+        for (int belong_index = 0; belong_index<belong_to_hier_x.Count; belong_index++)
+        {
+            hierarchy_c.heirarchy_master[belong_to_hier_x[belong_index], belong_to_hier_y[belong_index]].objects.Add(instance_h);
+        }
+    }
+
+    IEnumerator getIndexCreateMesh(int index)
+    {
+        // wait for the free builder to build mesh
+        int context_index = ShapeGrammarBuilder.getFreeStack();
+        while (context_index == -1)
+        {
+            context_index = ShapeGrammarBuilder.getFreeStack();
+            yield return null;
+        }
+        StartCoroutine(createHousePolygon(osm_reader.houses[index], index, osm_reader.houses_id[index], context_index));
     }
 
     //void createVirtualCam()
@@ -473,14 +621,14 @@ public class OSMReaderManager : MonoBehaviour
 
     void setCam()
     {
-        cam.transform.position = osm_reader.points_lib[set_camera_to_point_id].position + new Vector3(0, 3.5f, 0); 
+        cam.transform.position = osm_reader.points_lib[set_camera_to_point_id].position + new Vector3(0, 3.5f, 0);
     }
 
     // Start is called before the first frame update
     IEnumerator Start()
     {
         osm_reader = new OSMReader();
-        yield return StartCoroutine(osm_reader.readOSM(Application.streamingAssetsPath + "//" + file_path, this));
+        yield return(osm_reader.readOSM(Application.streamingAssetsPath + "//" + file_path, this));
         hierarchy_c = new HierarchyControl();
         hierarchy_c.setup(100, 100, osm_reader.boundary_max.x, osm_reader.boundary_max.y);
 
@@ -543,8 +691,11 @@ public class OSMReaderManager : MonoBehaviour
         house_mesh = new GameObject[osm_reader.houses.Count];
         for (int index = 0; index < osm_reader.houses.Count; index++)
         {
-            // houses
-            createHousePolygon(osm_reader.houses[index], index, osm_reader.houses_id[index]);
+            // build houses or polygon
+            if (!build_house)
+                createHousePolygon(osm_reader.houses[index], index, osm_reader.houses_id[index]);
+            else
+                StartCoroutine(getIndexCreateMesh(index));
         }
 
         //createVirtualCam();
