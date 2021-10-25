@@ -9,7 +9,8 @@ using System.Xml;
 public class OSMReaderManager : MonoBehaviour
 {
     public string file_path = "mapSimple.osm";
-    public Vector2 OSM_size;
+    public string set_camera_to_point_id = "45263678_226830312+0"; // 45263678_226830312+0還金路 4486262148竹子湖路 2037722609公館圓環
+    //public Vector2 OSM_size;
     public GameObject sphere_prefab;
     public GameObject tree_prefab;
     public GameObject view_instance;
@@ -31,7 +32,6 @@ public class OSMReaderManager : MonoBehaviour
     //public CinemachineVirtualCamera virtualCameraPrefab;
     //CinemachineVirtualCamera virtualCamera;
     bool show_osm_points = false; // show all points in OSM data
-
     bool finish_create = false;
 
     string getDigits(string s) // for parser
@@ -473,14 +473,14 @@ public class OSMReaderManager : MonoBehaviour
 
     void setCam()
     {
-        cam.transform.position = osm_reader.points_lib["4486262148"].position + new Vector3(0, 3.5f, 0);
+        cam.transform.position = osm_reader.points_lib[set_camera_to_point_id].position + new Vector3(0, 3.5f, 0); 
     }
 
     // Start is called before the first frame update
     IEnumerator Start()
     {
         osm_reader = new OSMReader();
-        yield return StartCoroutine(osm_reader.readOSM(Application.streamingAssetsPath + "//" + file_path,this)); //, OSM_size
+        yield return StartCoroutine(osm_reader.readOSM(Application.streamingAssetsPath + "//" + file_path, this));
         hierarchy_c = new HierarchyControl();
         hierarchy_c.setup(100, 100, osm_reader.boundary_max.x, osm_reader.boundary_max.y);
 

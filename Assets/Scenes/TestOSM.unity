@@ -226,6 +226,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1603017145}
   - component: {fileID: 1603017144}
+  - component: {fileID: 1603017146}
   m_Layer: 0
   m_Name: OSMReader
   m_TagString: Untagged
@@ -246,7 +247,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   file_path: mapSimple.osm
-  OSM_size: {x: 20000, y: 20000}
+  set_camera_to_point_id: 45263678_226830312+0
   sphere_prefab: {fileID: 7606946595633192119, guid: 7a7e0a9491a268e4881caac315264c20, type: 3}
   tree_prefab: {fileID: 100000, guid: 6aab193b7693b5e4c9741f1917d2987c, type: 3}
   view_instance: {fileID: 6379100898760342392, guid: 0070e3ca57a1355498c1e70df5223207, type: 3}
@@ -267,6 +268,28 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1603017146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1603017143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b56a1482029654544a273236b23638f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  file_name: mapNTUST.osm
+  output_name: mapNTUSTSimple.osm
+  load_osm_file: 0
+  leave_visible: 0
+  leave_version: 0
+  leave_changeset: 0
+  leave_timestamp: 0
+  leave_user: 0
+  leave_uid: 0
+  leave_relation: 0
 --- !u!1 &1617446011
 GameObject:
   m_ObjectHideFlags: 0

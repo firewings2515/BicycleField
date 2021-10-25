@@ -15,12 +15,13 @@ public class OSMReader
     //public Vector2 OSM_size;
     public Vector2 boundary_min = Vector2.zero;
     public Vector2 boundary_max = Vector2.zero;
-    float near_distance = 0.0f;
+    const float near_distance = 24.0f;
     List<List<string>> avenue_links_ref = new List<List<string>>();
     List<string> avenue_links_to = new List<string>();
     bool debug_mode = false;
     //float x_length = 1.0f;
     //float y_length = 1.0f;
+
     public void toUnityLocation(float lon, float lat, out float x, out float z)
     {
         //x = (lon - boundary_min.x) / x_length * OSM_size.x;
@@ -29,7 +30,7 @@ public class OSMReader
         z = (float)MercatorProjection.latToY(lat) - boundary_min.y;
     }
 
-    public IEnumerator readOSM(string file_path, MonoBehaviour mono) //, Vector2 _OSM_size
+    public IEnumerator readOSM(string file_path, MonoBehaviour mono)  //, Vector2 _OSM_size
     {
         //OSM_size = _OSM_size;
         XmlReader reader = XmlReader.Create(file_path);
@@ -177,8 +178,7 @@ public class OSMReader
         boundary_max = new Vector2((float)MercatorProjection.lonToX(boundary_max.x), (float)MercatorProjection.latToY(boundary_max.y));
         //x_length = boundary_max.x - boundary_min.x;
         //y_length = boundary_max.y - boundary_min.y;
-        near_distance = 2; // 0.0002f / x_length * OSM_size.x
-
+        //near_distance = 32; // 0.0002f / x_length * OSM_size.x
         //////////////////////////////get elevations/////////////////////////////////////////
         int coord_count = 0;
         List<float> all_elevations = new List<float>();
@@ -201,7 +201,7 @@ public class OSMReader
         all_elevations.AddRange(ele.elevations);
         //mono.StopCoroutine(ele.get_elevation_list(coord_collect));
         ///////////////////////////////////////////////////////////////////////////////////
-
+        
         for (int point_index = 0; point_index < points.Count; point_index++)
         {
             float unity_x, unity_z;
@@ -217,7 +217,6 @@ public class OSMReader
         }
 
         mergeRoad();
-        //yield return 0;
     }
 
     private void mergeRoad()
