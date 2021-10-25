@@ -29,13 +29,24 @@ public class CameraControl : MonoBehaviour
         {
             this.gameObject.transform.position += this.gameObject.transform.right * 0.2f;
         }
-        if (Input.GetKey(KeyCode.Q))
+
+
+
+        if (Input.GetKey(KeyCode.LeftArrow))
         {
             this.gameObject.transform.Rotate(Vector3.up, -1.0f);
         }
-        if (Input.GetKey(KeyCode.E))
+        if (Input.GetKey(KeyCode.RightArrow))
         {
             this.gameObject.transform.Rotate(Vector3.up, 1.0f);
+        }
+        if (Input.GetKey(KeyCode.UpArrow))
+        {
+            this.gameObject.transform.Rotate(Vector3.right, -1.0f);
+        }
+        if (Input.GetKey(KeyCode.DownArrow))
+        {
+            this.gameObject.transform.Rotate(Vector3.right, 1.0f);
         }
     }
 }
