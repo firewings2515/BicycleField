@@ -630,7 +630,7 @@ public class OSMReaderManager : MonoBehaviour
         osm_reader = new OSMReader();
         yield return(osm_reader.readOSM(Application.streamingAssetsPath + "//" + file_path, this));
         hierarchy_c = new HierarchyControl();
-        hierarchy_c.setup(100, 100, osm_reader.boundary_max.x, osm_reader.boundary_max.y);
+        hierarchy_c.setup((int)(osm_reader.boundary_max.x - osm_reader.boundary_min.x) / 200, (int)(osm_reader.boundary_max.y - osm_reader.boundary_min.y) / 200, osm_reader.boundary_max.x, osm_reader.boundary_max.y);
 
         house_polygon_manager = new GameObject("House Polygon Manager");
         road_manager = new GameObject("Road Manager");
