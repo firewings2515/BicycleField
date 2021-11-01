@@ -8349,83 +8349,6 @@
   <tag k="name:en" v="College of Management Building 2"/>
   <tag k="name:zh" v="管理學院二號館"/>
  </way>
- <way id="59410747">
-  <nd ref="736757261"/>
-  <nd ref="736757278"/>
-  <nd ref="5203446537"/>
-  <nd ref="5203446539"/>
-  <nd ref="5203446538"/>
-  <nd ref="736757296"/>
-  <nd ref="5205835403"/>
-  <nd ref="4990669815"/>
-  <nd ref="4904127626"/>
-  <nd ref="4904127627"/>
-  <nd ref="736757261"/>
-  <tag k="landuse" v="grass"/>
- </way>
- <way id="59547011">
-  <nd ref="738623800"/>
-  <nd ref="738623803"/>
-  <nd ref="738623810"/>
-  <nd ref="6072807305"/>
-  <nd ref="6072807304"/>
-  <nd ref="6072807306"/>
-  <nd ref="6072807307"/>
-  <nd ref="738623822"/>
-  <nd ref="738623800"/>
-  <tag k="leisure" v="swimming_pool"/>
-  <tag k="sport" v="swimming"/>
- </way>
- <way id="59686034">
-  <nd ref="740469388"/>
-  <nd ref="740469358"/>
-  <nd ref="740469364"/>
-  <nd ref="740469367"/>
-  <nd ref="740469374"/>
-  <nd ref="4506626112"/>
-  <nd ref="4506626113"/>
-  <nd ref="740469383"/>
-  <nd ref="7755571951"/>
-  <nd ref="7755571954"/>
-  <nd ref="740469388"/>
- </way>
- <way id="59687245">
-  <nd ref="740511960"/>
-  <nd ref="736464558"/>
-  <nd ref="740511956"/>
-  <nd ref="7779765329"/>
-  <nd ref="5203436918"/>
-  <nd ref="5203436920"/>
-  <nd ref="740511927"/>
-  <nd ref="7779765331"/>
-  <nd ref="740511976"/>
-  <nd ref="5203438323"/>
-  <nd ref="5203438322"/>
-  <nd ref="740511960"/>
-  <tag k="area" v="yes"/>
-  <tag k="highway" v="pedestrian"/>
- </way>
- <way id="59687811">
-  <nd ref="736464582"/>
-  <nd ref="736464577"/>
-  <nd ref="736464579"/>
-  <nd ref="736464580"/>
-  <nd ref="736464582"/>
-  <tag k="area" v="yes"/>
-  <tag k="highway" v="pedestrian"/>
- </way>
- <way id="158624108">
-  <nd ref="1707866553"/>
-  <nd ref="3302605816"/>
-  <nd ref="1707866512"/>
-  <nd ref="5203438354"/>
-  <nd ref="1707866561"/>
-  <nd ref="1707866507"/>
-  <nd ref="736747733"/>
-  <nd ref="1707866511"/>
-  <nd ref="2080746279"/>
-  <nd ref="1707866553"/>
- </way>
  <way id="158651497">
   <nd ref="1708079114"/>
   <nd ref="1708079093"/>
@@ -9094,32 +9017,6 @@
   <tag k="building" v="school"/>
   <tag k="name" v="書香樓"/>
  </way>
- <way id="192060399">
-  <nd ref="3302605746"/>
-  <nd ref="2026200188"/>
-  <nd ref="6240955584"/>
-  <nd ref="2026200477"/>
-  <nd ref="6240955583"/>
-  <nd ref="3302605702"/>
-  <nd ref="3302605696"/>
-  <nd ref="6240955582"/>
-  <nd ref="6240955581"/>
-  <nd ref="6240955580"/>
-  <nd ref="6240955579"/>
-  <nd ref="6240955578"/>
-  <nd ref="3302605694"/>
-  <nd ref="3302605725"/>
-  <nd ref="6240955577"/>
-  <nd ref="6240955576"/>
-  <nd ref="3302605736"/>
-  <nd ref="6240955574"/>
-  <nd ref="3302605742"/>
-  <nd ref="3302605744"/>
-  <nd ref="6240955575"/>
-  <nd ref="3302605748"/>
-  <nd ref="3302605750"/>
-  <nd ref="3302605746"/>
- </way>
  <way id="192060401">
   <nd ref="2026200412"/>
   <nd ref="2026200226"/>
@@ -9205,17 +9102,6 @@
   <tag k="name:zh" v="大氣系實驗室"/>
   <tag k="source" v="Bing"/>
  </way>
- <way id="192060414">
-  <nd ref="2026200359"/>
-  <nd ref="2026200612"/>
-  <nd ref="2026200238"/>
-  <nd ref="2026200216"/>
-  <nd ref="2026200554"/>
-  <nd ref="2026200521"/>
-  <nd ref="2026200482"/>
-  <nd ref="2026200331"/>
-  <nd ref="2026200359"/>
- </way>
  <way id="192060420">
   <nd ref="2026200379"/>
   <nd ref="2026200141"/>
@@ -9260,17 +9146,6 @@
   <tag k="name" v="男一餐廳"/>
   <tag k="source" v="Bing"/>
  </way>
- <way id="192060455">
-  <nd ref="2026200601"/>
-  <nd ref="4529998381"/>
-  <nd ref="2026200496"/>
-  <nd ref="2026200524"/>
-  <nd ref="2026200642"/>
-  <nd ref="2026200352"/>
-  <nd ref="2026200601"/>
-  <tag k="landuse" v="grass"/>
-  <tag k="source" v="Bing"/>
- </way>
  <way id="192060464">
   <nd ref="2026200679"/>
   <nd ref="2026200314"/>
@@ -9285,20 +9160,6 @@
   <tag k="name" v="行政大樓西側平房"/>
   <tag k="source" v="Bing"/>
  </way>
- <way id="192060470">
-  <nd ref="2026200145"/>
-  <nd ref="2026200416"/>
-  <nd ref="2026200187"/>
-  <nd ref="2026200561"/>
-  <nd ref="2026200384"/>
-  <nd ref="2026200367"/>
-  <nd ref="2026200355"/>
-  <nd ref="2026200244"/>
-  <nd ref="2026200388"/>
-  <nd ref="2026200577"/>
-  <nd ref="2026200146"/>
-  <nd ref="2026200145"/>
- </way>
  <way id="192060472">
   <nd ref="2026200206"/>
   <nd ref="2026200732"/>
@@ -9309,21 +9170,6 @@
   <tag k="name" v="第一會議室"/>
   <tag k="old_name" v="大幅"/>
   <tag k="source" v="Bing"/>
- </way>
- <way id="192060479">
-  <nd ref="2026200681"/>
-  <nd ref="2026200183"/>
-  <nd ref="2026200686"/>
-  <nd ref="2026200407"/>
-  <nd ref="2026200581"/>
-  <nd ref="2026200559"/>
-  <nd ref="2026200424"/>
-  <nd ref="2026200308"/>
-  <nd ref="2026200377"/>
-  <nd ref="2026200663"/>
-  <nd ref="2026200513"/>
-  <nd ref="2026200624"/>
-  <nd ref="2026200681"/>
  </way>
  <way id="192637384">
   <nd ref="2031839443"/>
@@ -9348,19 +9194,6 @@
   <nd ref="2031839406"/>
   <tag k="building" v="university"/>
   <tag k="name" v="實驗動物中心"/>
- </way>
- <way id="192637392">
-  <nd ref="2031839596"/>
-  <nd ref="2031839590"/>
-  <nd ref="2031839501"/>
-  <nd ref="2031839423"/>
-  <nd ref="2031839499"/>
-  <nd ref="2031839435"/>
-  <nd ref="2031839548"/>
-  <nd ref="2031839596"/>
-  <tag k="amenity" v="recycling"/>
-  <tag k="name" v="臺大資源回收中心"/>
-  <tag k="recycling_type" v="centre"/>
  </way>
  <way id="192637397">
   <nd ref="2031839561"/>
@@ -9414,63 +9247,6 @@
   <tag k="building" v="university"/>
   <tag k="name" v="台大動物醫院"/>
  </way>
- <way id="192884949">
-  <nd ref="2034267023"/>
-  <nd ref="2034267123"/>
-  <nd ref="2034267031"/>
-  <nd ref="2034267190"/>
-  <nd ref="2034267118"/>
-  <nd ref="2034267156"/>
-  <nd ref="2034267162"/>
-  <nd ref="2034267067"/>
-  <nd ref="2034267023"/>
-  <tag k="man_made" v="monitoring_station"/>
-  <tag k="name" v="大氣系氣象觀測坪"/>
- </way>
- <way id="193424495">
-  <nd ref="2039401153"/>
-  <nd ref="2039401182"/>
-  <nd ref="2039401135"/>
-  <nd ref="2039401202"/>
-  <nd ref="2039401199"/>
-  <nd ref="2039401196"/>
-  <nd ref="7779765322"/>
-  <nd ref="7779765323"/>
-  <nd ref="7779765324"/>
-  <nd ref="2039401162"/>
-  <nd ref="2039401153"/>
-  <tag k="amenity" v="parking"/>
-  <tag k="fee" v="yes"/>
-  <tag k="name" v="公館/二活平面停車場"/>
-  <tag k="parking" v="surface"/>
- </way>
- <way id="193424496">
-  <nd ref="2039401157"/>
-  <nd ref="2039401191"/>
-  <nd ref="2039401184"/>
-  <nd ref="2039401178"/>
-  <nd ref="4952060649"/>
-  <nd ref="4952060651"/>
-  <nd ref="2039401148"/>
-  <nd ref="2039401151"/>
-  <nd ref="2039401159"/>
-  <nd ref="2039401180"/>
-  <nd ref="2039401157"/>
-  <tag k="amenity" v="parking"/>
-  <tag k="fee" v="yes"/>
-  <tag k="name" v="台大公館平面停車場"/>
-  <tag k="parking" v="surface"/>
-  <tag k="surface" v="asphalt"/>
- </way>
- <way id="193424497">
-  <nd ref="2039401143"/>
-  <nd ref="2019464643"/>
-  <nd ref="2039401165"/>
-  <nd ref="2039401186"/>
-  <nd ref="2039401143"/>
-  <tag k="amenity" v="parking"/>
-  <tag k="parking" v="surface"/>
- </way>
  <way id="194300396">
   <nd ref="2048257995"/>
   <nd ref="2048257997"/>
@@ -9480,22 +9256,6 @@
   <tag k="building" v="university"/>
   <tag k="building:levels" v="1"/>
   <tag k="name" v="臺大農場農產品展示中心"/>
- </way>
- <way id="194580830">
-  <nd ref="2050889815"/>
-  <nd ref="2050889816"/>
-  <nd ref="2050889829"/>
-  <nd ref="2050889817"/>
-  <nd ref="3302620604"/>
-  <nd ref="2050889818"/>
-  <nd ref="2050889819"/>
-  <nd ref="2050889820"/>
-  <nd ref="2050889821"/>
-  <nd ref="2050889822"/>
-  <nd ref="3302620653"/>
-  <nd ref="4891310632"/>
-  <nd ref="2050889815"/>
-  <tag k="barrier" v="wall"/>
  </way>
  <way id="202164133">
   <nd ref="6072807294"/>
@@ -9598,27 +9358,6 @@
   <nd ref="2373756525"/>
   <nd ref="2373756524"/>
   <tag k="building" v="industrial"/>
- </way>
- <way id="228711111">
-  <nd ref="2373756513"/>
-  <nd ref="2373756516"/>
-  <nd ref="2373756507"/>
-  <nd ref="2373756505"/>
-  <nd ref="2373756513"/>
- </way>
- <way id="228711112">
-  <nd ref="2373756514"/>
-  <nd ref="2373756518"/>
-  <nd ref="2373756511"/>
-  <nd ref="2373756509"/>
-  <nd ref="2373756514"/>
- </way>
- <way id="228711113">
-  <nd ref="2373756520"/>
-  <nd ref="2373756522"/>
-  <nd ref="2373756503"/>
-  <nd ref="2373756501"/>
-  <nd ref="2373756520"/>
  </way>
  <way id="230918106">
   <nd ref="2393506973"/>
@@ -9784,48 +9523,6 @@
   <tag k="ref" v="AD"/>
   <tag k="wheelchair" v="limited"/>
  </way>
- <way id="251035731">
-  <nd ref="2573322548"/>
-  <nd ref="2573322546"/>
-  <nd ref="2573322542"/>
-  <nd ref="2573322540"/>
-  <nd ref="2573322544"/>
-  <nd ref="2573322551"/>
-  <nd ref="2573322560"/>
-  <nd ref="2573322565"/>
-  <nd ref="2573322568"/>
-  <nd ref="2573322572"/>
-  <nd ref="2573322574"/>
-  <nd ref="2573322577"/>
-  <nd ref="2573322581"/>
-  <nd ref="2573322585"/>
-  <nd ref="2573322586"/>
-  <nd ref="2573322592"/>
-  <nd ref="2573322596"/>
-  <nd ref="2573322597"/>
-  <nd ref="2573322599"/>
-  <nd ref="2573322598"/>
-  <nd ref="2573322590"/>
-  <nd ref="2573322588"/>
-  <nd ref="2573322583"/>
-  <nd ref="2573322579"/>
-  <nd ref="2573322575"/>
-  <nd ref="2573322570"/>
-  <nd ref="2573322567"/>
-  <nd ref="2573322563"/>
-  <nd ref="2573322561"/>
-  <nd ref="2573322558"/>
-  <nd ref="2573322556"/>
-  <nd ref="2573322555"/>
-  <nd ref="2573322553"/>
-  <nd ref="2573322549"/>
-  <nd ref="2573322548"/>
-  <tag k="name" v="生態池"/>
-  <tag k="natural" v="water"/>
-  <tag k="water" v="pond"/>
-  <tag k="wikidata" v="Q10927216"/>
-  <tag k="wikipedia" v="zh:國立臺灣大學生態池"/>
- </way>
  <way id="257789378">
   <nd ref="2632590693"/>
   <nd ref="2632590697"/>
@@ -9868,83 +9565,6 @@
   <tag k="official_ref" v="313324500K"/>
   <tag k="source" v="Bing;local knowledge"/>
  </way>
- <way id="279686640">
-  <nd ref="2838932805"/>
-  <nd ref="2838932806"/>
-  <nd ref="3302605768"/>
-  <nd ref="3302605771"/>
-  <nd ref="6072807369"/>
-  <nd ref="6072807407"/>
-  <nd ref="6072807406"/>
-  <nd ref="3302605765"/>
-  <nd ref="6072807405"/>
-  <nd ref="6072807404"/>
-  <nd ref="3302605755"/>
-  <nd ref="6072807403"/>
-  <nd ref="6072807402"/>
-  <nd ref="3302605747"/>
-  <nd ref="6072807401"/>
-  <nd ref="2838932807"/>
-  <nd ref="6072807400"/>
-  <nd ref="3302605749"/>
-  <nd ref="6072807397"/>
-  <nd ref="6072807398"/>
-  <nd ref="6072807399"/>
-  <nd ref="3302605785"/>
-  <nd ref="6072807396"/>
-  <nd ref="6072807395"/>
-  <nd ref="6072807394"/>
-  <nd ref="3302605789"/>
-  <nd ref="3302605793"/>
-  <nd ref="6072807393"/>
-  <nd ref="6072807392"/>
-  <nd ref="3302605795"/>
-  <nd ref="6072807386"/>
-  <nd ref="6072807391"/>
-  <nd ref="6072807390"/>
-  <nd ref="3302605803"/>
-  <nd ref="6072807388"/>
-  <nd ref="6072807389"/>
-  <nd ref="3302605804"/>
-  <nd ref="6072807387"/>
-  <nd ref="3302605805"/>
-  <nd ref="6072807411"/>
-  <nd ref="6072807409"/>
-  <nd ref="6072807408"/>
-  <nd ref="6072807410"/>
-  <nd ref="3302605807"/>
-  <nd ref="2838932805"/>
- </way>
- <way id="279686642">
-  <nd ref="2838932812"/>
-  <nd ref="2838932813"/>
-  <nd ref="2838932815"/>
-  <nd ref="2838932814"/>
-  <nd ref="2838932812"/>
-  <tag k="hoops" v="2"/>
-  <tag k="leisure" v="pitch"/>
-  <tag k="name" v="籃球場"/>
-  <tag k="sport" v="basketball"/>
- </way>
- <way id="279686643">
-  <nd ref="2838932816"/>
-  <nd ref="2838932817"/>
-  <nd ref="2838932818"/>
-  <nd ref="2838932819"/>
-  <nd ref="2838932816"/>
-  <tag k="leisure" v="pitch"/>
-  <tag k="name" v="網球場"/>
-  <tag k="sport" v="tennis"/>
- </way>
- <way id="279686646">
-  <nd ref="2838932823"/>
-  <nd ref="2838932824"/>
-  <nd ref="2838932825"/>
-  <nd ref="2838932826"/>
-  <nd ref="2838932823"/>
-  <tag k="landuse" v="grass"/>
-  <tag k="name" v="草地"/>
- </way>
  <way id="299815317">
   <nd ref="3039018441"/>
   <nd ref="5587503961"/>
@@ -9953,19 +9573,6 @@
   <nd ref="3039018441"/>
   <tag k="building" v="warehouse"/>
   <tag k="name" v="保管組倉庫"/>
- </way>
- <way id="299815319">
-  <nd ref="3039018440"/>
-  <nd ref="3039018445"/>
-  <nd ref="5456186756"/>
-  <nd ref="5456186755"/>
-  <nd ref="5456186754"/>
-  <nd ref="5456186753"/>
-  <nd ref="3039018444"/>
-  <nd ref="4931508507"/>
-  <nd ref="3039018440"/>
-  <tag k="landuse" v="grass"/>
-  <tag k="name" v="鹿鳴廣場"/>
  </way>
  <way id="310105893">
   <nd ref="3154666359"/>
@@ -9985,215 +9592,6 @@
   <tag k="man_made" v="pumping_station"/>
   <tag k="name" v="景美抽水站"/>
   <tag k="phone" v="+886 2 2932 0291"/>
- </way>
- <way id="323467306">
-  <nd ref="3302605758"/>
-  <nd ref="6072807370"/>
-  <nd ref="6072807371"/>
-  <nd ref="3302605786"/>
-  <nd ref="6072807378"/>
-  <nd ref="6072807379"/>
-  <nd ref="3302605792"/>
-  <nd ref="6072807380"/>
-  <nd ref="3302605794"/>
-  <nd ref="6072807381"/>
-  <nd ref="3302605796"/>
-  <nd ref="6072807382"/>
-  <nd ref="3302605798"/>
-  <nd ref="6072807383"/>
-  <nd ref="3302605800"/>
-  <nd ref="6072807384"/>
-  <nd ref="3302605799"/>
-  <nd ref="6072807385"/>
-  <nd ref="5494236657"/>
-  <nd ref="3302605780"/>
-  <nd ref="6072807377"/>
-  <nd ref="6072807376"/>
-  <nd ref="3302605774"/>
-  <nd ref="3302605770"/>
-  <nd ref="6072807375"/>
-  <nd ref="3302605766"/>
-  <nd ref="6072807374"/>
-  <nd ref="3302605761"/>
-  <nd ref="6072807373"/>
-  <nd ref="3302605759"/>
-  <nd ref="6072807372"/>
-  <nd ref="3302605758"/>
- </way>
- <way id="323467307">
-  <nd ref="3302605598"/>
-  <nd ref="3302605599"/>
-  <nd ref="6073402591"/>
-  <nd ref="3302605601"/>
-  <nd ref="3302605602"/>
-  <nd ref="6073402592"/>
-  <nd ref="3302605603"/>
-  <nd ref="3302605604"/>
-  <nd ref="3302605608"/>
-  <nd ref="6073402593"/>
-  <nd ref="3302605612"/>
-  <nd ref="6073402594"/>
-  <nd ref="3302605613"/>
-  <nd ref="3302605616"/>
-  <nd ref="3302605618"/>
-  <nd ref="3302605588"/>
-  <nd ref="3302605585"/>
-  <nd ref="3302605589"/>
-  <nd ref="6073402580"/>
-  <nd ref="6073402596"/>
-  <nd ref="3302605587"/>
-  <nd ref="6073402595"/>
-  <nd ref="3302605584"/>
-  <nd ref="6073402581"/>
-  <nd ref="3302605581"/>
-  <nd ref="6073402584"/>
-  <nd ref="6073402583"/>
-  <nd ref="6073402582"/>
-  <nd ref="3302605580"/>
-  <nd ref="6073402588"/>
-  <nd ref="6073402587"/>
-  <nd ref="6073402586"/>
-  <nd ref="6073402585"/>
-  <nd ref="3302605578"/>
-  <nd ref="6073402590"/>
-  <nd ref="6073402589"/>
-  <nd ref="3302605598"/>
- </way>
- <way id="323467312">
-  <nd ref="3302605754"/>
-  <nd ref="3302605752"/>
-  <nd ref="3302605751"/>
-  <nd ref="6240955585"/>
-  <nd ref="3302605745"/>
-  <nd ref="3302605741"/>
-  <nd ref="3302605737"/>
-  <nd ref="3302605729"/>
-  <nd ref="3302605739"/>
-  <nd ref="3302605733"/>
-  <nd ref="3302605683"/>
-  <nd ref="3302605686"/>
-  <nd ref="3302605687"/>
-  <nd ref="3302605689"/>
-  <nd ref="6240955573"/>
-  <nd ref="3302605693"/>
-  <nd ref="3302605697"/>
-  <nd ref="3302605703"/>
-  <nd ref="3302605706"/>
-  <nd ref="3302605714"/>
-  <nd ref="3302605709"/>
-  <nd ref="3302605719"/>
-  <nd ref="3302605767"/>
-  <nd ref="3302605760"/>
-  <nd ref="3302605754"/>
- </way>
- <way id="323467321">
-  <nd ref="3302605615"/>
-  <nd ref="3302605605"/>
-  <nd ref="3302605617"/>
-  <nd ref="3302605620"/>
-  <nd ref="3302605615"/>
-  <tag k="leisure" v="pitch"/>
-  <tag k="sport" v="volleyball"/>
- </way>
- <way id="323467322">
-  <nd ref="3302605600"/>
-  <nd ref="3302605595"/>
-  <nd ref="2034267204"/>
-  <nd ref="3302605607"/>
-  <nd ref="3302605600"/>
-  <tag k="leisure" v="pitch"/>
-  <tag k="sport" v="basketball"/>
- </way>
- <way id="323467323">
-  <nd ref="3302605681"/>
-  <nd ref="6072807111"/>
-  <nd ref="3302605625"/>
-  <nd ref="3302605594"/>
-  <nd ref="6760934231"/>
-  <nd ref="6760934235"/>
-  <nd ref="2426538115"/>
-  <nd ref="3302605681"/>
-  <tag k="barrier" v="wall"/>
- </way>
- <way id="323467325">
-  <nd ref="3302605726"/>
-  <nd ref="3302605743"/>
-  <nd ref="3302605728"/>
-  <nd ref="3302605716"/>
-  <nd ref="3302605726"/>
-  <tag k="leisure" v="pitch"/>
- </way>
- <way id="323467326">
-  <nd ref="3302605787"/>
-  <nd ref="3302605797"/>
-  <nd ref="3302605791"/>
-  <nd ref="3302605783"/>
-  <nd ref="3302605787"/>
-  <tag k="leisure" v="pitch"/>
-  <tag k="sport" v="basketball"/>
- </way>
- <way id="323467327">
-  <nd ref="3302605773"/>
-  <nd ref="3302605784"/>
-  <nd ref="3302605782"/>
-  <nd ref="3302605763"/>
-  <nd ref="3302605773"/>
-  <tag k="leisure" v="pitch"/>
-  <tag k="sport" v="soccer"/>
- </way>
- <way id="323467328">
-  <nd ref="3302605699"/>
-  <nd ref="3302605718"/>
-  <nd ref="3302605701"/>
-  <nd ref="3302605685"/>
-  <nd ref="3302605699"/>
-  <tag k="leisure" v="pitch"/>
-  <tag k="sport" v="basketball"/>
- </way>
- <way id="323467336">
-  <nd ref="3302605576"/>
-  <nd ref="2426538111"/>
-  <nd ref="2426538103"/>
-  <nd ref="2426538112"/>
-  <nd ref="6072807106"/>
-  <nd ref="2426538113"/>
-  <nd ref="2426538114"/>
-  <nd ref="3302605621"/>
-  <nd ref="3302605591"/>
-  <nd ref="3302605576"/>
- </way>
- <way id="323467341">
-  <nd ref="3302605609"/>
-  <nd ref="6073402579"/>
-  <nd ref="3302605611"/>
-  <nd ref="3302605606"/>
-  <nd ref="2031748086"/>
-  <nd ref="6073402565"/>
-  <nd ref="6073402566"/>
-  <nd ref="2031748089"/>
-  <nd ref="2031748090"/>
-  <nd ref="2031748095"/>
-  <nd ref="6073402573"/>
-  <nd ref="6073402572"/>
-  <nd ref="6073402571"/>
-  <nd ref="2031748105"/>
-  <nd ref="6073402570"/>
-  <nd ref="2031748107"/>
-  <nd ref="6073402569"/>
-  <nd ref="6073402568"/>
-  <nd ref="6073402567"/>
-  <nd ref="2031748109"/>
-  <nd ref="2031748115"/>
-  <nd ref="6073402574"/>
-  <nd ref="2031748116"/>
-  <nd ref="6073402575"/>
-  <nd ref="6073402576"/>
-  <nd ref="2031748128"/>
-  <nd ref="6073402577"/>
-  <nd ref="2031748131"/>
-  <nd ref="6073402578"/>
-  <nd ref="3302605609"/>
-  <tag k="landuse" v="grass"/>
  </way>
  <way id="323467344">
   <nd ref="3302605631"/>
@@ -10415,59 +9813,6 @@
   <tag k="building" v="yes"/>
   <tag k="name" v="小木屋鬆餅"/>
  </way>
- <way id="331499985">
-  <nd ref="2278504784"/>
-  <nd ref="3273277907"/>
-  <nd ref="3385751849"/>
-  <nd ref="3385751850"/>
-  <nd ref="2278504784"/>
-  <tag k="amenity" v="bicycle_rental"/>
-  <tag k="capacity" v="86"/>
-  <tag k="description" v="基隆路四段/基隆路四段73巷交叉口(鄰近國立台灣科技大學)"/>
-  <tag k="description:en" v="The intersection of Sec. 4, Keelung Rd. &amp; Ln. 73, Sec. 4, Keelung Rd"/>
-  <tag k="description:zh" v="基隆路四段/基隆路四段73巷交叉口(鄰近國立台灣科技大學)"/>
-  <tag k="fee" v="yes"/>
-  <tag k="name" v="台灣科技大學"/>
-  <tag k="name:en" v="N.T.U.S.T"/>
-  <tag k="name:zh" v="台灣科技大學"/>
-  <tag k="nat_ref" v="TPE0061"/>
-  <tag k="network" v="YouBike 微笑單車"/>
-  <tag k="network:en" v="YouBike"/>
-  <tag k="network:zh" v="微笑單車"/>
-  <tag k="opening_hours" v="24/7"/>
-  <tag k="payment:ep_easycard" v="yes"/>
-  <tag k="payment:ep_ipass" v="yes"/>
-  <tag k="payment:jcb" v="yes"/>
-  <tag k="payment:mastercard" v="yes"/>
-  <tag k="payment:visa" v="yes"/>
-  <tag k="ref" v="0061"/>
-  <tag k="start_date" v="2013-04-15"/>
- </way>
- <way id="345047187">
-  <nd ref="3517429185"/>
-  <nd ref="3517429186"/>
-  <nd ref="3517429187"/>
-  <nd ref="3517429188"/>
-  <nd ref="3517429185"/>
-  <tag k="amenity" v="bicycle_parking"/>
-  <tag k="covered" v="no"/>
-  <tag k="fee" v="no"/>
-  <tag k="lit" v="yes"/>
-  <tag k="opening_hours" v="24/7"/>
-  <tag k="supervised" v="no"/>
- </way>
- <way id="353807591">
-  <nd ref="3596119178"/>
-  <nd ref="6073621306"/>
-  <nd ref="6073621307"/>
-  <nd ref="6073621304"/>
-  <nd ref="6073621305"/>
-  <nd ref="3596119177"/>
-  <nd ref="3596119176"/>
-  <nd ref="3596119179"/>
-  <nd ref="3596119178"/>
-  <tag k="leisure" v="garden"/>
- </way>
  <way id="354248215">
   <nd ref="3644253251"/>
   <nd ref="3600011020"/>
@@ -10511,14 +9856,6 @@
   <tag k="name" v="第三學生宿舍"/>
   <tag k="name:en" v="Female Dorm #3"/>
   <tag k="name:zh" v="第三學生宿舍"/>
- </way>
- <way id="359201144">
-  <nd ref="736459792"/>
-  <nd ref="3639546976"/>
-  <nd ref="3639546977"/>
-  <nd ref="3639546975"/>
-  <nd ref="736459792"/>
-  <tag k="amenity" v="bicycle_parking"/>
  </way>
  <way id="359203935">
   <nd ref="3639565420"/>
@@ -10743,28 +10080,6 @@
   <tag k="historic" v="monument"/>
   <tag k="name" v="日治時期農業試驗場"/>
  </way>
- <way id="359844707">
-  <nd ref="3644775271"/>
-  <nd ref="3644775267"/>
-  <nd ref="3644775266"/>
-  <nd ref="3644775270"/>
-  <nd ref="3644775278"/>
-  <nd ref="3644775286"/>
-  <nd ref="3644775285"/>
-  <nd ref="3644775279"/>
-  <nd ref="3644775271"/>
- </way>
- <way id="359844709">
-  <nd ref="3644775273"/>
-  <nd ref="3644775275"/>
-  <nd ref="3644775281"/>
-  <nd ref="3644775280"/>
-  <nd ref="3644775274"/>
-  <nd ref="3644775272"/>
-  <nd ref="3644775269"/>
-  <nd ref="3644775268"/>
-  <nd ref="3644775273"/>
- </way>
  <way id="360363438">
   <nd ref="3649172834"/>
   <nd ref="6072807141"/>
@@ -10824,19 +10139,6 @@
   <tag k="wikidata" v="Q19853554"/>
   <tag k="wikipedia" v="zh:臺灣大學土地公廟"/>
  </way>
- <way id="368475478">
-  <nd ref="3723319566"/>
-  <nd ref="3723319551"/>
-  <nd ref="3723319553"/>
-  <nd ref="3723319556"/>
-  <nd ref="3723319530"/>
-  <nd ref="3723319564"/>
-  <nd ref="3723319560"/>
-  <nd ref="5481522231"/>
-  <nd ref="3723319568"/>
-  <nd ref="3723319566"/>
-  <tag k="barrier" v="wall"/>
- </way>
  <way id="368475481">
   <nd ref="3723319570"/>
   <nd ref="3723319571"/>
@@ -10869,27 +10171,6 @@
   <nd ref="3723319554"/>
   <tag k="building" v="yes"/>
  </way>
- <way id="371999449">
-  <nd ref="3755395726"/>
-  <nd ref="4932254793"/>
-  <nd ref="4932254795"/>
-  <nd ref="4932254794"/>
-  <nd ref="3755395727"/>
-  <nd ref="3755395728"/>
-  <nd ref="3755395736"/>
-  <nd ref="3755395735"/>
-  <nd ref="3755395729"/>
-  <nd ref="3755395730"/>
-  <nd ref="3755395731"/>
-  <nd ref="3755395732"/>
-  <nd ref="3755395733"/>
-  <nd ref="3755395734"/>
-  <nd ref="3755395726"/>
-  <tag k="landuse" v="cemetery"/>
-  <tag k="name" v="古亭第九公墓"/>
-  <tag k="name:en" v="Guting No.9 Cemetery"/>
-  <tag k="name:zh" v="古亭第九公墓"/>
- </way>
  <way id="380351310">
   <nd ref="3836878678"/>
   <nd ref="3836878676"/>
@@ -10907,45 +10188,6 @@
   <nd ref="3836878680"/>
   <tag k="building" v="yes"/>
  </way>
- <way id="396901470">
-  <nd ref="3997451796"/>
-  <nd ref="3997451797"/>
-  <nd ref="3997451798"/>
-  <nd ref="3997451799"/>
-  <nd ref="3997451800"/>
-  <nd ref="3997451801"/>
-  <nd ref="3997451802"/>
-  <nd ref="3997451796"/>
-  <tag k="amenity" v="kindergarten"/>
-  <tag k="name" v="臺大附設幼稚園"/>
- </way>
- <way id="404718177">
-  <nd ref="736466704"/>
-  <nd ref="4069889587"/>
-  <nd ref="4069889588"/>
-  <nd ref="4069900292"/>
-  <nd ref="736466704"/>
-  <tag k="amenity" v="bicycle_parking"/>
- </way>
- <way id="404718179">
-  <nd ref="4069900294"/>
-  <nd ref="4069900291"/>
-  <nd ref="4069900296"/>
-  <nd ref="4069900299"/>
-  <nd ref="4069900294"/>
-  <tag k="amenity" v="motorcycle_parking"/>
- </way>
- <way id="421635834">
-  <nd ref="2050889811"/>
-  <nd ref="4213848507"/>
-  <nd ref="4213848506"/>
-  <nd ref="2050889812"/>
-  <nd ref="2050889811"/>
-  <tag k="leisure" v="park"/>
-  <tag k="name" v="公館公園"/>
-  <tag k="name:en" v="Gongguan Park"/>
-  <tag k="name:zh" v="公館公園"/>
- </way>
  <way id="421762631">
   <nd ref="4215083689"/>
   <nd ref="4215083690"/>
@@ -10954,20 +10196,6 @@
   <nd ref="4215083689"/>
   <tag k="building" v="warehouse"/>
   <tag k="building:levels" v="1"/>
- </way>
- <way id="431620573">
-  <nd ref="4308517113"/>
-  <nd ref="4308517114"/>
-  <nd ref="4309171846"/>
-  <nd ref="736459796"/>
-  <nd ref="4309171847"/>
-  <nd ref="4308517116"/>
-  <nd ref="4308517117"/>
-  <nd ref="4308517113"/>
-  <tag k="amenity" v="bicycle_parking"/>
-  <tag k="covered" v="no"/>
-  <tag k="fee" v="no"/>
-  <tag k="parking" v="surface"/>
  </way>
  <way id="436654099">
   <nd ref="740494108"/>
@@ -11101,16 +10329,6 @@
   <nd ref="4554218358"/>
   <tag k="building" v="apartments"/>
  </way>
- <way id="474177279">
-  <nd ref="4681833259"/>
-  <nd ref="4681833258"/>
-  <nd ref="4681833257"/>
-  <nd ref="4681833256"/>
-  <nd ref="4681833259"/>
-  <tag k="amenity" v="parking"/>
-  <tag k="name" v="附設動物醫院臨時停車場"/>
-  <tag k="parking" v="surface"/>
- </way>
  <way id="502865699">
   <nd ref="4932241829"/>
   <nd ref="4932241830"/>
@@ -11137,52 +10355,6 @@
   <nd ref="4952060679"/>
   <nd ref="4952060676"/>
   <tag k="building" v="yes"/>
- </way>
- <way id="509960613">
-  <nd ref="2021654773"/>
-  <nd ref="5205835402"/>
-  <nd ref="4990669813"/>
-  <nd ref="4990669814"/>
-  <nd ref="4990669815"/>
-  <nd ref="5205835403"/>
-  <nd ref="2021654773"/>
-  <tag k="amenity" v="motorcycle_parking"/>
-  <tag k="parking" v="surface"/>
- </way>
- <way id="537308177">
-  <nd ref="5203436918"/>
-  <nd ref="5203436919"/>
-  <nd ref="2026200379"/>
-  <nd ref="2026200305"/>
-  <nd ref="5203436920"/>
-  <nd ref="5203436918"/>
-  <tag k="landuse" v="grass"/>
- </way>
- <way id="537308178">
-  <nd ref="5203438321"/>
-  <nd ref="5203438322"/>
-  <nd ref="5203438323"/>
-  <nd ref="5203438324"/>
-  <nd ref="5203438321"/>
-  <tag k="landuse" v="grass"/>
- </way>
- <way id="537308181">
-  <nd ref="5203438344"/>
-  <nd ref="5203438345"/>
-  <nd ref="5203438346"/>
-  <nd ref="5203438347"/>
-  <nd ref="5203438348"/>
-  <nd ref="5203438349"/>
-  <nd ref="5203438344"/>
-  <tag k="landuse" v="grass"/>
- </way>
- <way id="537308182">
-  <nd ref="5203438345"/>
-  <nd ref="5203438351"/>
-  <nd ref="5203438347"/>
-  <nd ref="5203438346"/>
-  <nd ref="5203438345"/>
-  <tag k="place" v="square"/>
  </way>
  <way id="537309338">
   <nd ref="5203446541"/>
@@ -11324,49 +10496,6 @@
   <tag k="building:levels" v="2"/>
   <tag k="building:part" v="yes"/>
  </way>
- <way id="537642646">
-  <nd ref="5205835403"/>
-  <nd ref="2021654773"/>
-  <nd ref="5205835402"/>
-  <nd ref="5205835404"/>
-  <nd ref="736757296"/>
-  <nd ref="5205835403"/>
-  <tag k="amenity" v="bicycle_parking"/>
- </way>
- <way id="538756689">
-  <nd ref="5214278416"/>
-  <nd ref="5203446560"/>
-  <nd ref="5205835419"/>
-  <nd ref="5203446561"/>
-  <nd ref="5203446562"/>
-  <nd ref="5203446563"/>
-  <nd ref="5203446564"/>
-  <nd ref="5203446565"/>
-  <nd ref="5203446566"/>
-  <nd ref="5203446567"/>
-  <nd ref="5205835415"/>
-  <nd ref="5203446568"/>
-  <nd ref="5203446569"/>
-  <nd ref="5203446570"/>
-  <nd ref="5203446571"/>
-  <nd ref="5203446584"/>
-  <nd ref="5203446555"/>
-  <nd ref="5203446552"/>
-  <nd ref="5203446586"/>
-  <nd ref="5203446553"/>
-  <nd ref="5203446544"/>
-  <nd ref="5203446585"/>
-  <nd ref="5203446543"/>
-  <nd ref="5203446542"/>
-  <nd ref="5203446541"/>
-  <nd ref="5203446545"/>
-  <nd ref="5203446546"/>
-  <nd ref="5203446587"/>
-  <nd ref="5203446547"/>
-  <nd ref="5203446554"/>
-  <nd ref="5203446580"/>
-  <nd ref="5214278416"/>
- </way>
  <way id="554778090">
   <nd ref="2512846634"/>
   <nd ref="5353828272"/>
@@ -11393,51 +10522,6 @@
   <tag k="rooms" v="16"/>
   <tag k="tourism" v="hostel"/>
  </way>
- <way id="557838244">
-  <nd ref="5379697824"/>
-  <nd ref="5379697825"/>
-  <nd ref="6073458287"/>
-  <nd ref="5379697826"/>
-  <nd ref="6073458288"/>
-  <nd ref="5379697827"/>
-  <nd ref="6073458289"/>
-  <nd ref="5379697828"/>
-  <nd ref="6073458290"/>
-  <nd ref="5379697829"/>
-  <nd ref="5379697831"/>
-  <nd ref="6073458291"/>
-  <nd ref="6073458292"/>
-  <nd ref="6073458293"/>
-  <nd ref="6073458294"/>
-  <nd ref="6073458295"/>
-  <nd ref="6073458296"/>
-  <nd ref="5379697832"/>
-  <nd ref="5379697824"/>
-  <tag k="landuse" v="basin"/>
- </way>
- <way id="562776018">
-  <nd ref="5424861361"/>
-  <nd ref="5424861362"/>
-  <nd ref="5424861363"/>
-  <nd ref="5456186750"/>
-  <nd ref="5424861361"/>
-  <tag k="leisure" v="park"/>
-  <tag k="name" v="岩石公園"/>
- </way>
- <way id="570100914">
-  <nd ref="5481522233"/>
-  <nd ref="3836878679"/>
-  <nd ref="3836878681"/>
-  <nd ref="3836878682"/>
-  <nd ref="3723319570"/>
-  <nd ref="3723319569"/>
-  <nd ref="5481522232"/>
-  <nd ref="3723319568"/>
-  <nd ref="5481522231"/>
-  <nd ref="5481522233"/>
-  <tag k="landuse" v="construction"/>
-  <tag k="name" v="台大學"/>
- </way>
  <way id="571750532">
   <nd ref="5494236661"/>
   <nd ref="5494236660"/>
@@ -11446,15 +10530,6 @@
   <nd ref="5494236661"/>
   <tag k="building" v="university"/>
   <tag k="name" v="司令台"/>
- </way>
- <way id="571750540">
-  <nd ref="5494236665"/>
-  <nd ref="5494236664"/>
-  <nd ref="5494236663"/>
-  <nd ref="5494236662"/>
-  <nd ref="5494236665"/>
-  <tag k="leisure" v="pitch"/>
-  <tag k="sport" v="volleyball"/>
  </way>
  <way id="575234103">
   <nd ref="5520170793"/>
@@ -11496,14 +10571,6 @@
   <nd ref="5520170793"/>
   <tag k="building" v="university"/>
   <tag k="name" v="卓越聯合大樓"/>
- </way>
- <way id="584531529">
-  <nd ref="5587515138"/>
-  <nd ref="5587515139"/>
-  <nd ref="5587515140"/>
-  <nd ref="5587515141"/>
-  <nd ref="5587515138"/>
-  <tag k="amenity" v="bicycle_parking"/>
  </way>
  <way id="615306893">
   <nd ref="5818500303"/>
@@ -12113,13 +11180,6 @@
   <tag k="building:levels" v="4"/>
   <tag k="building:part" v="yes"/>
  </way>
- <way id="646301761">
-  <nd ref="6072853396"/>
-  <nd ref="6072853395"/>
-  <nd ref="6072853394"/>
-  <nd ref="6072853393"/>
-  <nd ref="6072853396"/>
- </way>
  <way id="646301762">
   <nd ref="6072853429"/>
   <nd ref="6072853389"/>
@@ -12159,35 +11219,6 @@
   <tag k="official_name" v="國立台灣科技大學綜合研究大樓"/>
   <tag k="ref" v="RB"/>
  </way>
- <way id="646301763">
-  <nd ref="6072853453"/>
-  <nd ref="6072853452"/>
-  <nd ref="6072853451"/>
-  <nd ref="6072853450"/>
-  <nd ref="6072853449"/>
-  <nd ref="6072853448"/>
-  <nd ref="6072853447"/>
-  <nd ref="6072853446"/>
-  <nd ref="6072853445"/>
-  <nd ref="6072853444"/>
-  <nd ref="6072853443"/>
-  <nd ref="6072853442"/>
-  <nd ref="6072853441"/>
-  <nd ref="6072853440"/>
-  <nd ref="6072853439"/>
-  <nd ref="6072853438"/>
-  <nd ref="6072853437"/>
-  <nd ref="3302605688"/>
-  <nd ref="3302605690"/>
-  <nd ref="6072853436"/>
-  <nd ref="6072853435"/>
-  <nd ref="6072853434"/>
-  <nd ref="6072853433"/>
-  <nd ref="6072853432"/>
-  <nd ref="6072853431"/>
-  <nd ref="6072853430"/>
-  <nd ref="6072853453"/>
- </way>
  <way id="646382015">
   <nd ref="6073399373"/>
   <nd ref="6073399372"/>
@@ -12196,64 +11227,6 @@
   <nd ref="6073399373"/>
   <tag k="building" v="yes"/>
   <tag k="building:levels" v="1"/>
- </way>
- <way id="646382016">
-  <nd ref="6073402510"/>
-  <nd ref="6073402508"/>
-  <nd ref="6073402507"/>
-  <nd ref="6073402509"/>
-  <nd ref="6073402510"/>
-  <tag k="leisure" v="pitch"/>
-  <tag k="sport" v="volleyball"/>
- </way>
- <way id="646382017">
-  <nd ref="6073402512"/>
-  <nd ref="6073402510"/>
-  <nd ref="6073402509"/>
-  <nd ref="6073402511"/>
-  <nd ref="6073402512"/>
-  <tag k="leisure" v="pitch"/>
-  <tag k="sport" v="volleyball"/>
- </way>
- <way id="646382018">
-  <nd ref="5494236664"/>
-  <nd ref="6073402512"/>
-  <nd ref="6073402511"/>
-  <nd ref="5494236663"/>
-  <nd ref="5494236664"/>
-  <tag k="leisure" v="pitch"/>
-  <tag k="sport" v="volleyball"/>
- </way>
- <way id="646382019">
-  <nd ref="6073402516"/>
-  <nd ref="6073402514"/>
-  <nd ref="6073402513"/>
-  <nd ref="6073402515"/>
-  <nd ref="6073402516"/>
-  <tag k="leisure" v="pitch"/>
-  <tag k="name" v="網球場"/>
-  <tag k="sport" v="tennis"/>
- </way>
- <way id="646382020">
-  <nd ref="2838932817"/>
-  <nd ref="6073402516"/>
-  <nd ref="6073402515"/>
-  <nd ref="2838932818"/>
-  <nd ref="2838932817"/>
-  <tag k="leisure" v="pitch"/>
-  <tag k="name" v="網球場"/>
-  <tag k="sport" v="tennis"/>
- </way>
- <way id="646382021">
-  <nd ref="2838932813"/>
-  <nd ref="6073402518"/>
-  <nd ref="6073402517"/>
-  <nd ref="2838932812"/>
-  <nd ref="2838932813"/>
-  <tag k="hoops" v="2"/>
-  <tag k="leisure" v="pitch"/>
-  <tag k="name" v="籃球場"/>
-  <tag k="sport" v="basketball"/>
  </way>
  <way id="646382022">
   <nd ref="6073402521"/>
@@ -12271,19 +11244,6 @@
   <nd ref="6073402525"/>
   <tag k="building" v="university"/>
   <tag k="building:levels" v="3"/>
- </way>
- <way id="646382033">
-  <nd ref="6073402601"/>
-  <nd ref="6073402600"/>
-  <nd ref="6073403072"/>
-  <nd ref="6073403070"/>
-  <nd ref="6073402599"/>
-  <nd ref="6073403345"/>
-  <nd ref="6073403346"/>
-  <nd ref="6073402598"/>
-  <nd ref="6073402597"/>
-  <nd ref="6073402601"/>
-  <tag k="amenity" v="bicycle_parking"/>
  </way>
  <way id="646382037">
   <nd ref="6072807314"/>
@@ -13635,26 +12595,6 @@
   <tag k="building:levels" v="2"/>
   <tag k="building:part" v="yes"/>
  </way>
- <way id="646382209">
-  <nd ref="6073403281"/>
-  <nd ref="6073403280"/>
-  <nd ref="6073403279"/>
-  <nd ref="6073403278"/>
-  <nd ref="6073403277"/>
-  <nd ref="6073403276"/>
-  <nd ref="6073403275"/>
-  <nd ref="6073403274"/>
-  <nd ref="6073403273"/>
-  <nd ref="6073403272"/>
-  <nd ref="6073403271"/>
-  <nd ref="6073403270"/>
-  <nd ref="6073403269"/>
-  <nd ref="6073403268"/>
-  <nd ref="6073403267"/>
-  <nd ref="6073403266"/>
-  <nd ref="6073403281"/>
-  <tag k="landuse" v="grass"/>
- </way>
  <way id="646382210">
   <nd ref="6073403285"/>
   <nd ref="6073403284"/>
@@ -13663,35 +12603,6 @@
   <nd ref="5827513619"/>
   <nd ref="6073403285"/>
   <tag k="building" v="roof"/>
- </way>
- <way id="646387381">
-  <nd ref="5379697824"/>
-  <nd ref="6073458286"/>
-  <nd ref="6073458285"/>
-  <nd ref="6073456784"/>
-  <nd ref="6073456783"/>
-  <nd ref="6073456782"/>
-  <nd ref="6073456781"/>
-  <nd ref="6073456780"/>
-  <nd ref="6073456779"/>
-  <nd ref="6073456778"/>
-  <nd ref="6073456777"/>
-  <nd ref="6073456776"/>
-  <nd ref="6073456775"/>
-  <nd ref="6073456774"/>
-  <nd ref="6073456773"/>
-  <nd ref="6073456772"/>
-  <nd ref="5379697829"/>
-  <nd ref="5379697831"/>
-  <nd ref="6073458291"/>
-  <nd ref="6073458292"/>
-  <nd ref="6073458293"/>
-  <nd ref="6073458294"/>
-  <nd ref="6073458295"/>
-  <nd ref="6073458296"/>
-  <nd ref="5379697832"/>
-  <nd ref="5379697824"/>
-  <tag k="landuse" v="grass"/>
  </way>
  <way id="646387389">
   <nd ref="6073458307"/>
@@ -14311,45 +13222,6 @@
   <tag k="name" v="教學大樓停車場"/>
   <tag k="parking" v="multistore"/>
  </way>
- <way id="712494250">
-  <nd ref="6698916603"/>
-  <nd ref="6698916602"/>
-  <nd ref="6698916601"/>
-  <nd ref="6698916600"/>
-  <nd ref="6698916603"/>
-  <tag k="amenity" v="parking"/>
-  <tag k="fee" v="yes"/>
-  <tag k="layer" v="-1"/>
-  <tag k="parking" v="underground"/>
- </way>
- <way id="712494262">
-  <nd ref="6698916664"/>
-  <nd ref="6698916663"/>
-  <nd ref="6698916662"/>
-  <nd ref="6698916661"/>
-  <nd ref="6698916660"/>
-  <nd ref="6698916659"/>
-  <nd ref="6698916658"/>
-  <nd ref="6698916657"/>
-  <nd ref="6698916656"/>
-  <nd ref="6698916655"/>
-  <nd ref="6698916654"/>
-  <nd ref="6698916664"/>
-  <tag k="amenity" v="parking"/>
-  <tag k="fee" v="yes"/>
-  <tag k="name" v="芳蘭第一平面停車場"/>
-  <tag k="operator" v="臺灣大學"/>
-  <tag k="parking" v="surface"/>
- </way>
- <way id="712494267">
-  <nd ref="6698916678"/>
-  <nd ref="6698916677"/>
-  <nd ref="6698916676"/>
-  <nd ref="6698916674"/>
-  <nd ref="6698916675"/>
-  <nd ref="6698916678"/>
-  <tag k="amenity" v="motorcycle_parking"/>
- </way>
  <way id="712494271">
   <nd ref="6698932998"/>
   <nd ref="6698932997"/>
@@ -14385,37 +13257,6 @@
   <nd ref="6698933028"/>
   <tag k="building" v="construction"/>
  </way>
- <way id="720398146">
-  <nd ref="6760934230"/>
-  <nd ref="6760934222"/>
-  <nd ref="6760934229"/>
-  <nd ref="6760934217"/>
-  <nd ref="6760934228"/>
-  <nd ref="6760934223"/>
-  <nd ref="6760934227"/>
-  <nd ref="6760934218"/>
-  <nd ref="4420686297"/>
-  <nd ref="6760934219"/>
-  <nd ref="6760934226"/>
-  <nd ref="6760934220"/>
-  <nd ref="6760934225"/>
-  <nd ref="6760934221"/>
-  <nd ref="6760934230"/>
-  <tag k="highway" v="service"/>
-  <tag k="junction" v="roundabout"/>
-  <tag k="oneway" v="yes"/>
- </way>
- <way id="720398161">
-  <nd ref="6760946639"/>
-  <nd ref="6760946638"/>
-  <nd ref="6760946637"/>
-  <nd ref="6760946636"/>
-  <nd ref="6760946635"/>
-  <nd ref="6760946634"/>
-  <nd ref="6760946639"/>
-  <tag k="amenity" v="bicycle_parking"/>
-  <tag k="bicycle_parking" v="wall_loops"/>
- </way>
  <way id="720398185">
   <nd ref="6760946677"/>
   <nd ref="6760946676"/>
@@ -14447,37 +13288,6 @@
   <nd ref="6761329963"/>
   <nd ref="6761329970"/>
   <tag k="building" v="university"/>
- </way>
- <way id="720453360">
-  <nd ref="6761329983"/>
-  <nd ref="6761329982"/>
-  <nd ref="6761329981"/>
-  <nd ref="6761329980"/>
-  <nd ref="6761329979"/>
-  <nd ref="6761329978"/>
-  <nd ref="6761329977"/>
-  <nd ref="6761329976"/>
-  <nd ref="6761329975"/>
-  <nd ref="6761329974"/>
-  <nd ref="6761329973"/>
-  <nd ref="6761329972"/>
-  <nd ref="6761329971"/>
-  <nd ref="6761329983"/>
-  <tag k="landuse" v="greenfield"/>
- </way>
- <way id="720453361">
-  <nd ref="6761329993"/>
-  <nd ref="6761329992"/>
-  <nd ref="6761329991"/>
-  <nd ref="6761329990"/>
-  <nd ref="6761329989"/>
-  <nd ref="6761329988"/>
-  <nd ref="6761329987"/>
-  <nd ref="6761329986"/>
-  <nd ref="6761329985"/>
-  <nd ref="6761329984"/>
-  <nd ref="6761329993"/>
-  <tag k="landuse" v="greenfield"/>
  </way>
  <way id="722218809">
   <nd ref="6774517818"/>
@@ -14624,33 +13434,6 @@
   <nd ref="7309954105"/>
   <tag k="building" v="yes"/>
  </way>
- <way id="792800859">
-  <nd ref="7413394064"/>
-  <nd ref="7413394065"/>
-  <nd ref="7413394066"/>
-  <nd ref="7413394067"/>
-  <nd ref="7413394064"/>
-  <tag k="access" v="yes"/>
-  <tag k="amenity" v="bicycle_parking"/>
-  <tag k="bicycle_parking" v="surface"/>
-  <tag k="covered" v="no"/>
-  <tag k="fee" v="no"/>
-  <tag k="operator" v="國立台灣大學"/>
-  <tag k="operator:type" v="university"/>
- </way>
- <way id="792802050">
-  <nd ref="7413412280"/>
-  <nd ref="7413412281"/>
-  <nd ref="7413412282"/>
-  <nd ref="7413412283"/>
-  <nd ref="7413412280"/>
-  <tag k="access" v="yes"/>
-  <tag k="amenity" v="bicycle_parking"/>
-  <tag k="covered" v="no"/>
-  <tag k="fee" v="no"/>
-  <tag k="operator" v="國立台灣大學"/>
-  <tag k="operator:type" v="university"/>
- </way>
  <way id="840029437">
   <nd ref="7838758969"/>
   <nd ref="7838758970"/>
@@ -14671,36 +13454,6 @@
   <nd ref="7838758977"/>
   <tag k="building" v="yes"/>
  </way>
- <way id="922644522">
-  <nd ref="8565176445"/>
-  <nd ref="8565176446"/>
-  <nd ref="8565176447"/>
-  <nd ref="8565176448"/>
-  <nd ref="8565176445"/>
- </way>
- <way id="922644523">
-  <nd ref="8565176449"/>
-  <nd ref="8565176450"/>
-  <nd ref="8565176451"/>
-  <nd ref="8565176452"/>
-  <nd ref="8565176449"/>
-  <tag k="area" v="yes"/>
- </way>
- <way id="922644524">
-  <nd ref="8565176456"/>
-  <nd ref="8565176457"/>
-  <nd ref="8565176458"/>
-  <nd ref="8565176459"/>
-  <nd ref="8565176456"/>
- </way>
- <way id="922644525">
-  <nd ref="8565176460"/>
-  <nd ref="8565176461"/>
-  <nd ref="8565176462"/>
-  <nd ref="8565176463"/>
-  <nd ref="8565176460"/>
-  <tag k="area" v="yes"/>
- </way>
  <way id="951428250">
   <nd ref="8806608813"/>
   <nd ref="8806608814"/>
@@ -14716,14 +13469,5 @@
   <nd ref="8806617220"/>
   <nd ref="8806617217"/>
   <tag k="building" v="yes"/>
- </way>
- <way id="978888078">
-  <nd ref="9057509709"/>
-  <nd ref="9057509707"/>
-  <nd ref="9057509706"/>
-  <nd ref="9057509705"/>
-  <nd ref="9057509708"/>
-  <nd ref="9057509709"/>
-  <tag k="amenity" v="bicycle_parking"/>
  </way>
 </osm>

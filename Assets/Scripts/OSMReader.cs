@@ -196,13 +196,6 @@ public class OSMReader
                             }
                             else if (reader.Name == "way")
                             {
-                                if (!fetch_road && !fetch_house)
-                                {
-                                    if (current_points[0] == current_points[current_points.Count - 1])
-                                    {
-                                        fetch_house = true;
-                                    }
-                                }
                                 break;
                             }
                         }
@@ -244,6 +237,7 @@ public class OSMReader
                 }
             }
         }
+
 
         // normalize points
         List<float> all_elevations = new List<float>();

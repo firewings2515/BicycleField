@@ -290,10 +290,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec470da739f4afe47801b2b632c58297, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  file_name: map.osm
+  file_name: mapNTUST.osm
   osm3d_file_name: YangJin3D.osm
   need_write_osm3d: 0
-  set_camera_to_point_id: 45263678_226830312+0
+  set_camera_to_point_id: 4486262148
   sphere_prefab: {fileID: 7606946595633192119, guid: 7a7e0a9491a268e4881caac315264c20, type: 3}
   tree_prefab: {fileID: 100000, guid: 6aab193b7693b5e4c9741f1917d2987c, type: 3}
   view_instance: {fileID: 6379100898760342392, guid: 0070e3ca57a1355498c1e70df5223207, type: 3}
@@ -433,3 +433,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be0093ec111805b479b957563aba148c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mainSpeed: 10
+  shiftAdd: 25
+  maxShift: 100
+  camSens: 0.125
