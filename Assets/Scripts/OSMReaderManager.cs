@@ -10,7 +10,9 @@ using System.Threading;
 
 public class OSMReaderManager : MonoBehaviour
 {
-    public string file_path = "mapSimple.osm";
+    public string file_name = "mapSimple.osm";
+    public string osm3d_file_name = "YangJin3D.osm";
+    public bool need_write_osm3d = false;
     public string set_camera_to_point_id = "45263678_226830312+0"; // 45263678_226830312+0還金路 4486262148竹子湖路 2037722609公館圓環
     //public Vector2 OSM_size;
     public GameObject sphere_prefab;
@@ -592,7 +594,7 @@ public class OSMReaderManager : MonoBehaviour
             context_index = ShapeGrammarBuilder.getFreeStack();
             yield return null;
         }
-        StartCoroutine(createHousePolygon(osm_reader.houses[index], index, osm_reader.houses_id[index], context_index));
+        StartCoroutine(createHousePolygon(osm_reader.houses[index].ref_node, index, osm_reader.houses[index].id, context_index));
     }
 
     //void createVirtualCam()
@@ -628,82 +630,85 @@ public class OSMReaderManager : MonoBehaviour
     IEnumerator Start()
     {
         osm_reader = new OSMReader();
-        yield return(osm_reader.readOSM(Application.streamingAssetsPath + "//" + file_path, this));
-        hierarchy_c = new HierarchyControl();
-        hierarchy_c.setup((int)(osm_reader.boundary_max.x - osm_reader.boundary_min.x) / 200, (int)(osm_reader.boundary_max.y - osm_reader.boundary_min.y) / 200, osm_reader.boundary_max.x, osm_reader.boundary_max.y);
-
-        house_polygon_manager = new GameObject("House Polygon Manager");
-        road_manager = new GameObject("Road Manager");
-        tree_manager = new GameObject("Tree Manager");
-
-        // instance
-        //roads_polygon = new GameObject[osm_reader.pathes.Count];
-
-        if (show_osm_points)
+        yield return(osm_reader.readOSM(Application.streamingAssetsPath + "//" + file_name, this, need_write_osm3d, Application.streamingAssetsPath + "//" + osm3d_file_name));
+        if (!need_write_osm3d)
         {
-            point_manager = new GameObject("Point Manager");
-            foreach (KeyValuePair<string, Node> nn in osm_reader.points_lib)
+            hierarchy_c = new HierarchyControl();
+            hierarchy_c.setup((int)(osm_reader.boundary_max.x - osm_reader.boundary_min.x) / 200, (int)(osm_reader.boundary_max.y - osm_reader.boundary_min.y) / 200, osm_reader.boundary_max.x, osm_reader.boundary_max.y);
+
+            house_polygon_manager = new GameObject("House Polygon Manager");
+            road_manager = new GameObject("Road Manager");
+            tree_manager = new GameObject("Tree Manager");
+
+            // instance
+            //roads_polygon = new GameObject[osm_reader.pathes.Count];
+
+            if (show_osm_points)
             {
-                GameObject bb = Instantiate(sphere_prefab, nn.Value.position, Quaternion.identity);
-                string ans = "connectway";
-                for (int i = 0; i < nn.Value.connect_way.Count; i++)
-                    ans += " & " + nn.Value.connect_way[i];
-                bb.name = nn.Key + ans;
-                bb.transform.parent = point_manager.transform;
+                point_manager = new GameObject("Point Manager");
+                foreach (KeyValuePair<string, Node> nn in osm_reader.points_lib)
+                {
+                    GameObject bb = Instantiate(sphere_prefab, nn.Value.position, Quaternion.identity);
+                    string ans = "connectway";
+                    for (int i = 0; i < nn.Value.connect_way.Count; i++)
+                        ans += " & " + nn.Value.connect_way[i];
+                    bb.name = nn.Key + ans;
+                    bb.transform.parent = point_manager.transform;
+                }
             }
-        }
 
-        int road_index = 0;
-        for (road_index = 0; road_index < osm_reader.pathes.Count; road_index++)
-        {
-            if (osm_reader.pathes[road_index].is_merged)
-                break;
+            int road_index = 0;
+            for (road_index = 0; road_index < osm_reader.pathes.Count; road_index++)
+            {
+                if (osm_reader.pathes[road_index].is_merged)
+                    break;
 
-            //if (osm_reader.pathes[road_index].highway != Highway.Primary && osm_reader.pathes[road_index].highway != Highway.Secondary && osm_reader.pathes[road_index].highway != Highway.Trunk && osm_reader.pathes[road_index].highway != Highway.Unclassified)
-            //    continue;
+                //if (osm_reader.pathes[road_index].highway != Highway.Primary && osm_reader.pathes[road_index].highway != Highway.Secondary && osm_reader.pathes[road_index].highway != Highway.Trunk && osm_reader.pathes[road_index].highway != Highway.Unclassified)
+                //    continue;
 
-            // roads
-            createRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width, osm_reader.pathes[road_index].layer);
+                // roads
+                createRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width, osm_reader.pathes[road_index].layer);
 
-            if (osm_reader.pathes[road_index].layer != 0)
-                continue;
+                if (osm_reader.pathes[road_index].layer != 0)
+                    continue;
 
-            // trees
-            createArcTree(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width + 2);
-        }
-
-        // new way
-        for (; road_index < osm_reader.pathes.Count; road_index++)
-        {
-            createRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width, osm_reader.pathes[road_index].layer);
-
-            if (osm_reader.pathes[road_index].layer != 0)
-                continue;
-
-            // trees
-            if (osm_reader.pathes[road_index].highway != Highway.CombineLink) // link road is in merged road
+                // trees
                 createArcTree(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width + 2);
+            }
+
+            // new way
+            for (; road_index < osm_reader.pathes.Count; road_index++)
+            {
+                createRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width, osm_reader.pathes[road_index].layer);
+
+                if (osm_reader.pathes[road_index].layer != 0)
+                    continue;
+
+                // trees
+                if (osm_reader.pathes[road_index].highway != Highway.CombineLink) // link road is in merged road
+                    createArcTree(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width + 2);
+            }
+
+            Debug.Log("Tree amount: " + count); // trees amount
+
+            houses_polygon = new GameObject[osm_reader.houses.Count];
+            house_mesh = new GameObject[osm_reader.houses.Count];
+            for (int index = 0; index < osm_reader.houses.Count; index++)
+            {
+                // build houses or polygon
+                if (!build_house)
+                    createHousePolygon(osm_reader.houses[index].ref_node, index, osm_reader.houses[index].id);
+                else
+                    StartCoroutine(getIndexCreateMesh(index));
+            }
+
+            //createVirtualCam();
+            setCam();
+
+            hierarchy_c.beginHierarchy();
+
+            finish_create = true;
         }
-
-        Debug.Log("Tree amount: " + count); // trees amount
-
-        houses_polygon = new GameObject[osm_reader.houses.Count];
-        house_mesh = new GameObject[osm_reader.houses.Count];
-        for (int index = 0; index < osm_reader.houses.Count; index++)
-        {
-            // build houses or polygon
-            if (!build_house)
-                createHousePolygon(osm_reader.houses[index], index, osm_reader.houses_id[index]);
-            else
-                StartCoroutine(getIndexCreateMesh(index));
-        }
-
-        //createVirtualCam();
-        setCam();
-
-        hierarchy_c.beginHierarchy();
-
-        finish_create = true;
     }
 
     // Update is called once per frame

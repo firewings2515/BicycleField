@@ -29,6 +29,8 @@ public class Way
     public Vector3 head_orient = Vector3.forward;
     public Vector3 tail_orient = Vector3.forward;
     public float road_width = 6; // 6 is default
+    public List<string> tag_k = new List<string>();
+    public List<string> tag_v = new List<string>();
 
     public void updateOrient(Dictionary<string, Node> points_lib)
     {

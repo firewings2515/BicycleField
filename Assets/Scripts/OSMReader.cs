@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Text.RegularExpressions;
 using System.Xml;
+using System.IO;
 
 
 public class OSMReader
@@ -10,8 +11,7 @@ public class OSMReader
     List<string> points_id = new List<string>();
     public Dictionary<string, Node> points_lib = new Dictionary<string, Node>();
     public List<Way> pathes = new List<Way>();
-    public List<List<string>> houses = new List<List<string>>();
-    public List<string> houses_id = new List<string>();
+    public List<House> houses = new List<House>();
     //public Vector2 OSM_size;
     public Vector2 boundary_min = Vector2.zero;
     public Vector2 boundary_max = Vector2.zero;
@@ -30,38 +30,83 @@ public class OSMReader
         z = (float)MercatorProjection.latToY(lat) - boundary_min.y;
     }
 
-    public IEnumerator readOSM(string file_path, MonoBehaviour mono)  //, Vector2 _OSM_size
+    public IEnumerator readOSM(string file_path, MonoBehaviour mono, bool write_osm3d = false, string osm3d_file_path = "")  //, Vector2 _OSM_size
     {
-        //OSM_size = _OSM_size;
+        if (!write_osm3d)
+        {
+            file_path = osm3d_file_path;
+        }
+        Debug.Log("Loading " + file_path);
         XmlReader reader = XmlReader.Create(file_path);
         reader.MoveToContent();
         List<Node> points = new List<Node>();
         List<string> current_points = new List<string>();
+        List<List<string>> node_tag_ks = new List<List<string>>();
+        List<List<string>> node_tag_vs = new List<List<string>>();
         Dictionary<string, List<string>> connect_points = new Dictionary<string, List<string>>();
+        bool is_redundant = false;
 
         while (reader.Read())
         {
             if (reader.NodeType == XmlNodeType.Element)
             {
-                if (reader.Name == "bounds")
+                if (reader.Name == "redundant")
                 {
-                    boundary_min = new Vector2(float.Parse(reader.GetAttribute("minlon")), float.Parse(reader.GetAttribute("minlat")));
-                    boundary_max = new Vector2(float.Parse(reader.GetAttribute("maxlon")), float.Parse(reader.GetAttribute("maxlat")));
+                    is_redundant = true;
+                }
+                else if (reader.Name == "bounds")
+                {
+                    if (is_redundant)
+                    {
+                        boundary_min = new Vector2(float.Parse(reader.GetAttribute("minx")), float.Parse(reader.GetAttribute("minz")));
+                        boundary_max = new Vector2(float.Parse(reader.GetAttribute("maxx")), float.Parse(reader.GetAttribute("maxz")));
+                    }
+                    else
+                    {
+                        boundary_min = new Vector2(float.Parse(reader.GetAttribute("minlon")), float.Parse(reader.GetAttribute("minlat")));
+                        boundary_max = new Vector2(float.Parse(reader.GetAttribute("maxlon")), float.Parse(reader.GetAttribute("maxlat")));
+                    }
                 }
                 else if (reader.Name == "node")
                 {
-                    boundary_min.x = Mathf.Min(boundary_min.x, float.Parse(reader.GetAttribute("lon")));
-                    boundary_min.y = Mathf.Min(boundary_min.y, float.Parse(reader.GetAttribute("lat")));
-                    boundary_max.x = Mathf.Max(boundary_max.x, float.Parse(reader.GetAttribute("lon")));
-                    boundary_max.y = Mathf.Max(boundary_max.y, float.Parse(reader.GetAttribute("lat")));
-
+                    if (!is_redundant)
+                    {
+                        boundary_min.x = Mathf.Min(boundary_min.x, float.Parse(reader.GetAttribute("lon")));
+                        boundary_min.y = Mathf.Min(boundary_min.y, float.Parse(reader.GetAttribute("lat")));
+                        boundary_max.x = Mathf.Max(boundary_max.x, float.Parse(reader.GetAttribute("lon")));
+                        boundary_max.y = Mathf.Max(boundary_max.y, float.Parse(reader.GetAttribute("lat")));
+                    }
+                        
                     Node point = new Node();
-                    point.position = new Vector3(float.Parse(reader.GetAttribute("lon")), 0.5f, float.Parse(reader.GetAttribute("lat"))); // 0.5f is altitude
+                    if (is_redundant)
+                        point.position = new Vector3(float.Parse(reader.GetAttribute("x")), float.Parse(reader.GetAttribute("ele")), float.Parse(reader.GetAttribute("z"))); // 0.5f is default altitude
+                    else
+                        point.position = new Vector3(float.Parse(reader.GetAttribute("lon")), 0.5f, float.Parse(reader.GetAttribute("lat"))); // 0.5f is default altitude
                     points.Add(point);
                     string id = reader.GetAttribute("id");
                     points_id.Add(id);
 
                     connect_points[id] = new List<string>();
+
+                    List<string> tag_k = new List<string>();
+                    List<string> tag_v = new List<string>();
+                    if (!reader.IsEmptyElement)
+                    {
+                        while (reader.Read())
+                        {
+                            if (reader.Name == "tag")
+                            {
+                                tag_k.Add(reader.GetAttribute("k"));
+                                tag_v.Add(reader.GetAttribute("v").Replace(">", ">gt;").Replace("<", "<lt;").Replace("&", "&amp;").Replace("\"", "&quot;"));
+                            }
+                            else if (reader.Name == "node")
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    node_tag_ks.Add(tag_k);
+                    node_tag_vs.Add(tag_v);
                 }
                 else if (reader.Name == "way")
                 {
@@ -75,75 +120,94 @@ public class OSMReader
                     string road_tail = string.Empty;
                     Highway highway = Highway.None;
                     int layer = 0;
-                    
-                    while (reader.Read())
+                    float road_width = 6; // 6 is default
+                    List<string> tag_k = new List<string>();
+                    List<string> tag_v = new List<string>();
+                    if (!reader.IsEmptyElement)
                     {
-                        if (reader.Name == "nd")
+                        while (reader.Read())
                         {
-                            string way_ref = reader.GetAttribute("ref");
-                            current_points.Add(way_ref); // point id
-                            if (ref_index == 0)
+                            if (reader.Name == "nd")
                             {
-                                road_head = way_ref;
+                                string way_ref = reader.GetAttribute("ref");
+                                current_points.Add(way_ref); // point id
+                                if (ref_index == 0)
+                                {
+                                    road_head = way_ref;
+                                }
+                                road_tail = way_ref;
+                                ref_index++;
                             }
-                            road_tail = way_ref;
-                            ref_index++;
-                        }
-                        else if (reader.Name == "tag")
-                        {
-                            if (reader.GetAttribute("v") == "motorway") // road
+                            else if (reader.Name == "tag")
                             {
-                                fetch_road = true;
-                                highway = Highway.Motorway;
+                                tag_k.Add(reader.GetAttribute("k"));
+                                tag_v.Add(reader.GetAttribute("v").Replace(">", ">gt;").Replace("<", "<lt;").Replace("&", "&amp;").Replace("\"", "&quot;"));
+                                if (reader.GetAttribute("v") == "motorway") // road
+                                {
+                                    fetch_road = true;
+                                    highway = Highway.Motorway;
+                                }
+                                else if (reader.GetAttribute("v") == "trunk") // road
+                                {
+                                    fetch_road = true;
+                                    highway = Highway.Trunk;
+                                }
+                                else if (reader.GetAttribute("v") == "primary") // road
+                                {
+                                    fetch_road = true;
+                                    highway = Highway.Primary;
+                                }
+                                else if (reader.GetAttribute("v") == "secondary") // road
+                                {
+                                    fetch_road = true;
+                                    highway = Highway.Secondary;
+                                }
+                                else if (reader.GetAttribute("v") == "tertiary") // road
+                                {
+                                    fetch_road = true;
+                                    highway = Highway.Tertiary;
+                                }
+                                else if (reader.GetAttribute("v") == "unclassified") // road
+                                {
+                                    fetch_road = true;
+                                    highway = Highway.Unclassified;
+                                }
+                                else if (reader.GetAttribute("v") == "residential") // road
+                                {
+                                    fetch_road = true;
+                                    highway = Highway.Residential;
+                                }
+                                else if (reader.GetAttribute("k") == "name") // get road name
+                                {
+                                    road_name = reader.GetAttribute("v").Replace(">", ">gt;").Replace("<", "<lt;").Replace("&", "&amp;").Replace("\"", "&quot;");
+                                }
+                                else if (reader.GetAttribute("k").IndexOf("addr") == 0 || reader.GetAttribute("k").IndexOf("building") == 0) // house
+                                {
+                                    fetch_house = true;
+                                }
+                                else if (reader.GetAttribute("k") == "layer") // road height
+                                {
+                                    layer = int.Parse(reader.GetAttribute("v"));
+                                }
+                                else if (reader.GetAttribute("k") == "road_width") // road height
+                                {
+                                    road_width = float.Parse(reader.GetAttribute("v"));
+                                }
                             }
-                            else if (reader.GetAttribute("v") == "trunk") // road
+                            else if (reader.Name == "way")
                             {
-                                fetch_road = true;
-                                highway = Highway.Trunk;
+                                if (!fetch_road && !fetch_house)
+                                {
+                                    if (current_points[0] == current_points[current_points.Count - 1])
+                                    {
+                                        fetch_house = true;
+                                    }
+                                }
+                                break;
                             }
-                            else if (reader.GetAttribute("v") == "primary") // road
-                            {
-                                fetch_road = true;
-                                highway = Highway.Primary;
-                            }
-                            else if (reader.GetAttribute("v") == "secondary") // road
-                            {
-                                fetch_road = true;
-                                highway = Highway.Secondary;
-                            }
-                            else if (reader.GetAttribute("v") == "tertiary") // road
-                            {
-                                fetch_road = true;
-                                highway = Highway.Tertiary;
-                            }
-                            else if (reader.GetAttribute("v") == "unclassified") // road
-                            {
-                                fetch_road = true;
-                                highway = Highway.Unclassified;
-                            }
-                            else if (reader.GetAttribute("v") == "residential") // road
-                            {
-                                fetch_road = true;
-                                highway = Highway.Residential;
-                            }
-                            else if (reader.GetAttribute("k") == "name") // get road name
-                            {
-                                road_name = reader.GetAttribute("v");
-                            }
-                            else if (reader.GetAttribute("k").IndexOf("addr") == 0 || reader.GetAttribute("k").IndexOf("building") == 0) // house
-                            {
-                                fetch_house = true;
-                            }
-                            else if (reader.GetAttribute("k") == "layer") // road height
-                            {
-                                layer = int.Parse(reader.GetAttribute("v"));
-                            }
-                        }
-                        else if (reader.Name == "way")
-                        {
-                            break;
                         }
                     }
+
                     if (fetch_road)
                     {
                         Way way = new Way();
@@ -154,6 +218,9 @@ public class OSMReader
                         way.tail_node = road_tail;
                         way.highway = highway;
                         way.layer = layer;
+                        way.road_width = road_width;
+                        way.tag_k = tag_k;
+                        way.tag_v = tag_v;
                         pathes.Add(way);
 
                         for (int current_points_index = 0; current_points_index < current_points.Count; current_points_index++)
@@ -166,48 +233,59 @@ public class OSMReader
                     }
                     else if (fetch_house)
                     {
-                        houses.Add(new List<string>(current_points));
-                        houses_id.Add(id);
+                        House house = new House();
+                        house.ref_node = new List<string>(current_points);
+                        house.id = id;
+                        house.name = road_name;
+                        house.tag_k = tag_k;
+                        house.tag_v = tag_v;
+                        houses.Add(house);
                     }
                 }
             }
         }
 
         // normalize points
-        boundary_min = new Vector2((float)MercatorProjection.lonToX(boundary_min.x), (float)MercatorProjection.latToY(boundary_min.y));
-        boundary_max = new Vector2((float)MercatorProjection.lonToX(boundary_max.x), (float)MercatorProjection.latToY(boundary_max.y));
-        //x_length = boundary_max.x - boundary_min.x;
-        //y_length = boundary_max.y - boundary_min.y;
-        //near_distance = 32; // 0.0002f / x_length * OSM_size.x
-        //////////////////////////////get elevations/////////////////////////////////////////
-        int coord_count = 0;
         List<float> all_elevations = new List<float>();
-        List<EarthCoord> coord_collect = new List<EarthCoord>();
-        GameObject ele_obj = new GameObject("get elevations");
-        GetElevations ele = ele_obj.AddComponent<GetElevations>();
-        for (int point_index = 0; point_index < points.Count; point_index++)
+        if (!is_redundant)
         {
-            coord_count++;
-            coord_collect.Add(new EarthCoord(points[point_index].position.x, points[point_index].position.z));
-            if (coord_count == 80)
+            boundary_min = new Vector2((float)MercatorProjection.lonToX(boundary_min.x), (float)MercatorProjection.latToY(boundary_min.y));
+            boundary_max = new Vector2((float)MercatorProjection.lonToX(boundary_max.x), (float)MercatorProjection.latToY(boundary_max.y));
+
+            //////////////////////////////get elevations/////////////////////////////////////////
+            int coord_count = 0;
+            List<EarthCoord> coord_collect = new List<EarthCoord>();
+            GameObject ele_obj = new GameObject("get elevations");
+            GetElevations ele = ele_obj.AddComponent<GetElevations>();
+            for (int point_index = 0; point_index < points.Count; point_index++)
             {
-                yield return mono.StartCoroutine(ele.get_elevation_list(coord_collect));
-                all_elevations.AddRange(ele.elevations);
-                coord_count = 0;
-                coord_collect.Clear();
+                coord_count++;
+                coord_collect.Add(new EarthCoord(points[point_index].position.x, points[point_index].position.z));
+                if (coord_count == 80)
+                {
+                    yield return mono.StartCoroutine(ele.get_elevation_list(coord_collect));
+                    all_elevations.AddRange(ele.elevations);
+                    coord_count = 0;
+                    coord_collect.Clear();
+                }
             }
+            yield return mono.StartCoroutine(ele.get_elevation_list(coord_collect));
+            all_elevations.AddRange(ele.elevations);
+            //mono.StopCoroutine(ele.get_elevation_list(coord_collect));
+            ///////////////////////////////////////////////////////////////////////////////////
         }
-        yield return mono.StartCoroutine(ele.get_elevation_list(coord_collect));
-        all_elevations.AddRange(ele.elevations);
-        //mono.StopCoroutine(ele.get_elevation_list(coord_collect));
-        ///////////////////////////////////////////////////////////////////////////////////
-        
+
         for (int point_index = 0; point_index < points.Count; point_index++)
         {
-            float unity_x, unity_z;
-            toUnityLocation(points[point_index].position.x, points[point_index].position.z, out unity_x, out unity_z);
-            points[point_index].position = new Vector3(unity_x, all_elevations[point_index], unity_z);
+            if (!is_redundant)
+            {
+                float unity_x, unity_z;
+                toUnityLocation(points[point_index].position.x, points[point_index].position.z, out unity_x, out unity_z);
+                points[point_index].position = new Vector3(unity_x, all_elevations[point_index], unity_z);
+            }
             points[point_index].connect_way = new List<string>(connect_points[points_id[point_index]]);
+            points[point_index].tag_k = node_tag_ks[point_index];
+            points[point_index].tag_v = node_tag_vs[point_index];
             points_lib.Add(points_id[point_index], points[point_index]);
         }
 
@@ -217,6 +295,12 @@ public class OSMReader
         }
 
         mergeRoad();
+        if (write_osm3d)
+        {
+            writeOSM(osm3d_file_path);
+        }
+
+        Debug.Log("Successful!");
     }
 
     private void mergeRoad()
@@ -727,6 +811,10 @@ public class OSMReader
                         way.is_merged = true;
                         way.highway = pathes[road_i].highway;
                         way.road_width = merged_road_width;
+                        way.tag_k = pathes[road_i].tag_k;
+                        way.tag_v = pathes[road_i].tag_v;
+                        way.tag_k.Add("road_width");
+                        way.tag_v.Add(way.road_width.ToString());
                         pathes.Add(way);
 
                         delete_pathes.Add(pathes[road_i].id);
@@ -805,6 +893,64 @@ public class OSMReader
         }
     }
 
+    private void writeOSM(string file_path)
+    {
+        Debug.Log("Writing " + file_path);
+        using (StreamWriter sw = new StreamWriter(file_path))
+        {
+            sw.WriteLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            sw.WriteLine("<osm version=\"0.6\" generator=\"CGImap0.8.5(3066139spike-06.openstreetmap.org)\" copyright=\"OpenStreetMapandcontributors\" attribution=\"http://www.openstreetmap.org/copyright\" license=\"http://opendatacommons.org/licenses/odbl/1-0/\">");
+            sw.WriteLine(" <redundant v=\"yes\"/>");
+            sw.WriteLine($" <bounds minz=\"{boundary_min.y}\" minx=\"{boundary_min.x}\" maxz=\"{boundary_max.y}\" maxx=\"{boundary_max.x}\"/>");
+            foreach (KeyValuePair<string, Node> point in points_lib)
+            {
+                if (point.Value.tag_k.Count == 0)
+                {
+                    sw.WriteLine($" <node id=\"{point.Key}\" x=\"{point.Value.position.x}\" ele=\"{point.Value.position.y}\" z=\"{point.Value.position.z}\"/>");
+                }
+                else
+                {
+                    sw.WriteLine($" <node id=\"{point.Key}\" x=\"{point.Value.position.x}\" ele=\"{point.Value.position.y}\" z=\"{point.Value.position.z}\">");
+                    for (int k_index = 0; k_index < point.Value.tag_k.Count; k_index++)
+                    {
+                        sw.WriteLine($"  <tag k=\"{point.Value.tag_k[k_index]}\" v=\"{point.Value.tag_v[k_index]}\"/>");
+                    }
+                    sw.WriteLine(" </node>");
+                }
+            }
+
+            foreach (Way path in pathes)
+            {
+                sw.WriteLine($" <way id=\"{path.id}\">");
+                for (int nd_index = 0; nd_index < path.ref_node.Count; nd_index++)
+                {
+                    sw.WriteLine($"  <nd ref=\"{path.ref_node[nd_index]}\"/>");
+                }
+                for (int k_index = 0; k_index < path.tag_k.Count; k_index++)
+                {
+                    sw.WriteLine($"  <tag k=\"{path.tag_k[k_index]}\" v=\"{path.tag_v[k_index]}\"/>");
+                }
+                sw.WriteLine(" </way>");
+            }
+
+            foreach (House house in houses)
+            {
+                sw.WriteLine($" <way id=\"{house.id}\">");
+                for (int nd_index = 0; nd_index < house.ref_node.Count; nd_index++)
+                {
+                    sw.WriteLine($"  <nd ref=\"{house.ref_node[nd_index]}\"/>");
+                }
+                for (int k_index = 0; k_index < house.tag_k.Count; k_index++)
+                {
+                    sw.WriteLine($"  <tag k=\"{house.tag_k[k_index]}\" v=\"{house.tag_v[k_index]}\"/>");
+                }
+                sw.WriteLine(" </way>");
+            }
+            sw.WriteLine("</osm>");
+        }
+        Debug.Log("Write Successfully!");
+    }
+
     private bool isNearedPoint(Vector3 pos_i, Vector3 pos_j)
     {
         return Vector3.Distance(pos_j, pos_i) < near_distance;
@@ -857,8 +1003,15 @@ public class OSMReader
 
     public List<Vector2> getHousePolygon(string house_id)
     {
-        int house_index = houses_id.IndexOf(house_id);
-        if (house_index == -1)
+        int house_index = 0;
+        for (house_index = 0; house_index < houses.Count; house_index++)
+        {
+            if (houses[house_index].id == house_id)
+            {
+                break;
+            }
+        }
+        if (house_index == houses.Count)
         {
             Debug.Log("Not found the house!");
             return new List<Vector2>();
@@ -870,9 +1023,9 @@ public class OSMReader
     public List<Vector2> getHousePolygon(int house_index)
     {
         List<Vector2> vertex2D = new List<Vector2>();
-        for (int point_index = 0; point_index < houses[house_index].Count - 1; point_index++)
+        for (int point_index = 0; point_index < houses[house_index].ref_node.Count - 1; point_index++)
         {
-            vertex2D.Add(new Vector2(points_lib[houses[house_index][point_index]].position.x, points_lib[houses[house_index][point_index]].position.z));
+            vertex2D.Add(new Vector2(points_lib[houses[house_index].ref_node[point_index]].position.x, points_lib[houses[house_index].ref_node[point_index]].position.z));
         }
 
         return vertex2D;

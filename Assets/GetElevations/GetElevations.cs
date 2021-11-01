@@ -9,10 +9,10 @@ public class GetElevations : MonoBehaviour
 {
     // Start is called before the first frame update
     string api_url;
-    public List<float> elevations;
+    public List<float> elevations = new List<float>();
     void Start()
     {
-        elevations = new List<float>();
+
     }
 
 
