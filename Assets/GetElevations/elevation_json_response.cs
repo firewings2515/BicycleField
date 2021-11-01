@@ -2,16 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
-public class EarthCoord
-{
-    [SerializeField] public float latitude;
-    [SerializeField] public float longitude;
-    public EarthCoord(float _longitude, float _latitude) {
-        latitude = _latitude;
-        longitude = _longitude;
-    }
-}
 
 public class Results
 {
