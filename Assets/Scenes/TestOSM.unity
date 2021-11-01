@@ -290,7 +290,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec470da739f4afe47801b2b632c58297, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  file_name: mapNTUST.osm
+  file_name: map.osm
   osm3d_file_name: YangJin3D.osm
   need_write_osm3d: 0
   set_camera_to_point_id: 4486262148

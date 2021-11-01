@@ -529,7 +529,15 @@ public class OSMReaderManager : MonoBehaviour
                 minLen.y = polygon[i].y;
         }
         Vector2 maxSize = maxLen - minLen;
-        Vector2 center = (maxLen + minLen) / 2;
+        Vector2 center2d = (maxLen + minLen) / 2;
+        //Vector2 center2d = Vector2.zero;
+        //for (int i = 0; i < vertex2D.Length; i++)
+        //{
+        //    center2d += vertex2D[i];
+        //}
+        //center2d /= vertex2D.Length;
+        float building_height = Random.Range(10, 20);
+        Vector3 center = new Vector3(center2d.x, vertex[0].y + building_height - 2.5f, center2d.y);
 
         // Init house and set parameters
         ShapeGrammarBuilder.InitObject(context_id);
@@ -537,7 +545,7 @@ public class OSMReaderManager : MonoBehaviour
         ShapeGrammarBuilder.AddPolygon("001", polygon, context_id);
         string filename = ".\\grammars\\hello_house.shp";
         ShapeGrammarBuilder.loadShape(filename, context_id);
-        ShapeGrammarBuilder.setParam("height", Random.Range(10, 20).ToString(), context_id);
+        ShapeGrammarBuilder.setParam("height", building_height.ToString(), context_id);
         ShapeGrammarBuilder.setParam("splitfacade", Random.Range(2, 6).ToString(), context_id);
         ShapeGrammarBuilder.setParam("maxSize", Mathf.Max(Mathf.Abs(maxSize.x), Mathf.Abs(maxSize.y)).ToString(), context_id);
 
@@ -577,6 +585,7 @@ public class OSMReaderManager : MonoBehaviour
 
         instance_h.name = "housePolygon_" + house_id;
         instance_h.transform.parent = house_polygon_manager.transform;
+        instance_h.transform.position = new Vector3(instance_h.transform.position.x, vertex[0].y, instance_h.transform.position.z);
 
         // add to heirarchy system
         for (int belong_index = 0; belong_index<belong_to_hier_x.Count; belong_index++)

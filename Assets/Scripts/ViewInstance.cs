@@ -79,7 +79,7 @@ public class ViewInstance : MonoBehaviour
                     {
                         // build the mesh of building
                         house_mesh = ShapeGrammarBuilder.StringToGameobject(ref obj, ref mtl);
-                        house_mesh.name = "house_" + house_id;
+                        house_mesh.name = "house_" + house_id + center.ToString();
                         Mesh mesh = house_mesh.GetComponentInChildren<MeshFilter>().mesh;
                         
                         //Recalculations
@@ -91,9 +91,10 @@ public class ViewInstance : MonoBehaviour
                         house_mesh.GetComponentInChildren<MeshFilter>().mesh = mesh;
                         Transform temp = house_mesh.GetComponentsInChildren<Transform>()[1];
                         //temp.transform.position = new Vector3(center.x, 0, center.y);
-                        Bounds bound = mesh.bounds;
-                        house_mesh.transform.position = new Vector3(center.x - 31, -bound.center.y, center.y + 35);
+                        //Bounds bound = mesh.bounds;
+                        house_mesh.transform.position = new Vector3(center.x, center.y, center.z); // - 11.2f   + 18.7f
                         house_mesh.transform.Rotate(new Vector3(0, 183, 0));
+                        house_mesh.transform.localScale = new Vector3(house_mesh.transform.localScale.x * 0.8f, house_mesh.transform.localScale.y * 0.8f, house_mesh.transform.localScale.z * 0.8f);
                     }
                 }
                 else
