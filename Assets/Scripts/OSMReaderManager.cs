@@ -389,11 +389,6 @@ public class OSMReaderManager : MonoBehaviour
         Mesh mesh = new Mesh();
         // generate polygon vertex
         Vector3[] vertex = new Vector3[house_point_ids.Count - 1];
-        for (int index = 0; index < house_point_ids.Count - 1; index++)
-        {
-            vertex[index] = osm_reader.points_lib[house_point_ids[index]].position;
-        }
-
         // classification hierarchy area
         for (int index = 0; index < vertex.Length; index++)
         {
@@ -448,6 +443,8 @@ public class OSMReaderManager : MonoBehaviour
         {
             hierarchy_c.heirarchy_master[belong_to_hier_x[belong_index], belong_to_hier_y[belong_index]].objects.Add(instance_h);
         }
+
+
 
         //Return the points
         return mesh;
@@ -530,14 +527,14 @@ public class OSMReaderManager : MonoBehaviour
         }
         Vector2 maxSize = maxLen - minLen;
         Vector2 center2d = (maxLen + minLen) / 2;
-        //Vector2 center2d = Vector2.zero;
+
         //for (int i = 0; i < vertex2D.Length; i++)
         //{
         //    center2d += vertex2D[i];
         //}
         //center2d /= vertex2D.Length;
         float building_height = Random.Range(10, 20);
-        Vector3 center = new Vector3(center2d.x, vertex[0].y + building_height - 2.5f, center2d.y);
+        Vector3 center = new Vector3(center2d.x, vertex[0].y, center2d.y);
 
         // Init house and set parameters
         ShapeGrammarBuilder.InitObject(context_id);
@@ -579,6 +576,8 @@ public class OSMReaderManager : MonoBehaviour
         instance_h.GetComponent<ViewInstance>().points = vertex;
         instance_h.GetComponent<ViewInstance>().instance = houses_polygon[house_index];
         instance_h.GetComponent<ViewInstance>().setup(false);
+        instance_h.GetComponent<ViewInstance>().building_height = building_height;
+
 
         // bind the house information to ViewInstance
         instance_h.GetComponent<ViewInstance>().setHouse(house_id, obj, mtl, center);
@@ -592,6 +591,8 @@ public class OSMReaderManager : MonoBehaviour
         {
             hierarchy_c.heirarchy_master[belong_to_hier_x[belong_index], belong_to_hier_y[belong_index]].objects.Add(instance_h);
         }
+
+
     }
 
     IEnumerator getIndexCreateMesh(int index)

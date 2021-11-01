@@ -18,6 +18,7 @@ public class ViewInstance : MonoBehaviour
     private string house_id;
     private Vector3 center;
     GameObject house_mesh;
+    public float building_height;
 
     // Start is called before the first frame update
     void Start()
@@ -77,6 +78,7 @@ public class ViewInstance : MonoBehaviour
                 {
                     if (house_mesh == null)
                     {
+                        //8603.1, 654.4, 10195.0
                         // build the mesh of building
                         house_mesh = ShapeGrammarBuilder.StringToGameobject(ref obj, ref mtl);
                         house_mesh.name = "house_" + house_id + center.ToString();
@@ -87,14 +89,30 @@ public class ViewInstance : MonoBehaviour
                         mesh.RecalculateBounds();
                         mesh.Optimize();
 
-                        // set transform
+                        //// set transform
+                        //house_mesh.GetComponentInChildren<MeshFilter>().mesh = mesh;
+                        //Transform temp = house_mesh.GetComponentsInChildren<Transform>()[1];
+                        ////temp.transform.position = new Vector3(center.x, 0, center.y);
+                        ////Bounds bound = mesh.bounds;
+                        //house_mesh.transform.position = new Vector3(center.x, center.y, center.z); // - 11.2f   + 18.7f
+                        //house_mesh.transform.Rotate(new Vector3(0, 183, 0));
+                        //house_mesh.transform.localScale = new Vector3(house_mesh.transform.localScale.x * 0.8f, house_mesh.transform.localScale.y * 0.8f, house_mesh.transform.localScale.z * 0.8f);
+
+
                         house_mesh.GetComponentInChildren<MeshFilter>().mesh = mesh;
-                        Transform temp = house_mesh.GetComponentsInChildren<Transform>()[1];
-                        //temp.transform.position = new Vector3(center.x, 0, center.y);
-                        //Bounds bound = mesh.bounds;
-                        house_mesh.transform.position = new Vector3(center.x, center.y, center.z); // - 11.2f   + 18.7f
-                        house_mesh.transform.Rotate(new Vector3(0, 183, 0));
+                        house_mesh.transform.position = center;
+                        house_mesh.transform.rotation = Quaternion.Euler(0, 180, 0);
                         house_mesh.transform.localScale = new Vector3(house_mesh.transform.localScale.x * 0.8f, house_mesh.transform.localScale.y * 0.8f, house_mesh.transform.localScale.z * 0.8f);
+
+                        //­×¥¿mesh¦ì²¾----
+                        Bounds Bound = mesh.bounds;
+                        Vector3 offset = house_mesh.transform.position - house_mesh.transform.TransformPoint(Bound.center);
+                        house_mesh.transform.position += offset;
+                        //----
+
+                        house_mesh.transform.Translate(0, house_mesh.transform.position.y-center.y, 0);
+                        //house_mesh.transform.position = new Vector3(house_mesh.transform.position.x, center.y, house_mesh.transform.position.z); ;
+
                     }
                 }
                 else
