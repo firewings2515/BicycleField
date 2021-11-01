@@ -30,7 +30,7 @@ public class OSMReader
         z = (float)MercatorProjection.latToY(lat) - boundary_min.y;
     }
 
-    public IEnumerator readOSM(string file_path, MonoBehaviour mono, bool write_osm3d = false, string osm3d_file_path = "")  //, Vector2 _OSM_size
+    public void readOSM(string file_path, bool write_osm3d = false, string osm3d_file_path = "")  //, Vector2 _OSM_size
     {
         if (!write_osm3d)
         {
@@ -246,26 +246,16 @@ public class OSMReader
             boundary_min = new Vector2((float)MercatorProjection.lonToX(boundary_min.x), (float)MercatorProjection.latToY(boundary_min.y));
             boundary_max = new Vector2((float)MercatorProjection.lonToX(boundary_max.x), (float)MercatorProjection.latToY(boundary_max.y));
 
+
+            
             //////////////////////////////get elevations/////////////////////////////////////////
-            int coord_count = 0;
-            List<EarthCoord> coord_collect = new List<EarthCoord>();
-            GameObject ele_obj = new GameObject("get elevations");
-            GetElevations ele = ele_obj.AddComponent<GetElevations>();
+            List<EarthCoord> all_coords = new List<EarthCoord>();
             for (int point_index = 0; point_index < points.Count; point_index++)
             {
-                coord_count++;
-                coord_collect.Add(new EarthCoord(points[point_index].position.x, points[point_index].position.z));
-                if (coord_count == 80)
-                {
-                    yield return mono.StartCoroutine(ele.get_elevation_list(coord_collect));
-                    all_elevations.AddRange(ele.elevations);
-                    coord_count = 0;
-                    coord_collect.Clear();
-                }
+                all_coords.Add(new EarthCoord(points[point_index].position.x, points[point_index].position.z));
             }
-            yield return mono.StartCoroutine(ele.get_elevation_list(coord_collect));
-            all_elevations.AddRange(ele.elevations);
-            //mono.StopCoroutine(ele.get_elevation_list(coord_collect));
+
+            all_elevations = HgtReader.getElevations(all_coords);
             ///////////////////////////////////////////////////////////////////////////////////
         }
 

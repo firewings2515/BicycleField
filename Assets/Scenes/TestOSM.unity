@@ -123,7 +123,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &162094391
+--- !u!1 &293967383
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -131,35 +131,34 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 162094393}
-  - component: {fileID: 162094392}
+  - component: {fileID: 293967385}
+  - component: {fileID: 293967384}
   m_Layer: 0
-  m_Name: get elevations
+  m_Name: testHgt
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &162094392
+--- !u!114 &293967384
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 162094391}
+  m_GameObject: {fileID: 293967383}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 131197dc34789bc43bc0496ea9804f71, type: 3}
+  m_Script: {fileID: 11500000, guid: 9c05eb8be6982084daa54bc50e3df1a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  elevations: []
---- !u!4 &162094393
+--- !u!4 &293967385
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 162094391}
+  m_GameObject: {fileID: 293967383}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -300,7 +299,7 @@ MonoBehaviour:
   cam: {fileID: 1617446011}
   houses_polygon_mat: {fileID: 2100000, guid: 3d21b45424d31b347abbf049f562aa95, type: 2}
   roads_polygon_mat: {fileID: 2100000, guid: 5e3d6923654f8c2419ca4b91c25456bd, type: 2}
-  build_house: 1
+  build_house: 0
 --- !u!4 &1603017145
 Transform:
   m_ObjectHideFlags: 0
@@ -349,6 +348,7 @@ GameObject:
   - component: {fileID: 1617446013}
   - component: {fileID: 1617446012}
   - component: {fileID: 1617446015}
+  - component: {fileID: 1617446016}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -428,7 +428,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1617446011}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: be0093ec111805b479b957563aba148c, type: 3}
   m_Name: 
@@ -437,3 +437,20 @@ MonoBehaviour:
   shiftAdd: 25
   maxShift: 100
   camSens: 0.125
+--- !u!114 &1617446016
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1617446011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a90ce8f302c24a4eabdf425a4e4415e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  movementSpeed: 10
+  fastMovementSpeed: 100
+  freeLookSensitivity: 3
+  zoomSensitivity: 10
+  fastZoomSensitivity: 50
