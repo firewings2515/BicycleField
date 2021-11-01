@@ -629,6 +629,7 @@ public class OSMReaderManager : MonoBehaviour
     // Start is called before the first frame update
     IEnumerator Start()
     {
+        ShapeGrammarBuilder.InitClass();
         osm_reader = new OSMReader();
         yield return(osm_reader.readOSM(Application.streamingAssetsPath + "//" + file_name, this, need_write_osm3d, Application.streamingAssetsPath + "//" + osm3d_file_name));
         if (!need_write_osm3d)
