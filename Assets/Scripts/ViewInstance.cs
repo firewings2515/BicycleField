@@ -110,7 +110,8 @@ public class ViewInstance : MonoBehaviour
                         house_mesh.transform.position += offset;
                         //----
 
-                        house_mesh.transform.Translate(0, house_mesh.transform.position.y-center.y, 0);
+                        float y_offset = Mathf.Abs(house_mesh.transform.position.y - center.y);
+                        house_mesh.transform.Translate(0, y_offset, 0);
                         //house_mesh.transform.position = new Vector3(house_mesh.transform.position.x, center.y, house_mesh.transform.position.z); ;
 
                     }
