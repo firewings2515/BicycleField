@@ -10,10 +10,13 @@ public class HgtReader
     static int resolution = 3601;
     static string hgt_file_location = "Assets\\Resources\\hgt\\";
 
+    static int m_floor(float input) {
+        return (int)Math.Floor(input);
+    }
     static string getHgtFileName(float longitude, float latitude)
     {
-        int lat_int = (int)latitude;
-        int lon_int = (int)longitude;
+        int lat_int = m_floor(latitude);
+        int lon_int = m_floor(longitude);
         char EW = longitude > 0.0f ? 'E' : 'W';
         char NS = latitude > 0.0f ? 'N' : 'S';
         return NS + Math.Abs(lat_int).ToString() + EW + Math.Abs(lon_int).ToString() + ".hgt";
@@ -23,15 +26,23 @@ public class HgtReader
     {
         return hgt_file_location + getHgtFileName(longitude, latitude);
     }
+    static int hgtSeekPos(int lat_row, int lon_row)
+    {
+        return ((resolution - 1 - lat_row) * resolution + lon_row) * 2;
+    }
+    static void hgtSeek(FileStream hgt_file, int lat_row, int lon_row) 
+    {
+        hgt_file.Seek(hgtSeekPos(lat_row, lon_row), SeekOrigin.Begin);
+    }
 
     static public float getElevation(float longitude, float latitude)
     {
-        int lat_int = (int)latitude;
-        int lon_int = (int)longitude;
+        int lat_int = m_floor(latitude);
+        int lon_int = m_floor(longitude);
         FileStream hgt_file = new FileStream(getHgtPath(longitude, latitude), FileMode.Open);
         int lat_row = (int)Math.Round((latitude - lat_int) * (resolution - 1));
         int lon_row = (int)Math.Round((longitude - lon_int) * (resolution - 1));
-        hgt_file.Seek(((resolution - 1 - lat_row) * resolution + lon_row) * 2, SeekOrigin.Begin);
+        hgtSeek(hgt_file, lat_row, lon_row);
         int byte1 = hgt_file.ReadByte();
         int byte2 = hgt_file.ReadByte();
         int result = byte1 << 8 | byte2;
@@ -53,11 +64,11 @@ public class HgtReader
             }
             float latitude = all_coords[i].latitude;
             float longitude = all_coords[i].longitude;
-            int lat_int = (int)latitude;
-            int lon_int = (int)longitude;
+            int lat_int = m_floor(latitude);
+            int lon_int = m_floor(longitude);
             int lat_row = (int)Math.Round((latitude - lat_int) * (resolution - 1));
             int lon_row = (int)Math.Round((longitude - lon_int) * (resolution - 1));
-            int position = ((resolution - 1 - lat_row) * resolution + lon_row) * 2;
+            int position = hgtSeekPos(lat_row, lon_row);
             rows.Add(new KeyValuePair<string, int>(hgt_file_name, position));
         }
 
