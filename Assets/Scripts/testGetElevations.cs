@@ -7,16 +7,18 @@ public class testGetElevations : MonoBehaviour
     [SerializeField]
     public EarthCoord[] all_coords;
     // Start is called before the first frame update
-    IEnumerator Start()
+    void Start()
     {
+
         List<EarthCoord> all_coords_list = new List<EarthCoord>(all_coords);
-        GetElevations ele = gameObject.AddComponent<GetElevations>();
-        yield return ele.get_elevation_list(all_coords_list);
-        for (int i = 0; i < ele.elevations.Count; i++) {
+        List<float> all_ele = HgtReader.getElevations(all_coords_list);
+
+        for (int i = 0; i < all_ele.Count; i++)
+        {
             Debug.Log(
-                "latitude: " + all_coords[i].latitude.ToString() + ' ' + 
-                "longitude: " + all_coords[i].longitude.ToString()+ ' ' + 
-                "elevation: " + ele.elevations[i].ToString() + ' '
+                "latitude: " + all_coords[i].latitude.ToString() + ' ' +
+                "longitude: " + all_coords[i].longitude.ToString() + ' ' +
+                "elevation: " + all_ele[i].ToString() + ' '
                 );
         }
     }
