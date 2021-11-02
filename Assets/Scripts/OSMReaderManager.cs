@@ -462,9 +462,11 @@ public class OSMReaderManager : MonoBehaviour
         Mesh mesh = new Mesh();
         // generate polygon vertex
         Vector3[] vertex = new Vector3[house_point_ids.Count - 1];
+        float ele_min = 100000.0f;
         for (int index = 0; index<house_point_ids.Count - 1; index++)
         {
             vertex[index] = osm_reader.points_lib[house_point_ids[index]].position;
+            ele_min = Mathf.Min(ele_min, vertex[index].y);
         }
 
         // classification hierarchy area
@@ -534,7 +536,8 @@ public class OSMReaderManager : MonoBehaviour
         //}
         //center2d /= vertex2D.Length;
         float building_height = Random.Range(10, 20);
-        Vector3 center = new Vector3(center2d.x, vertex[0].y, center2d.y);
+
+        Vector3 center = new Vector3(center2d.x, ele_min, center2d.y);
 
         // Init house and set parameters
         ShapeGrammarBuilder.InitObject(context_id);
@@ -584,7 +587,7 @@ public class OSMReaderManager : MonoBehaviour
 
         instance_h.name = "housePolygon_" + house_id;
         instance_h.transform.parent = house_polygon_manager.transform;
-        instance_h.transform.position = new Vector3(instance_h.transform.position.x, vertex[0].y, instance_h.transform.position.z);
+        instance_h.transform.position = new Vector3(instance_h.transform.position.x, ele_min, instance_h.transform.position.z);
 
         // add to heirarchy system
         for (int belong_index = 0; belong_index<belong_to_hier_x.Count; belong_index++)
