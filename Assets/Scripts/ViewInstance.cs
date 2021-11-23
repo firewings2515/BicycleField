@@ -20,18 +20,23 @@ public class ViewInstance : MonoBehaviour
     GameObject house_mesh;
     public float building_height;
 
+    // road information
+    string road_id;
+    RoadIntegration road_integration;
+
     // Start is called before the first frame update
     void Start()
     {
         //InvokeRepeating("viewerUpdate", 0f, 0.02f);
     }
 
-    public void setup(bool setup_prefab)
+    public void setup(bool setup_prefab, bool have_instance = true)
     {
         if (setup_prefab)
             instance = Instantiate(prefab, gameObject.transform);
 
-        instance.SetActive(false);
+        if (have_instance)
+            instance.SetActive(false);
 
         finish_instance = true;
     }
@@ -44,6 +49,13 @@ public class ViewInstance : MonoBehaviour
         this.obj = obj;
         this.mtl = mtl;
         this.center = center;
+    }
+
+    // set the road information if the instance is road
+    public void setRoad(string road_id, RoadIntegration road_integration)
+    {
+        this.road_id = road_id;
+        this.road_integration = road_integration;
     }
 
     private void Update()
@@ -129,5 +141,11 @@ public class ViewInstance : MonoBehaviour
 
             instance.SetActive(in_view);
         }
+    }
+
+    void OnMouseDown()
+    {
+        road_integration.selectPath(road_id);
+        Debug.Log(road_id);
     }
 }

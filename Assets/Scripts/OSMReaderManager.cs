@@ -32,6 +32,7 @@ public class OSMReaderManager : MonoBehaviour
     GameObject tree_manager;
     HierarchyControl hierarchy_c;
     int camera_path_index;
+    public Dictionary<string, List<GameObject>> pathes_objects;
     OSMReader osm_reader;
     //public CinemachineVirtualCamera virtualCameraPrefab;
     //CinemachineVirtualCamera virtualCamera;
@@ -321,6 +322,7 @@ public class OSMReaderManager : MonoBehaviour
             vertex[road_point_index * 2 + 1][2] = road_point[road_point_index * 2 + 2];
         }
 
+        List<GameObject> path_objects = new List<GameObject>();
         for (int piece_index = 0; piece_index < vertex.Length; piece_index++)
         {
             belong_to_hier_x.Clear();
@@ -360,11 +362,20 @@ public class OSMReaderManager : MonoBehaviour
             mr.material = roads_polygon_mat;
             road_peice.transform.parent = road_manager.transform;
 
+            //road_peice.AddComponent<ViewInstance>();
+            //road_peice.GetComponent<ViewInstance>().cam = cam;
+            //road_peice.GetComponent<ViewInstance>().points = vertex[piece_index];
+            //road_peice.GetComponent<ViewInstance>().instance = road_peice;
+            //road_peice.GetComponent<ViewInstance>().setup(false, false);
+            //road_peice.transform.parent = road_manager.transform;
             GameObject instance_p = Instantiate(view_instance);
             instance_p.GetComponent<ViewInstance>().cam = cam;
             instance_p.GetComponent<ViewInstance>().points = vertex[piece_index];
             instance_p.GetComponent<ViewInstance>().instance = road_peice;
+            instance_p.GetComponent<ViewInstance>().setRoad(road_id, GetComponent<RoadIntegration>());
             instance_p.GetComponent<ViewInstance>().setup(false);
+            instance_p.AddComponent<MeshCollider>();
+            instance_p.GetComponent<MeshCollider>().sharedMesh = mesh;
             instance_p.transform.parent = road_manager.transform;
             //if (road_id == "407209896" && piece_index == 52) // 其中一片
             //instance_p.GetComponent<ViewInstance>().finish_instance = true;
@@ -374,7 +385,10 @@ public class OSMReaderManager : MonoBehaviour
             {
                 hierarchy_c.heirarchy_master[belong_to_hier_x[belong_index], belong_to_hier_y[belong_index]].objects.Add(instance_p);
             }
+
+            path_objects.Add(instance_p);
         }
+        pathes_objects.Add(road_id, path_objects);
     }
 
     Mesh createHousePolygon(List<string> house_point_ids, int house_index, string house_id) // generate a house polygon
@@ -671,6 +685,7 @@ public class OSMReaderManager : MonoBehaviour
                 }
             }
 
+            pathes_objects = new Dictionary<string, List<GameObject>>();
             int road_index = 0;
             for (road_index = 0; road_index < osm_reader.pathes.Count; road_index++)
             {
