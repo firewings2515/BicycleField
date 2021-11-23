@@ -146,6 +146,5 @@ public class ViewInstance : MonoBehaviour
     void OnMouseDown()
     {
         road_integration.selectPath(road_id);
-        Debug.Log(road_id);
     }
 }

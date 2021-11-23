@@ -33,7 +33,7 @@ public class OSMReaderManager : MonoBehaviour
     HierarchyControl hierarchy_c;
     int camera_path_index;
     public Dictionary<string, List<GameObject>> pathes_objects;
-    OSMReader osm_reader;
+    public OSMReader osm_reader;
     //public CinemachineVirtualCamera virtualCameraPrefab;
     //CinemachineVirtualCamera virtualCamera;
     bool show_osm_points = false; // show all points in OSM data

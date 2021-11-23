@@ -76,7 +76,7 @@ public class OSMReader
                         boundary_max.x = Mathf.Max(boundary_max.x, float.Parse(reader.GetAttribute("lon")));
                         boundary_max.y = Mathf.Max(boundary_max.y, float.Parse(reader.GetAttribute("lat")));
                     }
-                        
+
                     Node point = new Node();
                     if (is_redundant)
                         point.position = new Vector3(float.Parse(reader.GetAttribute("x")), float.Parse(reader.GetAttribute("ele")), float.Parse(reader.GetAttribute("z"))); // 0.5f is default altitude
@@ -247,7 +247,7 @@ public class OSMReader
             boundary_max = new Vector2((float)MercatorProjection.lonToX(boundary_max.x), (float)MercatorProjection.latToY(boundary_max.y));
 
 
-            
+
             //////////////////////////////get elevations/////////////////////////////////////////
             List<EarthCoord> all_coords = new List<EarthCoord>();
             for (int point_index = 0; point_index < points.Count; point_index++)
@@ -354,7 +354,7 @@ public class OSMReader
                         for (int avenue_point_index = 0; avenue_point_index < avenue.Count; avenue_point_index++)
                         {
                             bool need_add_linkref = false;
-                       
+
                             if (avenue_point_index == 0)
                             {
                                 int link_ref_h_index = linkRefIndexOf(pathes[road_i].ref_node[0], pathes[road_j].ref_node[0]);
@@ -429,7 +429,7 @@ public class OSMReader
                                 avenue_links_to.Add(newnode_id);
                             }
                         }
-                        
+
                         // calculate intersection points
                         for (current_i = 1; current_i < pathes[road_i].ref_node.Count - 1; current_i++)
                         {
@@ -1120,6 +1120,16 @@ public class OSMReader
             {
                 return index;
             }
+        }
+        return -1;
+    }
+
+    public int getPathIndex(string road_id)
+    {
+        for (int pathes_index = 0; pathes_index < pathes.Count; pathes_index++)
+        {
+            if (pathes[pathes_index].id == road_id)
+                return pathes_index;
         }
         return -1;
     }

@@ -360,7 +360,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ce125b3d8cd47b4abc724850c5801dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  camera: {fileID: 1617446011}
+  roads_selected_mat: {fileID: 2100000, guid: 48b71794ab85154488c0e9a675f24119, type: 2}
+  edit_mode: 1
 --- !u!1 &1617446011
 GameObject:
   m_ObjectHideFlags: 0
