@@ -375,7 +375,14 @@ public class OSMReaderManager : MonoBehaviour
             instance_p.GetComponent<ViewInstance>().setRoad(road_id, GetComponent<RoadIntegration>());
             instance_p.GetComponent<ViewInstance>().setup(false);
             instance_p.AddComponent<MeshCollider>();
-            instance_p.GetComponent<MeshCollider>().sharedMesh = mesh;
+            try
+            {
+                instance_p.GetComponent<MeshCollider>().sharedMesh = mesh;
+            }
+            catch
+            {
+                Debug.Log(road_id);
+            }
             instance_p.transform.parent = road_manager.transform;
             //if (road_id == "407209896" && piece_index == 52) // 其中一片
             //instance_p.GetComponent<ViewInstance>().finish_instance = true;

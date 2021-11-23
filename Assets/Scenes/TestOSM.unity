@@ -362,6 +362,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   roads_selected_mat: {fileID: 2100000, guid: 48b71794ab85154488c0e9a675f24119, type: 2}
   edit_mode: 1
+  file_path: NTUSTCG.bpf
+  write_file: 0
 --- !u!1 &1617446011
 GameObject:
   m_ObjectHideFlags: 0
