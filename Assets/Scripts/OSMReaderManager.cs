@@ -396,13 +396,14 @@ public class OSMReaderManager : MonoBehaviour
 
             path_objects.Add(instance_p);
         }
-        PathCreator pc = new PathCreator();
+       
         Transform[] trans = new Transform[road.Count];
-        GameObject parent = new GameObject("road");
+        GameObject parent = new GameObject(road_id);
+        PathCreator pc = parent.AddComponent<PathCreator>();
         parent.transform.parent = all_pc_obj.transform;
         for (int i = 0; i < road.Count; i++)
         {
-            GameObject tmp = new GameObject("road point");
+            GameObject tmp = new GameObject("road_point_" + i.ToString());
             tmp.transform.parent = parent.transform;
             trans[i] = tmp.transform;
             trans[i].position = new Vector3(road[i].x, road[i].y, road[i].z);
@@ -705,7 +706,7 @@ public class OSMReaderManager : MonoBehaviour
                     bb.transform.parent = point_manager.transform;
                 }
             }
-            all_pc_obj = new GameObject("all_pc_obj");
+            all_pc_obj = new GameObject("All_Roads");
             all_pc = new List<PathCreator>();
             pathes_objects = new Dictionary<string, List<GameObject>>();
             int road_index = 0;

@@ -31,6 +31,8 @@ public class follow_path : MonoBehaviour
     {
         if (pathCreator == null) {
             Debug.Log("no path creator");
+            OSMReaderManager orm = GameObject.Find("OSMReader").GetComponent<OSMReaderManager>();
+            pathCreator = orm.all_pc[0];
         }
         if (pathCreator != null && !pause)
         {
