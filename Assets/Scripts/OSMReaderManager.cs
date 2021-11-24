@@ -5,6 +5,8 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Threading;
+using PathCreation;
+using PathCreation.Examples;
 
 //using Cinemachine;
 
@@ -40,7 +42,7 @@ public class OSMReaderManager : MonoBehaviour
     bool finish_create = false;
     [Header("Procedural Modeling of house")]
     public bool build_house = false;
-
+    public List<PathCreator> all_pc;
     string getDigits(string s) // for parser
     {
         return Regex.Match(s, "[+-]?([0-9]*[.])?[0-9]+").ToString();
@@ -393,6 +395,13 @@ public class OSMReaderManager : MonoBehaviour
 
             path_objects.Add(instance_p);
         }
+        PathCreator pc = new PathCreator();
+        Transform[] trans = new Transform[road.Count];
+        for (int i = 0; i < road.Count; i++) {
+            trans[i].position = road[i];
+        }
+        pc.bezierPath = new BezierPath(trans, false, PathSpace.xyz);
+        all_pc.Add(pc);
         pathes_objects.Add(road_id, path_objects);
     }
 
