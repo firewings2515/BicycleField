@@ -43,6 +43,7 @@ public class OSMReaderManager : MonoBehaviour
     [Header("Procedural Modeling of house")]
     public bool build_house = false;
     public List<PathCreator> all_pc;
+    private GameObject all_pc_obj;
     string getDigits(string s) // for parser
     {
         return Regex.Match(s, "[+-]?([0-9]*[.])?[0-9]+").ToString();
@@ -397,8 +398,14 @@ public class OSMReaderManager : MonoBehaviour
         }
         PathCreator pc = new PathCreator();
         Transform[] trans = new Transform[road.Count];
-        for (int i = 0; i < road.Count; i++) {
-            trans[i].position = road[i];
+        GameObject parent = new GameObject("road");
+        parent.transform.parent = all_pc_obj.transform;
+        for (int i = 0; i < road.Count; i++)
+        {
+            GameObject tmp = new GameObject("road point");
+            tmp.transform.parent = parent.transform;
+            trans[i] = tmp.transform;
+            trans[i].position = new Vector3(road[i].x, road[i].y, road[i].z);
         }
         pc.bezierPath = new BezierPath(trans, false, PathSpace.xyz);
         all_pc.Add(pc);
@@ -698,7 +705,8 @@ public class OSMReaderManager : MonoBehaviour
                     bb.transform.parent = point_manager.transform;
                 }
             }
-
+            all_pc_obj = new GameObject("all_pc_obj");
+            all_pc = new List<PathCreator>();
             pathes_objects = new Dictionary<string, List<GameObject>>();
             int road_index = 0;
             for (road_index = 0; road_index < osm_reader.pathes.Count; road_index++)

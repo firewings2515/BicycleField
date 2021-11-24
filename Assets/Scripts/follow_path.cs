@@ -11,7 +11,7 @@ public class follow_path : MonoBehaviour
     public float speed = 30;
     public bool reverse = false;
     float distanceTravelled;
-    bool pause = true;
+    public bool pause = true;
 
     void Start()
     {
@@ -21,12 +21,17 @@ public class follow_path : MonoBehaviour
             pathCreator.pathUpdated += OnPathChanged;
         }
         else {
+            OSMReaderManager orm = GameObject.Find("OSMReader").GetComponent<OSMReaderManager>();
+            pathCreator = orm.all_pc[0];
             //path_change(0);
         }
     }
 
     void Update()
     {
+        if (pathCreator == null) {
+            Debug.Log("no path creator");
+        }
         if (pathCreator != null && !pause)
         {
             if (!reverse)
