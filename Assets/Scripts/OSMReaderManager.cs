@@ -289,6 +289,37 @@ public class OSMReaderManager : MonoBehaviour
 
     void createRoadPolygons(List<Vector3> road, string road_id, float road_width, int layer) // generate pieces of road
     {
+        List<GameObject> path_objects = new List<GameObject>();
+        Transform[] trans = new Transform[road.Count];
+        GameObject road_obj = new GameObject(road_id);
+        PathCreator pc = road_obj.AddComponent<PathCreator>();
+        road_obj.transform.parent = all_pc_obj.transform;
+        for (int i = 0; i < road.Count; i++)
+        {
+            GameObject road_point_obj = new GameObject("road_point_" + i.ToString());
+            road_point_obj.transform.parent = road_obj.transform;
+            trans[i] = road_point_obj.transform;
+            trans[i].position = new Vector3(road[i].x, road[i].y, road[i].z);
+        }
+        pc.bezierPath = new BezierPath(trans, false, PathSpace.xyz);
+        all_pc.Add(pc);
+        RoadMeshCreator rm = road_obj.AddComponent<RoadMeshCreator>();
+        rm.pathCreator = pc;
+        rm.roadWidth = 6.0f;
+        rm.flattenSurface = true;
+        rm.roadMaterial = roads_polygon_mat;
+        rm.undersideMaterial = roads_polygon_mat;
+        rm.TriggerUpdate();
+        //rm.PathUpdated();
+        //rm.CreateRoadMesh();
+        //road.Clear();
+        //for (float dis = 0.0f; dis <= 1.0f; dis += 0.05f)
+        //{
+        //    Vector3 point = pc.path.GetPointAtDistance(dis);
+        //    road.Add(point);
+        //}
+
+
         List<int> belong_to_hier_x = new List<int>();
         List<int> belong_to_hier_y = new List<int>();
         belong_to_hier_x.Clear();
@@ -325,7 +356,7 @@ public class OSMReaderManager : MonoBehaviour
             vertex[road_point_index * 2 + 1][2] = road_point[road_point_index * 2 + 2];
         }
 
-        List<GameObject> path_objects = new List<GameObject>();
+
         for (int piece_index = 0; piece_index < vertex.Length; piece_index++)
         {
             belong_to_hier_x.Clear();
@@ -396,20 +427,7 @@ public class OSMReaderManager : MonoBehaviour
 
             path_objects.Add(instance_p);
         }
-       
-        Transform[] trans = new Transform[road.Count];
-        GameObject parent = new GameObject(road_id);
-        PathCreator pc = parent.AddComponent<PathCreator>();
-        parent.transform.parent = all_pc_obj.transform;
-        for (int i = 0; i < road.Count; i++)
-        {
-            GameObject tmp = new GameObject("road_point_" + i.ToString());
-            tmp.transform.parent = parent.transform;
-            trans[i] = tmp.transform;
-            trans[i].position = new Vector3(road[i].x, road[i].y, road[i].z);
-        }
-        pc.bezierPath = new BezierPath(trans, false, PathSpace.xyz);
-        all_pc.Add(pc);
+
         pathes_objects.Add(road_id, path_objects);
     }
 
@@ -499,14 +517,14 @@ public class OSMReaderManager : MonoBehaviour
         // generate polygon vertex
         Vector3[] vertex = new Vector3[house_point_ids.Count - 1];
         float ele_min = 100000.0f;
-        for (int index = 0; index<house_point_ids.Count - 1; index++)
+        for (int index = 0; index < house_point_ids.Count - 1; index++)
         {
             vertex[index] = osm_reader.points_lib[house_point_ids[index]].position;
             ele_min = Mathf.Min(ele_min, vertex[index].y);
         }
 
         // classification hierarchy area
-        for (int index = 0; index<vertex.Length; index++)
+        for (int index = 0; index < vertex.Length; index++)
         {
             hierarchy_c.calcLocation(vertex[index].x, vertex[index].z, ref belong_x, ref belong_y);
             belong_to_hier_x.Add(belong_x);
@@ -515,7 +533,7 @@ public class OSMReaderManager : MonoBehaviour
 
         // for shape grammar
         Vector2[] vertex2D = new Vector2[house_point_ids.Count - 1];
-        for (int index = 0; index<house_point_ids.Count - 1; index++)
+        for (int index = 0; index < house_point_ids.Count - 1; index++)
         {
             vertex2D[index] = new Vector2(osm_reader.points_lib[house_point_ids[index]].position.x, osm_reader.points_lib[house_point_ids[index]].position.z);
         }
@@ -544,23 +562,23 @@ public class OSMReaderManager : MonoBehaviour
         MeshRenderer mr = houses_polygon[house_index].AddComponent<MeshRenderer>();
         mf.mesh = mesh;
         mr.material = houses_polygon_mat;
-        
+
         // ======================================================
         // Procedural Modeling of house
         List<Vector2> polygon = new List<Vector2>(vertex2D);
         Vector2 maxLen = Vector2.zero;
         Vector2 minLen = polygon[0];
-        
+
         // bound record
-        for (int i = 0; i<polygon.Count; i++)
+        for (int i = 0; i < polygon.Count; i++)
         {
             if (polygon[i].x > maxLen.x)
                 maxLen.x = polygon[i].x;
             if (polygon[i].y > maxLen.y)
                 maxLen.y = polygon[i].y;
-            if (polygon[i].x<minLen.x)
+            if (polygon[i].x < minLen.x)
                 minLen.x = polygon[i].x;
-            if (polygon[i].y<minLen.y)
+            if (polygon[i].y < minLen.y)
                 minLen.y = polygon[i].y;
         }
         Vector2 maxSize = maxLen - minLen;
@@ -626,7 +644,7 @@ public class OSMReaderManager : MonoBehaviour
         instance_h.transform.position = new Vector3(instance_h.transform.position.x, ele_min, instance_h.transform.position.z);
 
         // add to heirarchy system
-        for (int belong_index = 0; belong_index<belong_to_hier_x.Count; belong_index++)
+        for (int belong_index = 0; belong_index < belong_to_hier_x.Count; belong_index++)
         {
             hierarchy_c.heirarchy_master[belong_to_hier_x[belong_index], belong_to_hier_y[belong_index]].objects.Add(instance_h);
         }

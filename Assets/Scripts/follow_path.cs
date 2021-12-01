@@ -85,6 +85,6 @@ public class follow_path : MonoBehaviour
     }
     public void to_pause()
     {
-        pause = true;
+        pause = !pause;
     }
 }

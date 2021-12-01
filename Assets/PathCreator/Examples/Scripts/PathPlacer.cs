@@ -37,7 +37,7 @@ namespace PathCreation.Examples {
             }
         }
 
-        protected override void PathUpdated () {
+        public override void PathUpdated () {
             if (pathCreator != null) {
                 Generate ();
             }

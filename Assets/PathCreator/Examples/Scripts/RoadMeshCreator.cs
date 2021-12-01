@@ -22,7 +22,7 @@ namespace PathCreation.Examples {
         MeshRenderer meshRenderer;
         Mesh mesh;
 
-        protected override void PathUpdated () {
+        public override void PathUpdated () {
             if (pathCreator != null) {
                 AssignMeshComponents ();
                 AssignMaterials ();
@@ -30,7 +30,7 @@ namespace PathCreation.Examples {
             }
         }
 
-        void CreateRoadMesh () {
+        public void CreateRoadMesh () {
             Vector3[] verts = new Vector3[path.NumPoints * 8];
             Vector2[] uvs = new Vector2[verts.Length];
             Vector3[] normals = new Vector3[verts.Length];
@@ -121,7 +121,8 @@ namespace PathCreation.Examples {
         void AssignMeshComponents () {
 
             if (meshHolder == null) {
-                meshHolder = new GameObject ("Road Mesh Holder");
+                //meshHolder = new GameObject ("Road Mesh Holder");
+                meshHolder = this.gameObject;
             }
 
             meshHolder.transform.rotation = Quaternion.identity;
