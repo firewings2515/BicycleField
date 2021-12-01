@@ -383,7 +383,7 @@ public class OSMReaderManager : MonoBehaviour
                 Debug.Log("road_" + road_id + "_" + piece_index);
                 Debug.Log(road_point[piece_index]);
             }
-            instance_p.GetComponent<MeshCollider>().sharedMesh = mesh;
+            //instance_p.GetComponent<MeshCollider>().sharedMesh = mesh;
             instance_p.transform.parent = road_manager.transform;
             //if (road_id == "407209896" && piece_index == 52) // 其中一片
             //instance_p.GetComponent<ViewInstance>().finish_instance = true;
