@@ -43,7 +43,7 @@ public class OSMReaderManager : MonoBehaviour
     [Header("Procedural Modeling of house")]
     public bool build_house = false;
     public List<PathCreator> all_pc;
-    private GameObject all_pc_obj;
+    private GameObject all_road_obj;
     string getDigits(string s) // for parser
     {
         return Regex.Match(s, "[+-]?([0-9]*[.])?[0-9]+").ToString();
@@ -291,9 +291,9 @@ public class OSMReaderManager : MonoBehaviour
     {
         List<GameObject> path_objects = new List<GameObject>();
         Transform[] trans = new Transform[road.Count];
-        GameObject road_obj = new GameObject(road_id);
+        GameObject road_obj =  new GameObject(road_id);
         PathCreator pc = road_obj.AddComponent<PathCreator>();
-        road_obj.transform.parent = all_pc_obj.transform;
+        road_obj.transform.parent = all_road_obj.transform;
         for (int i = 0; i < road.Count; i++)
         {
             GameObject road_point_obj = new GameObject("road_point_" + i.ToString());
@@ -310,6 +310,18 @@ public class OSMReaderManager : MonoBehaviour
         rm.roadMaterial = roads_polygon_mat;
         rm.undersideMaterial = roads_polygon_mat;
         rm.TriggerUpdate();
+
+
+        //smooth road
+        GameObject instance_s = Instantiate(view_instance);
+        instance_s.GetComponent<ViewInstance>().cam = cam;
+        instance_s.GetComponent<ViewInstance>().points = road.ToArray();
+        instance_s.GetComponent<ViewInstance>().instance = road_obj;
+        instance_s.GetComponent<ViewInstance>().setRoad(road_id, GetComponent<RoadIntegration>());
+        instance_s.GetComponent<ViewInstance>().setup(false);
+        instance_s.AddComponent<MeshCollider>();
+        instance_s.transform.parent = all_road_obj.transform;
+
         //rm.PathUpdated();
         //rm.CreateRoadMesh();
         //road.Clear();
@@ -409,6 +421,9 @@ public class OSMReaderManager : MonoBehaviour
             instance_p.GetComponent<ViewInstance>().setRoad(road_id, GetComponent<RoadIntegration>());
             instance_p.GetComponent<ViewInstance>().setup(false);
             instance_p.AddComponent<MeshCollider>();
+
+
+
             if (road_id == "330745386")
             {
                 Debug.Log("road_" + road_id + "_" + piece_index);
@@ -724,7 +739,7 @@ public class OSMReaderManager : MonoBehaviour
                     bb.transform.parent = point_manager.transform;
                 }
             }
-            all_pc_obj = new GameObject("All_Roads");
+            all_road_obj = new GameObject("All_Roads");
             all_pc = new List<PathCreator>();
             pathes_objects = new Dictionary<string, List<GameObject>>();
             int road_index = 0;
