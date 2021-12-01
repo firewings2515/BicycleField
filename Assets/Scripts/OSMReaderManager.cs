@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -44,6 +45,8 @@ public class OSMReaderManager : MonoBehaviour
     public bool build_house = false;
     public List<PathCreator> all_pc;
     private GameObject all_road_obj;
+    List<string> road_id_list;
+    public Dropdown road_choose;
     string getDigits(string s) // for parser
     {
         return Regex.Match(s, "[+-]?([0-9]*[.])?[0-9]+").ToString();
@@ -322,6 +325,8 @@ public class OSMReaderManager : MonoBehaviour
         instance_s.AddComponent<MeshCollider>();
         instance_s.transform.parent = all_road_obj.transform;
 
+        road_id_list.Add(road_id);
+        
         //rm.PathUpdated();
         //rm.CreateRoadMesh();
         //road.Clear();
@@ -741,6 +746,7 @@ public class OSMReaderManager : MonoBehaviour
             }
             all_road_obj = new GameObject("All_Roads");
             all_pc = new List<PathCreator>();
+            road_id_list = new List<string>();
             pathes_objects = new Dictionary<string, List<GameObject>>();
             int road_index = 0;
             for (road_index = 0; road_index < osm_reader.pathes.Count; road_index++)
@@ -773,6 +779,8 @@ public class OSMReaderManager : MonoBehaviour
                 if (osm_reader.pathes[road_index].highway != Highway.CombineLink) // link road is in merged road
                     createArcTree(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width + 2);
             }
+
+            road_choose.AddOptions(road_id_list);
 
             Debug.Log("Tree amount: " + count); // trees amount
 

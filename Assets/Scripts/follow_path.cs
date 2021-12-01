@@ -12,7 +12,7 @@ public class follow_path : MonoBehaviour
     public bool reverse = false;
     float distanceTravelled;
     public bool pause = true;
-
+    public OSMReaderManager orm;
     void Start()
     {
         if (pathCreator != null)
@@ -20,20 +20,11 @@ public class follow_path : MonoBehaviour
             // Subscribed to the pathUpdated event so that we're notified if the path changes during the game
             pathCreator.pathUpdated += OnPathChanged;
         }
-        else {
-            OSMReaderManager orm = GameObject.Find("OSMReader").GetComponent<OSMReaderManager>();
-            //pathCreator = orm.all_pc[0];
-            //path_change(0);
-        }
     }
 
     void Update()
     {
-        if (pathCreator == null) {
-            Debug.Log("no path creator");
-            OSMReaderManager orm = GameObject.Find("OSMReader").GetComponent<OSMReaderManager>();
-            //pathCreator = orm.all_pc[0];
-        }
+
         if (pathCreator != null && !pause)
         {
             if (!reverse)
@@ -60,9 +51,8 @@ public class follow_path : MonoBehaviour
     }
 
     public void path_change(int path_index) {
-        path_index--;
         GameObject road_obj = GameObject.Find("road" + path_index.ToString());
-        pathCreator = road_obj.GetComponent<PathCreator>();
+        pathCreator = orm.all_pc[path_index];
     }
     public void reverse_change(bool rev) {
         reverse = rev;
