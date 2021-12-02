@@ -28,7 +28,6 @@ public class RoadManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Debug.Log(current_segment);
         if (Info.MAX_LOADED_SEGMENT - current_segment <= Info.PRELOAD_SEGMENT)
         {
             getAndSetNextSegment();
