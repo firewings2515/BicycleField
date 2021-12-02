@@ -62,8 +62,8 @@ public class ViewInstance : MonoBehaviour
         this.road_integration = road_integration;
         this.points = points;
         setup(false);
-        in_dist = 1600;
-        mid_dist = 1600;
+        in_dist = 3200;
+        mid_dist = 3200;
     }
 
     // set the road information if the instance is road

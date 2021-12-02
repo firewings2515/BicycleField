@@ -69,11 +69,29 @@ public class OSMRoadRender : MonoBehaviour
     void createRoadPolygons(Way path) // generate pieces of road
     {
         List<Vector3> path_points = osm_reader.toPositions(path.ref_node);
-
+        GameObject road_manager = new GameObject(path.id);
         List<GameObject> path_objects = new List<GameObject>();
+        List<int> belong_to_hier_x = new List<int>();
+        List<int> belong_to_hier_y = new List<int>();
+        int belong_x = 0;
+        int belong_y = 0;
+
+        // Bezier roads =============================================================
+        //Mesh mesh = new Mesh();
+
         //Transform[] trans = new Transform[path_points.Count];
         //GameObject road_obj = new GameObject(path.id);
+        //for (int i = 0; i < path_points.Count; i++)
+        //{
+        //    GameObject road_point_obj = new GameObject("road_point_" + i.ToString());
+        //    road_point_obj.transform.parent = road_obj.transform;
+        //    trans[i] = road_point_obj.transform;
+        //    trans[i].position = new Vector3(path_points[i].x, path_points[i].y, path_points[i].z);
 
+        //    hierarchy_c.calcLocation(path_points[i].x, path_points[i].z, ref belong_x, ref belong_y);
+        //    belong_to_hier_x.Add(belong_x);
+        //    belong_to_hier_y.Add(belong_y);
+        //}
         //PathCreator pc = road_obj.AddComponent<PathCreator>();
         //pc.bezierPath = new BezierPath(trans, false, PathSpace.xyz);
         ////all_pc.Add(pc);
@@ -89,19 +107,17 @@ public class OSMRoadRender : MonoBehaviour
         //GameObject instance_s = Instantiate(view_instance);
         //instance_s.GetComponent<ViewInstance>().instance = road_obj;
         //instance_s.GetComponent<ViewInstance>().setRoad(path.id, path_points, cam, GetComponent<RoadIntegration>());
-        //instance_s.GetComponent<ViewInstance>().setup(false);
         //instance_s.AddComponent<MeshCollider>();
-        ////instance_s.GetComponent<MeshCollider>().sharedMesh = road_obj.mesh;
-        //instance_s.transform.parent = roads_manager.transform;
+        //instance_s.GetComponent<MeshCollider>().sharedMesh = road_obj.GetComponent<MeshFilter>().mesh;
+        //road_obj.transform.parent = instance_s.transform;
 
-        GameObject road_manager = new GameObject(path.id);
-        List<int> belong_to_hier_x = new List<int>();
-        List<int> belong_to_hier_y = new List<int>();
-        belong_to_hier_x.Clear();
-        belong_to_hier_y.Clear();
-        int belong_x = 0;
-        int belong_y = 0;
+        //for (int belong_index = 0; belong_index < belong_to_hier_x.Count; belong_index++)
+        //{
+        //    hierarchy_c.heirarchy_master[belong_to_hier_x[belong_index], belong_to_hier_y[belong_index]].objects.Add(instance_s);
+        //}
+        // ==========================================================================
 
+        // linear roads =============================================================
         Vector3[][] vertex = new Vector3[(path_points.Count - 1) * 2][];
         Vector3 f = new Vector3();
         Vector3 up = new Vector3();
@@ -171,19 +187,11 @@ public class OSMRoadRender : MonoBehaviour
             mr.material = roads_polygon_mat;
             road_peice.transform.parent = road_manager.transform;
 
-            //road_peice.AddComponent<ViewInstance>();
-            //road_peice.GetComponent<ViewInstance>().cam = cam;
-            //road_peice.GetComponent<ViewInstance>().points = vertex[piece_index];
-            //road_peice.GetComponent<ViewInstance>().instance = road_peice;
-            //road_peice.GetComponent<ViewInstance>().setup(false, false);
-            //road_peice.transform.parent = road_manager.transform;
             GameObject instance_p = Instantiate(view_instance);
             instance_p.GetComponent<ViewInstance>().instance = road_peice;
             instance_p.GetComponent<ViewInstance>().setRoad(path.id, vertex[piece_index], cam, GetComponent<RoadIntegration>());
-            instance_p.GetComponent<ViewInstance>().setup(false);
             instance_p.AddComponent<MeshCollider>();
-
-            //instance_p.GetComponent<MeshCollider>().sharedMesh = mesh;
+            instance_p.GetComponent<MeshCollider>().sharedMesh = mesh;
             instance_p.transform.parent = road_manager.transform;
             instance_p.name = "road_" + path.id + "_" + piece_index;
 
@@ -196,9 +204,10 @@ public class OSMRoadRender : MonoBehaviour
         }
 
         pathes_objects.Add(path.id, path_objects);
+        // ==========================================================================
 
         // show text on the road
-        Vector3 text_center = path_points[path_points.Count / 2] + new Vector3(0,10,0);
+        Vector3 text_center = path_points[path_points.Count / 2] + new Vector3(0, 10, 0);
         GameObject road_name = Instantiate(road_name_prefab);
         road_name.GetComponent<TMPro.TextMeshPro>().text = path.name;
         road_name.GetComponent<TMPro.TextMeshPro>().rectTransform.position = text_center;
