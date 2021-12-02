@@ -79,68 +79,44 @@ public class RoadIntegration : MonoBehaviour
                     bicycle_points_list.Clear();
                     bicycle_points_list = new List<string>(GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].ref_node);
                     bicycle_roads_list = path_objects;
+                    if (GetComponent<OSMRoadRender>().initial_point != bicycle_points_list[0])
+                    {
+                        bicycle_points_list.Reverse();
+                        bicycle_roads_list.Reverse();
+                    }
                 }
                 else
                 {
                     int bicycle_points_index;
-                    //int target_road_ref_index;
-                    //List<GameObject> path_objects_target = GetComponent<OSMRoadRender>().pathes_objects[last_way_id];
-                    //List<string> path_target = new List<string>(GetComponent<OSMRoadRender>().osm_reader.pathes[GetComponent<OSMRoadRender>().osm_reader.getPathIndex(last_way_id)].ref_node);
-                    //if (from_tail) target_road_ref_index = 1;
-                    //else target_road_ref_index = path_target.Count - 2;
-                    //Debug.Log("Hello" + bicycle_points_list[bicycle_points_list.Count - 1]);
-                    bicycle_points_list.Reverse();
+                    bool read_reverse = false;
                     for (bicycle_points_index = bicycle_points_list.Count - 1; bicycle_points_index >= 0; bicycle_points_index--)
                     {
-                        if (GetComponent<OSMRoadRender>().osm_reader.points_lib[bicycle_points_list[bicycle_points_index]].connect_way.Contains(new_road_id))
+                        if (bicycle_points_list[bicycle_points_index] == GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].head_node)
                         {
+                            break;
+                        }
+                        else if (bicycle_points_list[bicycle_points_index] == GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].tail_node)
+                        {
+                            read_reverse = true;
                             break;
                         }
                         else
                         {
-                            Debug.Log(bicycle_points_index);
                             bicycle_points_list.RemoveAt(bicycle_points_index);
                             bicycle_roads_list[bicycle_roads_list.Count - 1].GetComponent<ViewInstance>().instance.GetComponent<MeshRenderer>().material = roads_unselected_mat;
                             bicycle_roads_list.RemoveAt(bicycle_roads_list.Count - 1);
-                            //if (from_tail)
-                            //{
-                            //    for (; target_road_ref_index < path_target.Count; target_road_ref_index++)
-                            //    {
-                            //        if (path_target[target_road_ref_index] == bicycle_points_list[bicycle_points_index])
-                            //        {
-                            //            path_objects_target[target_road_ref_index].GetComponent<ViewInstance>().instance.GetComponent<MeshRenderer>().material = roads_unselected_mat;
-                            //        }
-                            //        else
-                            //        {
-                            //            break;
-                            //        }
-                            //    }
-                            //}
-                            //else
-                            //{
-                            //    for (; target_road_ref_index > 0; target_road_ref_index--)
-                            //    {
-                            //        if (path_target[target_road_ref_index] == bicycle_points_list[bicycle_points_index])
-                            //        {
-                            //            path_objects_target[target_road_ref_index - 1].GetComponent<ViewInstance>().instance.GetComponent<MeshRenderer>().material = roads_unselected_mat;
-                            //        }
-                            //        else
-                            //        {
-                            //            break;
-                            //        }
-                            //    }
-                            //}
+                            bicycle_roads_list[bicycle_roads_list.Count - 1].GetComponent<ViewInstance>().instance.GetComponent<MeshRenderer>().material = roads_unselected_mat;
+                            bicycle_roads_list.RemoveAt(bicycle_roads_list.Count - 1);
                         }
-                        //Debug.Log("Hello~" + bicycle_points_index);
                     }
 
-                    //Debug.Log("Hi");
-                    if (GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].head_node == bicycle_points_list[bicycle_points_index]) // head to tail
+                    if (!read_reverse) // head to tail
                     {
                         for (int new_road_ref_index = 1; new_road_ref_index < GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].ref_node.Count; new_road_ref_index++)
                         {
                             bicycle_points_list.Add(GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].ref_node[new_road_ref_index]);
-                            bicycle_roads_list.Add(path_objects[new_road_ref_index]);
+                            bicycle_roads_list.Add(path_objects[(new_road_ref_index - 1) * 2]);
+                            bicycle_roads_list.Add(path_objects[(new_road_ref_index - 1) * 2 + 1]);
                         }
                         //from_tail = false;
                     }
@@ -149,7 +125,8 @@ public class RoadIntegration : MonoBehaviour
                         for (int new_road_ref_index = GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].ref_node.Count - 2; new_road_ref_index >= 0; new_road_ref_index--)
                         {
                             bicycle_points_list.Add(GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].ref_node[new_road_ref_index]);
-                            bicycle_roads_list.Add(path_objects[new_road_ref_index]);
+                            bicycle_roads_list.Add(path_objects[new_road_ref_index * 2]);
+                            bicycle_roads_list.Add(path_objects[new_road_ref_index * 2 + 1]);
                         }
                         //from_tail = true;
                     }
