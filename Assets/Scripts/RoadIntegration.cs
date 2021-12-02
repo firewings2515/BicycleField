@@ -18,9 +18,6 @@ public class RoadIntegration : MonoBehaviour
     public string file_path = "NTUSTCG.bpf";
     public bool write_file = false;
 
-    string last_way_id;
-    bool from_tail;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -118,7 +115,6 @@ public class RoadIntegration : MonoBehaviour
                             bicycle_roads_list.Add(path_objects[(new_road_ref_index - 1) * 2]);
                             bicycle_roads_list.Add(path_objects[(new_road_ref_index - 1) * 2 + 1]);
                         }
-                        //from_tail = false;
                     }
                     else
                     {
@@ -128,12 +124,9 @@ public class RoadIntegration : MonoBehaviour
                             bicycle_roads_list.Add(path_objects[new_road_ref_index * 2]);
                             bicycle_roads_list.Add(path_objects[new_road_ref_index * 2 + 1]);
                         }
-                        //from_tail = true;
                     }
-                    //Debug.Log(from_tail);
                 }
 
-                last_way_id = new_road_id;
                 Debug.Log("Road " + new_road_id + " Linked Successfully!");
             }
             else
@@ -156,6 +149,7 @@ public class RoadIntegration : MonoBehaviour
                 sw.WriteLine($"{pos.x} {pos.y} {pos.z}");
             }
 
+            // old method
             //sw.WriteLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             //sw.WriteLine("<osm version=\"0.6\" generator=\"CGImap0.8.5(3066139spike-06.openstreetmap.org)\" copyright=\"OpenStreetMapandcontributors\" attribution=\"http://www.openstreetmap.org/copyright\" license=\"http://opendatacommons.org/licenses/odbl/1-0/\">");
             //foreach (KeyValuePair<string, Node> point in GetComponent<OSMRoadRender>().osm_reader.points_lib)

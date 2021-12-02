@@ -150,6 +150,10 @@ public class OSMRoadRender : MonoBehaviour
 
         for (int piece_index = 0; piece_index < vertex.Length; piece_index++)
         {
+            //if ((vertex[piece_index][0] - vertex[piece_index][1]).magnitude < 1.0f && (vertex[piece_index][1] - vertex[piece_index][2]).magnitude < 1.0f && (vertex[piece_index][2] - vertex[piece_index][0]).magnitude < 1.0f)
+            //if (vertex[piece_index][0] == vertex[piece_index][1] || vertex[piece_index][1] == vertex[piece_index][2] || vertex[piece_index][2] == vertex[piece_index][0])
+            //    continue;
+
             belong_to_hier_x.Clear();
             belong_to_hier_y.Clear();
 
@@ -179,7 +183,6 @@ public class OSMRoadRender : MonoBehaviour
             //Name the mesh
             mesh.name = path.id;
 
-
             GameObject road_peice = new GameObject();
             road_peice.name = "instance_" + path.id + "_" + piece_index;
             MeshFilter mf = road_peice.AddComponent<MeshFilter>();
@@ -191,8 +194,19 @@ public class OSMRoadRender : MonoBehaviour
             GameObject instance_p = Instantiate(view_instance);
             instance_p.GetComponent<ViewInstance>().instance = road_peice;
             instance_p.GetComponent<ViewInstance>().setRoad(path.id, vertex[piece_index], cam, GetComponent<RoadIntegration>());
-            instance_p.AddComponent<MeshCollider>();
-            instance_p.GetComponent<MeshCollider>().sharedMesh = mesh;
+
+            //if (path.id == "330745386")
+            //{
+            //    Debug.Log("road_" + path.id + "_" + piece_index);
+            //    Debug.Log(road_point[piece_index]);
+            //    Debug.Log(mesh.bounds.size);
+            //}
+            if (vertex[piece_index][0] != vertex[piece_index][1] && vertex[piece_index][1] != vertex[piece_index][2] && vertex[piece_index][2] != vertex[piece_index][0])
+            {
+                instance_p.AddComponent<MeshCollider>();
+                instance_p.GetComponent<MeshCollider>().cookingOptions = MeshColliderCookingOptions.CookForFasterSimulation | MeshColliderCookingOptions.WeldColocatedVertices | MeshColliderCookingOptions.UseFastMidphase;
+                instance_p.GetComponent<MeshCollider>().sharedMesh = mesh;
+            }
             instance_p.transform.parent = road_manager.transform;
             instance_p.name = "road_" + path.id + "_" + piece_index;
 
