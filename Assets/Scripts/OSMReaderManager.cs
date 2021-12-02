@@ -320,7 +320,7 @@ public class OSMReaderManager : MonoBehaviour
         instance_s.GetComponent<ViewInstance>().cam = cam;
         instance_s.GetComponent<ViewInstance>().points = road.ToArray();
         instance_s.GetComponent<ViewInstance>().instance = road_obj;
-        instance_s.GetComponent<ViewInstance>().setRoad(road_id, GetComponent<RoadIntegration>());
+        instance_s.GetComponent<ViewInstance>().setRoad(road_id, road, cam, GetComponent<RoadIntegration>());
         instance_s.GetComponent<ViewInstance>().setup(false);
         instance_s.AddComponent<MeshCollider>();
         instance_s.transform.parent = all_road_obj.transform;
@@ -423,7 +423,7 @@ public class OSMReaderManager : MonoBehaviour
             instance_p.GetComponent<ViewInstance>().cam = cam;
             instance_p.GetComponent<ViewInstance>().points = vertex[piece_index];
             instance_p.GetComponent<ViewInstance>().instance = road_peice;
-            instance_p.GetComponent<ViewInstance>().setRoad(road_id, GetComponent<RoadIntegration>());
+            instance_p.GetComponent<ViewInstance>().setRoad(road_id, new List<Vector3>(vertex[piece_index]), cam, GetComponent<RoadIntegration>());
             instance_p.GetComponent<ViewInstance>().setup(false);
             instance_p.AddComponent<MeshCollider>();
 

@@ -19,6 +19,7 @@ public class OSMReader
     List<List<string>> avenue_links_ref = new List<List<string>>();
     List<string> avenue_links_to = new List<string>();
     bool debug_mode = false;
+    public bool read_finish = false;
     //float x_length = 1.0f;
     //float y_length = 1.0f;
 
@@ -285,6 +286,7 @@ public class OSMReader
         }
 
         Debug.Log("Successful!");
+        read_finish = true;
     }
 
     private void mergeRoad()
