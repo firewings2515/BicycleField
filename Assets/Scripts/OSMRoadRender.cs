@@ -6,7 +6,7 @@ using PathCreation.Examples;
 
 public class OSMRoadRender : MonoBehaviour
 {
-    bool is_initial = false;
+    public bool is_initial = false;
     public bool editor_mode = true;
     public string osm3d_file_name = "YangJin3D.osm";
     public GameObject cam;
@@ -18,6 +18,7 @@ public class OSMRoadRender : MonoBehaviour
     //GameObject roads_manager;
     public GameObject road_name_prefab;
     GameObject road_textes_manager;
+    public string initial_point = "45263678_226830312+24";
 
     // Start is called before the first frame update
     void Start()
@@ -216,7 +217,7 @@ public class OSMRoadRender : MonoBehaviour
 
     void setCam()
     {
-        cam.transform.position = osm_reader.points_lib["45263678_226830312+0"].position + new Vector3(0, 800.0f, 0);
+        cam.transform.position = osm_reader.points_lib[initial_point].position + new Vector3(0, 800.0f, 0);
         cam.transform.rotation = Quaternion.Euler(90,0,0);
     }
 }

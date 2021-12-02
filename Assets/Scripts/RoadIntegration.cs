@@ -9,6 +9,7 @@ public class RoadIntegration : MonoBehaviour
     public Material roads_selected_mat;
     List<string> bicycle_way_list;
     List<string> bicycle_points_list;
+    List<GameObject> bicycle_roads_list;
 
     [Header("Edit Bicycle Road List")]
     public bool edit_mode = true;
@@ -25,6 +26,7 @@ public class RoadIntegration : MonoBehaviour
     {
         bicycle_way_list = new List<string>();
         bicycle_points_list = new List<string>();
+        bicycle_roads_list = new List<GameObject>();
     }
 
     // Update is called once per frame
@@ -57,16 +59,16 @@ public class RoadIntegration : MonoBehaviour
         return -1;
     }
 
-    public void selectPath(string road_id)
+    public void selectPath(string new_road_id)
     {
         if (edit_mode)
         {
-            int new_road_index = roadCanLinked(road_id);
+            int new_road_index = roadCanLinked(new_road_id);
             if (new_road_index != -1)
             {
-                bicycle_way_list.Add(road_id);
+                bicycle_way_list.Add(new_road_id);
 
-                List<GameObject> path_objects = GetComponent<OSMRoadRender>().pathes_objects[road_id];
+                List<GameObject> path_objects = GetComponent<OSMRoadRender>().pathes_objects[new_road_id];
                 for (int index = 0; index < path_objects.Count; index++)
                 {
                     path_objects[index].GetComponent<ViewInstance>().instance.GetComponent<MeshRenderer>().material = roads_selected_mat;
@@ -76,6 +78,7 @@ public class RoadIntegration : MonoBehaviour
                 {
                     bicycle_points_list.Clear();
                     bicycle_points_list = new List<string>(GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].ref_node);
+                    bicycle_roads_list = path_objects;
                 }
                 else
                 {
@@ -86,15 +89,19 @@ public class RoadIntegration : MonoBehaviour
                     //if (from_tail) target_road_ref_index = 1;
                     //else target_road_ref_index = path_target.Count - 2;
                     //Debug.Log("Hello" + bicycle_points_list[bicycle_points_list.Count - 1]);
+                    bicycle_points_list.Reverse();
                     for (bicycle_points_index = bicycle_points_list.Count - 1; bicycle_points_index >= 0; bicycle_points_index--)
                     {
-                        if (GetComponent<OSMRoadRender>().osm_reader.points_lib[bicycle_points_list[bicycle_points_index]].connect_way.Contains(road_id))
+                        if (GetComponent<OSMRoadRender>().osm_reader.points_lib[bicycle_points_list[bicycle_points_index]].connect_way.Contains(new_road_id))
                         {
                             break;
                         }
                         else
                         {
+                            Debug.Log(bicycle_points_index);
                             bicycle_points_list.RemoveAt(bicycle_points_index);
+                            bicycle_roads_list[bicycle_roads_list.Count - 1].GetComponent<ViewInstance>().instance.GetComponent<MeshRenderer>().material = roads_unselected_mat;
+                            bicycle_roads_list.RemoveAt(bicycle_roads_list.Count - 1);
                             //if (from_tail)
                             //{
                             //    for (; target_road_ref_index < path_target.Count; target_road_ref_index++)
@@ -133,6 +140,7 @@ public class RoadIntegration : MonoBehaviour
                         for (int new_road_ref_index = 1; new_road_ref_index < GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].ref_node.Count; new_road_ref_index++)
                         {
                             bicycle_points_list.Add(GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].ref_node[new_road_ref_index]);
+                            bicycle_roads_list.Add(path_objects[new_road_ref_index]);
                         }
                         //from_tail = false;
                     }
@@ -141,14 +149,15 @@ public class RoadIntegration : MonoBehaviour
                         for (int new_road_ref_index = GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].ref_node.Count - 2; new_road_ref_index >= 0; new_road_ref_index--)
                         {
                             bicycle_points_list.Add(GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].ref_node[new_road_ref_index]);
+                            bicycle_roads_list.Add(path_objects[new_road_ref_index]);
                         }
                         //from_tail = true;
                     }
                     //Debug.Log(from_tail);
                 }
 
-                last_way_id = road_id;
-                Debug.Log("Road " + road_id + " Linked Successfully!");
+                last_way_id = new_road_id;
+                Debug.Log("Road " + new_road_id + " Linked Successfully!");
             }
             else
             {

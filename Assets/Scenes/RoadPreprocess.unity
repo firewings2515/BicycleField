@@ -394,6 +394,7 @@ GameObject:
   - component: {fileID: 2144769850}
   - component: {fileID: 2144769847}
   - component: {fileID: 2144769846}
+  - component: {fileID: 2144769848}
   m_Layer: 0
   m_Name: OSMReader
   m_TagString: Untagged
@@ -440,6 +441,22 @@ MonoBehaviour:
   leave_user: 0
   leave_uid: 0
   leave_relation: 0
+--- !u!114 &2144769848
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2144769845}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 412e86c147f2b504b8b13b1a79a31e29, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sphere_prefab: {fileID: 7606946595633192119, guid: 7a7e0a9491a268e4881caac315264c20, type: 3}
+  initial_point: 45263678_226830312+24
+  spheres_select_mat: {fileID: 2100000, guid: c2d2cb5ff7155134e82ed1beaa68b3a0, type: 2}
+  spheres_unselect_mat: {fileID: 2100000, guid: fbe480eedec928c4fbee96b49c5c432c, type: 2}
 --- !u!4 &2144769849
 Transform:
   m_ObjectHideFlags: 0
