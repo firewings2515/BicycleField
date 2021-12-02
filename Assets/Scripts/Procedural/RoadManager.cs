@@ -7,12 +7,16 @@ using PathCreation;
 public class RoadManager : MonoBehaviour
 {
     private int current_segment = 2;
-    private int loaded_segment = -1;
-    private long loading_pointer = 0;
+
+    private StreamReader reader;
+
+    public string file_name;
     public PathCreator path_creator;
 
     private void Start()
     {
+        reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
+
         //remove first default segment
         removeEarliestRoad();
 
@@ -42,6 +46,7 @@ public class RoadManager : MonoBehaviour
         {
             Vector3 vec3_point = Functions.StrToVec3(str_point);
 
+            Debug.Log(vec3_point);
             spawnAnchorCheckpoint(vec3_point);
 
             generateRoad(vec3_point);
@@ -51,18 +56,8 @@ public class RoadManager : MonoBehaviour
 
     private bool getNextSegment(out string point_data)
     {
-        StreamReader reader = new StreamReader(Application.dataPath + "/StreamingAssets/procedural_test.txt");
-
-        if (loading_pointer < reader.BaseStream.Length)
-        {
-            reader.BaseStream.Position = loading_pointer;
-            point_data = reader.ReadLine();
-            loading_pointer += point_data.Length + 2; // + 2 skips newline (seen as 2 characters)
-        }
-        else point_data = "";
-
-        reader.Close();
-        return point_data != "";
+        point_data = reader.ReadLine();
+        return point_data != null;
     }
 
     private void generateRoad(Vector3 road)
@@ -82,6 +77,7 @@ public class RoadManager : MonoBehaviour
         prefab.transform.position = position;
         prefab.AddComponent<SphereCollider>();
         prefab.GetComponent<SphereCollider>().isTrigger = true;
+        prefab.GetComponent<SphereCollider>().transform.localScale *= Info.CHECKPOINT_SIZE;
         prefab.AddComponent<AnchorCheckpoint>();
 
     }
