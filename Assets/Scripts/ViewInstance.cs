@@ -10,6 +10,9 @@ public class ViewInstance : MonoBehaviour
     public GameObject cam;
     public Vector3[] points;
     public bool finish_instance = false;
+    int in_angle = 65;
+    int in_dist = 150;
+    int mid_dist = 100;
 
     // house information
     private bool is_house = false;
@@ -52,10 +55,21 @@ public class ViewInstance : MonoBehaviour
     }
 
     // set the road information if the instance is road
-    public void setRoad(string road_id, RoadIntegration road_integration)
+    public void setRoad(string path_id, Vector3[] points, GameObject cam, RoadIntegration road_integration)
     {
-        this.road_id = road_id;
+        this.road_id = path_id;
+        this.cam = cam;
         this.road_integration = road_integration;
+        this.points = points;
+        setup(false);
+        in_dist = 1600;
+        mid_dist = 1600;
+    }
+
+    // set the road information if the instance is road
+    public void setRoad(string path_id, List<Vector3> points, GameObject cam, RoadIntegration road_integration)
+    {
+        setRoad(path_id, points.ToArray(), cam, road_integration);
     }
 
     private void Update()
@@ -72,11 +86,11 @@ public class ViewInstance : MonoBehaviour
                 float dist = v.magnitude;
                 float angle = Vector2.Angle(f, v);
 
-                if ((angle > 65 && dist > 150) || dist > 100)
+                if ((angle > in_angle && dist > mid_dist) || dist > in_dist)
                 {
                     in_view = false;
                 }
-                else if (angle <= 65 && dist <= 150)
+                else if (angle <= in_angle && dist <= mid_dist)
                 {
                     in_view = true;
                     break;
