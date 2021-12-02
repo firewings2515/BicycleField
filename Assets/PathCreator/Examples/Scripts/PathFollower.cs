@@ -10,6 +10,7 @@ namespace PathCreation.Examples
         public EndOfPathInstruction endOfPathInstruction;
         public float speed = 5;
         float distanceTravelled;
+        private int current_segment = 0;
 
         void Start() {
             if (pathCreator != null)
@@ -33,6 +34,21 @@ namespace PathCreation.Examples
         // is as close as possible to its position on the old path
         void OnPathChanged() {
             distanceTravelled = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
+        }
+
+        public float getDistanceTravelled()
+        {
+            return distanceTravelled;
+        }
+
+        public float getCurrentSegment()
+        {
+            return current_segment;
+        }
+
+        public void incrementCurrentSegment()
+        {
+            current_segment++;
         }
     }
 }

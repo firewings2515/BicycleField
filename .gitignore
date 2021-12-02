@@ -48,6 +48,11 @@ ExportedObj/
 *.pdb.meta
 *.mdb.meta
 
+procedural_test.txt.meta
+
+# Testing text files
+procedural_test.txt
+
 # Unity3D generated file on crash reports
 sysinfo.txt
 
