@@ -13,6 +13,8 @@ public class RoadManager : MonoBehaviour
     public string file_name;
     public PathCreator path_creator;
 
+    Vector3 last_segment = new Vector3(0,0,0);
+
     private void Start()
     {
         reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
@@ -46,7 +48,16 @@ public class RoadManager : MonoBehaviour
         {
             Vector3 vec3_point = Functions.StrToVec3(str_point);
 
-            Debug.Log(vec3_point);
+            if ((vec3_point - last_segment).magnitude < 100)
+            {
+                getAndSetNextSegment();
+                return;
+            }
+            else 
+            {
+                last_segment = vec3_point;
+            }
+
             spawnAnchorCheckpoint(vec3_point);
 
             generateRoad(vec3_point);
