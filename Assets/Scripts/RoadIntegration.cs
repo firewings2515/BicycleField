@@ -5,6 +5,7 @@ using System.IO;
 
 public class RoadIntegration : MonoBehaviour
 {
+    public Material roads_unselected_mat;
     public Material roads_selected_mat;
     List<string> bicycle_way_list;
     List<string> bicycle_points_list;
@@ -15,6 +16,9 @@ public class RoadIntegration : MonoBehaviour
     [Header("Write Bicycle Pathes File")]
     public string file_path = "NTUSTCG.bpf";
     public bool write_file = false;
+
+    string last_way_id;
+    bool from_tail;
 
     // Start is called before the first frame update
     void Start()
@@ -75,35 +79,75 @@ public class RoadIntegration : MonoBehaviour
                 }
                 else
                 {
-                    int bucycle_points_index;
-                    for (bucycle_points_index = bicycle_points_list.Count - 1; bucycle_points_index >= 0; bucycle_points_index--)
+                    int bicycle_points_index;
+                    //int target_road_ref_index;
+                    //List<GameObject> path_objects_target = GetComponent<OSMRoadRender>().pathes_objects[last_way_id];
+                    //List<string> path_target = new List<string>(GetComponent<OSMRoadRender>().osm_reader.pathes[GetComponent<OSMRoadRender>().osm_reader.getPathIndex(last_way_id)].ref_node);
+                    //if (from_tail) target_road_ref_index = 1;
+                    //else target_road_ref_index = path_target.Count - 2;
+                    //Debug.Log("Hello" + bicycle_points_list[bicycle_points_list.Count - 1]);
+                    for (bicycle_points_index = bicycle_points_list.Count - 1; bicycle_points_index >= 0; bicycle_points_index--)
                     {
-                        if (GetComponent<OSMRoadRender>().osm_reader.points_lib[bicycle_points_list[bucycle_points_index]].connect_way.Contains(road_id))
+                        if (GetComponent<OSMRoadRender>().osm_reader.points_lib[bicycle_points_list[bicycle_points_index]].connect_way.Contains(road_id))
                         {
                             break;
                         }
                         else
                         {
-                            bicycle_points_list.RemoveAt(bucycle_points_index);
+                            bicycle_points_list.RemoveAt(bicycle_points_index);
+                            //if (from_tail)
+                            //{
+                            //    for (; target_road_ref_index < path_target.Count; target_road_ref_index++)
+                            //    {
+                            //        if (path_target[target_road_ref_index] == bicycle_points_list[bicycle_points_index])
+                            //        {
+                            //            path_objects_target[target_road_ref_index].GetComponent<ViewInstance>().instance.GetComponent<MeshRenderer>().material = roads_unselected_mat;
+                            //        }
+                            //        else
+                            //        {
+                            //            break;
+                            //        }
+                            //    }
+                            //}
+                            //else
+                            //{
+                            //    for (; target_road_ref_index > 0; target_road_ref_index--)
+                            //    {
+                            //        if (path_target[target_road_ref_index] == bicycle_points_list[bicycle_points_index])
+                            //        {
+                            //            path_objects_target[target_road_ref_index - 1].GetComponent<ViewInstance>().instance.GetComponent<MeshRenderer>().material = roads_unselected_mat;
+                            //        }
+                            //        else
+                            //        {
+                            //            break;
+                            //        }
+                            //    }
+                            //}
                         }
+                        //Debug.Log("Hello~" + bicycle_points_index);
                     }
 
-                    if (GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].head_node == bicycle_points_list[bucycle_points_index]) // head to tail
+                    //Debug.Log("Hi");
+                    if (GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].head_node == bicycle_points_list[bicycle_points_index]) // head to tail
                     {
-                        for (int new_road_ref_index = 0; new_road_ref_index < GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].ref_node.Count; new_road_ref_index++)
+                        for (int new_road_ref_index = 1; new_road_ref_index < GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].ref_node.Count; new_road_ref_index++)
                         {
                             bicycle_points_list.Add(GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].ref_node[new_road_ref_index]);
                         }
+                        //from_tail = false;
                     }
                     else
                     {
-                        for (int new_road_ref_index = GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].ref_node.Count - 1; new_road_ref_index >= 0; new_road_ref_index--)
+                        for (int new_road_ref_index = GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].ref_node.Count - 2; new_road_ref_index >= 0; new_road_ref_index--)
                         {
                             bicycle_points_list.Add(GetComponent<OSMRoadRender>().osm_reader.pathes[new_road_index].ref_node[new_road_ref_index]);
                         }
+                        //from_tail = true;
                     }
+                    //Debug.Log(from_tail);
                 }
 
+                last_way_id = road_id;
                 Debug.Log("Road " + road_id + " Linked Successfully!");
             }
             else
@@ -118,9 +162,11 @@ public class RoadIntegration : MonoBehaviour
         Debug.Log("Writing " + file_path);
         using (StreamWriter sw = new StreamWriter(file_path))
         {
+            // move first point to origin because of pathCreator
+            Vector3 origin_pos = GetComponent<OSMRoadRender>().osm_reader.points_lib[bicycle_points_list[0]].position;
             foreach (string ref_id in bicycle_points_list)
             {
-                Vector3 pos = GetComponent<OSMRoadRender>().osm_reader.points_lib[ref_id].position;
+                Vector3 pos = GetComponent<OSMRoadRender>().osm_reader.points_lib[ref_id].position - origin_pos;
                 sw.WriteLine($"{pos.x} {pos.y} {pos.z}");
             }
 
