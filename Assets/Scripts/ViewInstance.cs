@@ -54,6 +54,18 @@ public class ViewInstance : MonoBehaviour
         this.center = center;
     }
 
+    // set the house information if the instance is house polygon
+    public void setHouse(string house_id, Vector3[] points, GameObject cam, RoadIntegration road_integration)
+    {
+        this.house_id = house_id;
+        this.cam = cam;
+        this.road_integration = road_integration;
+        this.points = points;
+        setup(false);
+        in_dist = 3200;
+        mid_dist = 3200;
+    }
+
     // set the road information if the instance is road
     public void setRoad(string path_id, Vector3[] points, GameObject cam, RoadIntegration road_integration)
     {

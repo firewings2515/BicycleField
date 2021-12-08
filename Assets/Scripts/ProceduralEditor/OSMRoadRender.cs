@@ -6,70 +6,49 @@ using PathCreation.Examples;
 
 public class OSMRoadRender : MonoBehaviour
 {
+    OSMEditor osm_editor;
     public bool is_initial = false;
-    public bool editor_mode = true;
-    public string osm3d_file_name = "YangJin3D.osm";
-    public GameObject cam;
-    public GameObject view_instance;
-    public OSMReader osm_reader;
-    HierarchyControl hierarchy_c;
     public Material roads_polygon_mat;
     public Dictionary<string, List<GameObject>> pathes_objects;
-    //GameObject roads_manager;
+    GameObject roads_manager;
     public GameObject road_name_prefab;
     GameObject road_textes_manager;
-    public string initial_point = "45263678_226830312+24";
 
     // Start is called before the first frame update
     void Start()
     {
-        osm_reader = new OSMReader();
-        //roads_manager = new GameObject("roads_manager");
+        osm_editor = GetComponent<OSMEditor>();
+        roads_manager = new GameObject("roads_manager");
         road_textes_manager = new GameObject("road_textes_manager");
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!osm_reader.read_finish)
+        if (!is_initial && osm_editor.is_initial)
         {
-            osm_reader.readOSM(Application.streamingAssetsPath + "//" + osm3d_file_name, false, Application.streamingAssetsPath + "//" + osm3d_file_name);
-        }
-        else if (!is_initial && osm_reader.read_finish)
-        {
+            // OSMRoadRender is initail
             is_initial = true;
-            hierarchy_c = new HierarchyControl();
-            // each hierarchy manage range is 200m x 200m
-            hierarchy_c.setup((int)(osm_reader.boundary_max.x - osm_reader.boundary_min.x) / 200, (int)(osm_reader.boundary_max.y - osm_reader.boundary_min.y) / 200, osm_reader.boundary_max.x, osm_reader.boundary_max.y);
-            
-            pathes_objects = new Dictionary<string, List<GameObject>>();
-            int road_index = 0;
-            // process non-merged road
-            for (road_index = 0; road_index < osm_reader.pathes.Count; road_index++)
-            {
-                if (osm_reader.pathes[road_index].is_merged)
-                    break;
 
-                //if (osm_reader.pathes[road_index].highway != Highway.Primary && osm_reader.pathes[road_index].highway != Highway.Secondary && osm_reader.pathes[road_index].highway != Highway.Trunk && osm_reader.pathes[road_index].highway != Highway.Unclassified)
+            // manage all pathes view_instance
+            pathes_objects = new Dictionary<string, List<GameObject>>();
+
+            // process roads render
+            for (int road_index = 0; road_index < osm_editor.osm_reader.pathes.Count; road_index++)
+            {
+                // for conditional road
+                //if (osm_editor.osm_reader.pathes[road_index].highway != Highway.Primary && osm_editor.osm_reader.pathes[road_index].highway != Highway.Secondary && osm_editor.osm_reader.pathes[road_index].highway != Highway.Trunk && osm_editor.osm_reader.pathes[road_index].highway != Highway.Unclassified)
                 //    continue;
 
                 // roads
-                createRoadPolygons(osm_reader.pathes[road_index]);
+                createRoadPolygons(osm_editor.osm_reader.pathes[road_index]);
             }
-
-            // new way (merged)
-            for (; road_index < osm_reader.pathes.Count; road_index++)
-            {
-                createRoadPolygons(osm_reader.pathes[road_index]);
-            }
-
-            setCam();
         }
     }
 
     void createRoadPolygons(Way path) // generate pieces of road
     {
-        List<Vector3> path_points = osm_reader.toPositions(path.ref_node);
+        List<Vector3> path_points = osm_editor.osm_reader.toPositions(path.ref_node);
         GameObject road_manager = new GameObject(path.id);
         List<GameObject> path_objects = new List<GameObject>();
         List<int> belong_to_hier_x = new List<int>();
@@ -150,10 +129,6 @@ public class OSMRoadRender : MonoBehaviour
 
         for (int piece_index = 0; piece_index < vertex.Length; piece_index++)
         {
-            //if ((vertex[piece_index][0] - vertex[piece_index][1]).magnitude < 1.0f && (vertex[piece_index][1] - vertex[piece_index][2]).magnitude < 1.0f && (vertex[piece_index][2] - vertex[piece_index][0]).magnitude < 1.0f)
-            //if (vertex[piece_index][0] == vertex[piece_index][1] || vertex[piece_index][1] == vertex[piece_index][2] || vertex[piece_index][2] == vertex[piece_index][0])
-            //    continue;
-
             belong_to_hier_x.Clear();
             belong_to_hier_y.Clear();
 
@@ -161,7 +136,7 @@ public class OSMRoadRender : MonoBehaviour
 
             for (int vertex_indice = 0; vertex_indice < 3; vertex_indice++)
             {
-                hierarchy_c.calcLocation(vertex[piece_index][vertex_indice].x, vertex[piece_index][vertex_indice].z, ref belong_x, ref belong_y);
+                osm_editor.hierarchy_c.calcLocation(vertex[piece_index][vertex_indice].x, vertex[piece_index][vertex_indice].z, ref belong_x, ref belong_y);
                 belong_to_hier_x.Add(belong_x);
                 belong_to_hier_y.Add(belong_y);
             }
@@ -183,6 +158,7 @@ public class OSMRoadRender : MonoBehaviour
             //Name the mesh
             mesh.name = path.id;
 
+            // managed by view_instance
             GameObject road_peice = new GameObject();
             road_peice.name = "instance_" + path.id + "_" + piece_index;
             MeshFilter mf = road_peice.AddComponent<MeshFilter>();
@@ -191,16 +167,12 @@ public class OSMRoadRender : MonoBehaviour
             mr.material = roads_polygon_mat;
             road_peice.transform.parent = road_manager.transform;
 
-            GameObject instance_p = Instantiate(view_instance);
+            // view_instance
+            GameObject instance_p = Instantiate(osm_editor.view_instance);
             instance_p.GetComponent<ViewInstance>().instance = road_peice;
-            instance_p.GetComponent<ViewInstance>().setRoad(path.id, vertex[piece_index], cam, GetComponent<RoadIntegration>());
+            instance_p.GetComponent<ViewInstance>().setRoad(path.id, vertex[piece_index], GetComponent<OSMEditor>().cam, GetComponent<RoadIntegration>());
 
-            //if (path.id == "330745386")
-            //{
-            //    Debug.Log("road_" + path.id + "_" + piece_index);
-            //    Debug.Log(road_point[piece_index]);
-            //    Debug.Log(mesh.bounds.size);
-            //}
+            // solve mesh failed and clean problem
             if (vertex[piece_index][0] != vertex[piece_index][1] && vertex[piece_index][1] != vertex[piece_index][2] && vertex[piece_index][2] != vertex[piece_index][0])
             {
                 instance_p.AddComponent<MeshCollider>();
@@ -210,15 +182,17 @@ public class OSMRoadRender : MonoBehaviour
             instance_p.transform.parent = road_manager.transform;
             instance_p.name = "road_" + path.id + "_" + piece_index;
 
+            // catalog hierarchy
             for (int belong_index = 0; belong_index < belong_to_hier_x.Count; belong_index++)
             {
-                hierarchy_c.heirarchy_master[belong_to_hier_x[belong_index], belong_to_hier_y[belong_index]].objects.Add(instance_p);
+                osm_editor.hierarchy_c.heirarchy_master[belong_to_hier_x[belong_index], belong_to_hier_y[belong_index]].objects.Add(instance_p);
             }
 
             path_objects.Add(instance_p);
         }
 
         pathes_objects.Add(path.id, path_objects);
+        road_manager.transform.parent = roads_manager.transform;
         // ==========================================================================
 
         // show text on the road
@@ -227,11 +201,5 @@ public class OSMRoadRender : MonoBehaviour
         road_name.GetComponent<TMPro.TextMeshPro>().text = path.name;
         road_name.GetComponent<TMPro.TextMeshPro>().rectTransform.position = text_center;
         road_name.transform.parent = road_textes_manager.transform;
-    }
-
-    void setCam()
-    {
-        cam.transform.position = osm_reader.points_lib[initial_point].position + new Vector3(0, 800.0f, 0);
-        cam.transform.rotation = Quaternion.Euler(90,0,0);
     }
 }

@@ -24,7 +24,7 @@ public class ControlPointManager : MonoBehaviour
         if (!is_initial && GetComponent<OSMRoadRender>().is_initial)
         {
             is_initial = true;
-            osm_reader = GetComponent<OSMRoadRender>().osm_reader;
+            osm_reader = GetComponent<OSMEditor>().osm_reader;
             GameObject point_manager = new GameObject("Point Manager");
             foreach (KeyValuePair<string, Node> nn in osm_reader.points_lib)
             {
@@ -39,7 +39,7 @@ public class ControlPointManager : MonoBehaviour
                 controlpoints_lib.Add(nn.Key, bb);
                 last_select_sphere_id = nn.Key;
             }
-            controlpoints_lib[GetComponent<OSMRoadRender>().initial_point].GetComponent<ControlPoint>().select();
+            controlpoints_lib[GetComponent<OSMEditor>().initial_point].GetComponent<ControlPoint>().select();
         }
     }
 
