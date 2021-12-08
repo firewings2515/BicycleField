@@ -5,8 +5,8 @@ using UnityEngine;
 public class HierarchyControl
 {
     public HierarchyDomination[,] heirarchy_master;
-    int split_x;
-    int split_y;
+    public int split_x;
+    public int split_y;
     bool[,] check_mask;
     int at_x = 0;
     int at_y = 0;
@@ -98,5 +98,25 @@ public class HierarchyControl
                 heirarchy_master[at_x + i, at_y + j].toggle(true);
             }
         }
+    }
+
+    public List<string> getHousesInArea(int x, int y)
+    {
+        List<string> house_ids = new List<string>();
+
+        List<GameObject> view_instances = heirarchy_master[x, y].objects;
+        for (int view_instances_index = 0; view_instances_index < view_instances.Count; view_instances_index++)
+        {
+            ViewInstance view_instance;
+            if (view_instances[view_instances_index].TryGetComponent<ViewInstance>(out view_instance))
+            {
+                if (view_instance.is_house)
+                {
+                    house_ids.Add(view_instance.house_id);
+                }
+            }
+        }
+
+        return house_ids;
     }
 }

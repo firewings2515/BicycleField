@@ -15,10 +15,10 @@ public class ViewInstance : MonoBehaviour
     int mid_dist = 100;
 
     // house information
-    private bool is_house = false;
+    public bool is_house = false;
     private string obj;
     private string mtl;
-    private string house_id;
+    public string house_id;
     private Vector3 center;
     GameObject house_mesh;
     public float building_height;
@@ -26,11 +26,15 @@ public class ViewInstance : MonoBehaviour
     // road information
     string road_id;
     RoadIntegration road_integration;
+    public List<int> belong_to_hier_x;
+    public List<int> belong_to_hier_y;
 
     // Start is called before the first frame update
     void Start()
     {
         //InvokeRepeating("viewerUpdate", 0f, 0.02f);
+        belong_to_hier_x = new List<int>();
+        belong_to_hier_y = new List<int>();
     }
 
     public void setup(bool setup_prefab, bool have_instance = true)
@@ -57,6 +61,7 @@ public class ViewInstance : MonoBehaviour
     // set the house information if the instance is house polygon
     public void setHouse(string house_id, Vector3[] points, GameObject cam, RoadIntegration road_integration)
     {
+        is_house = true;
         this.house_id = house_id;
         this.cam = cam;
         this.road_integration = road_integration;

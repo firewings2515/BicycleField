@@ -34,6 +34,11 @@ public class RoadIntegration : MonoBehaviour
         if (write_file)
         {
             write_file = false;
+
+            Debug.Log("Binding houses to roads...");
+            int house_amount = HouseIntegration.bindHouses(osm_reader, bicycle_points_list, GetComponent<OSMEditor>().hierarchy_c, GetComponent<OSMHousePolygonRender>().house_polygons_objects);
+            Debug.Log($"Bind {house_amount} houses Successfully!");
+
             writeBPF(Application.streamingAssetsPath + "//" + file_path);
         }
     }

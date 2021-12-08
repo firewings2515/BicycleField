@@ -88,11 +88,11 @@ public class OSMHousePolygonRender : MonoBehaviour
         // create a gameobject to scene
         GameObject house_polygon = new GameObject();
         house_polygon.name = "instance_" + house.id;
-        house_polygon.transform.parent = house_polygons_manager.transform;
         MeshFilter mf = house_polygon.AddComponent<MeshFilter>();
         MeshRenderer mr = house_polygon.AddComponent<MeshRenderer>();
         mf.mesh = mesh;
         mr.material = house_polygon_mat;
+        house_polygon.transform.parent = house_polygons_manager.transform;
 
         // managed by heirarchy
         GameObject instance_h = Instantiate(osm_editor.view_instance);

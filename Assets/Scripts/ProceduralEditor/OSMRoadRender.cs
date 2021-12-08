@@ -179,14 +179,16 @@ public class OSMRoadRender : MonoBehaviour
                 instance_p.GetComponent<MeshCollider>().cookingOptions = MeshColliderCookingOptions.CookForFasterSimulation | MeshColliderCookingOptions.WeldColocatedVertices | MeshColliderCookingOptions.UseFastMidphase;
                 instance_p.GetComponent<MeshCollider>().sharedMesh = mesh;
             }
-            instance_p.transform.parent = road_manager.transform;
             instance_p.name = "road_" + path.id + "_" + piece_index;
+            instance_p.transform.parent = road_manager.transform;
 
             // catalog hierarchy
             for (int belong_index = 0; belong_index < belong_to_hier_x.Count; belong_index++)
             {
                 osm_editor.hierarchy_c.heirarchy_master[belong_to_hier_x[belong_index], belong_to_hier_y[belong_index]].objects.Add(instance_p);
             }
+            instance_p.GetComponent<ViewInstance>().belong_to_hier_x = belong_to_hier_x;
+            instance_p.GetComponent<ViewInstance>().belong_to_hier_y = belong_to_hier_y;
 
             path_objects.Add(instance_p);
         }
@@ -200,6 +202,7 @@ public class OSMRoadRender : MonoBehaviour
         GameObject road_name = Instantiate(road_name_prefab);
         road_name.GetComponent<TMPro.TextMeshPro>().text = path.name;
         road_name.GetComponent<TMPro.TextMeshPro>().rectTransform.position = text_center;
+        road_name.name = path.name;
         road_name.transform.parent = road_textes_manager.transform;
     }
 }
