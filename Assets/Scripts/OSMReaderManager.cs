@@ -144,83 +144,46 @@ public class OSMReaderManager : MonoBehaviour
         t1 = (t1 - pos) * gap / d + pos;
         next = posOnPointIndex % path_point.Count + t1;
     }
-    void getSmoothNextStep(int dir, float pos, float gap, ref float next, List<Vector3> path_point) // arcLength
-    {
-        Vector3 qt1, qt0;
-        float t0 = 0.0f, t1;
-        float d = 0.0f;
-        int posOnPointIndex = (int)pos;
-        pos -= posOnPointIndex;
-        t1 = t0 = pos;
-        //pos
-        Vector3 cp_pos_p1 = path_point[posOnPointIndex % path_point.Count];
-        Vector3 cp_pos_p2 = path_point[(posOnPointIndex + 1) % path_point.Count];
 
-        float percent = 1.0f / DIVIDE_LINE;
+    Vector3 GMT(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, int matrix_type, float t) {
 
-        qt1 = (1 - t1) * cp_pos_p1 + t1 * cp_pos_p2;
-
-        while (d < gap)
+        Matrix4x4 M = new Matrix4x4();
+        float tension = 0.5f;
+        if (tension < 0.01) tension = 0.01f;
+        switch (matrix_type)
         {
-            qt0 = qt1;
-            t0 = t1;
-            t1 += dir * percent;
-            if (t1 < 0)
-            {
-                qt1 = path_point[posOnPointIndex % path_point.Count];
-                d += Vector3.Distance(qt0, qt1);
-
-                if (d > gap)
-                {
-                    t1 = -pos * gap / d + pos;
-                    next = posOnPointIndex % path_point.Count + t1;
-                    return;
-                }
-
-                t1 = 1.0f - percent;
-                pos = 1.0f;
-                gap -= d;
-                d = 0.0f;
-
-                posOnPointIndex--;
-                if (posOnPointIndex < 0)
-                    posOnPointIndex += path_point.Count;
-
-                cp_pos_p2 = cp_pos_p1;
-                cp_pos_p1 = path_point[posOnPointIndex % path_point.Count];
-                qt0 = cp_pos_p2;
+            case 1: {
+                    M.SetRow(0,new Vector4(0, 0, 0, 0));
+                    M.SetRow(1,new Vector4(0, 0, -1, 1));
+                    M.SetRow(2,new Vector4(0, 0, 1, 0));
+                    M.SetRow(3,new Vector4(0, 0, 0, 0));
             }
-            else if (t1 > 1)
-            {
-                qt1 = path_point[(posOnPointIndex + 1) % path_point.Count];
-                d += Vector3.Distance(qt0, qt1);
-
-                if (d > gap)
-                {
-                    t1 = (1 - pos) * gap / d + pos;
-                    next = posOnPointIndex % path_point.Count + t1;
-                    return;
+            break;
+            case 2: {
+                    M.SetRow(0, (new Vector4(-1.0f, 2.0f, -1.0f, 0.0f)) * tension);
+                    M.SetRow(1, (new Vector4(2.0f / tension- 1.0f, 1.0f - 3.0f / tension, 0.0f, 1.0f / tension)) *tension);
+                    M.SetRow(2, (new Vector4(1.0f - 2.0f / tension, 3.0f / tension- 2.0f, 1.0f, 0.0f))*tension);
+                    M.SetRow(3, (new Vector4(1, -1, 0, 0)) * tension);
                 }
-                t1 = percent;
-                pos = 0.0f;
-                gap -= d;
-                d = 0.0f;
-
-                posOnPointIndex++;
-                if (posOnPointIndex >= path_point.Count)
-                    posOnPointIndex -= path_point.Count;
-
-                cp_pos_p1 = cp_pos_p2;
-                cp_pos_p2 = path_point[(posOnPointIndex + 1) % path_point.Count];
-                qt0 = cp_pos_p1;
-            }
-
-            qt1 = (1 - t1) * cp_pos_p1 + t1 * cp_pos_p2;
-            d += Vector3.Distance(qt0, qt1); //t:d=tx:gap tx=t/d*gap
+                break;
+            case 3: default: {
+                    M.SetRow(0, (new Vector4(-1, 3, -3, 1)) / 6.0f);
+                    M.SetRow(1, (new Vector4(3, -6, 0, 4))/6.0f);
+                    M.SetRow(2, (new Vector4(-3, 3, 3, 1))/6.0f);
+                    M.SetRow(3, (new Vector4(1, 0, 0, 0))/6.0f);
+                }
+                break;
         }
-
-        t1 = (t1 - pos) * gap / d + pos;
-        next = posOnPointIndex % path_point.Count + t1;
+        //M = M.transpose;
+        Matrix4x4 G = new Matrix4x4();
+        G.SetRow(0, new Vector4(p0.x, p0.y, p0.z, 1.0f));
+        G.SetRow(1, new Vector4(p1.x, p1.y, p1.z, 1.0f));
+        G.SetRow(2, new Vector4(p2.x, p2.y, p2.z, 1.0f));
+        G.SetRow(3, new Vector4(p3.x, p3.y, p3.z, 1.0f));
+        G = G.transpose;
+        Vector4 T = new Vector4( t * t * t, t * t, t, 1.0f );
+        Vector4 result = G * M * T;
+        return new Vector3(result[0], result[1], result[2]);
     }
 
     void createArcTree(List<Vector3> path_point, string path_id, float road_width)
@@ -296,7 +259,9 @@ public class OSMReaderManager : MonoBehaviour
             t0 = t2; //next start t
         }
     }
-
+    float vec_len(Vector3 input) {
+        return input.x * input.x + input.y * input.y + input.z * input.z;
+    }
     void createSmoothRoadPolygons(List<Vector3> path_point, string path_id, float road_width)
     {
         Transform[] trans = new Transform[path_point.Count];
@@ -313,12 +278,12 @@ public class OSMReaderManager : MonoBehaviour
         pc.bezierPath = new BezierPath(trans, false, PathSpace.xyz);
         all_pc.Add(pc);
 
-        float t0 = 0.0f;
-        float t1 = 0.0f;
-        float t2 = 0.0f;
+
+        int cp_size = path_point.Count;
+        if (cp_size < 4) return;
+        float arc_length = 0.0f;
         float percent = 1.0f / DIVIDE_LINE;
-        bool breakLoop = false;
-        Vector3 qt0, qt1, cross_t;
+        Vector3 cross_t;
         Vector3 orient_t = new Vector3(0, 1, 0);
         MeshFilter mf = road_obj.AddComponent<MeshFilter>();
         MeshRenderer mr = road_obj.AddComponent<MeshRenderer>();
@@ -326,69 +291,50 @@ public class OSMReaderManager : MonoBehaviour
         List<int> triangles = new List<int>();
         List<Vector3> vertices = new List<Vector3>();
         bool first_calc = true;
-        float travel = 0.0f;
-        Debug.Log("mew" + pc.path.length.ToString());
-        while (travel <= pc.path.length-1.0f)
+        Vector3 preQ = GMT(path_point[cp_size-1], path_point[0], path_point[1], path_point[2],2, 0.0f);
+        float dis = 1.0f;
+        
+        for (int i = 0; i < cp_size-1; i++)
         {
-            getNextStep(1, t0, 5.0f, ref t1, path_point);
-
-            if (t1 >= path_point.Count - 1 || t0 > t1)
+            Vector3 p0 = path_point[(i - 1 + cp_size) % cp_size];
+            Vector3 p1 = path_point[i % cp_size];
+            Vector3 p2 = path_point[(i + 1) % cp_size];
+            Vector3 p3 = path_point[(i + 2) % cp_size];
+            float t = percent;
+            for (int j = 1; j < DIVIDE_LINE; j++)
             {
-                breakLoop = true;
-                break;
+                Vector3 Q = GMT(p0, p1, p2, p3, 2, t);
+                Vector3 backward = Q -preQ;
+                cross_t = Vector3.Cross((Q - preQ), orient_t).normalized;
+                cross_t = cross_t * road_width;
+                arc_length += vec_len(backward);
+
+                if (arc_length >= dis) {
+                    Vector3 right_pos = Q + cross_t;
+                    vertices.Add(right_pos);
+
+                    Vector3 left_pos = Q - cross_t;
+                    vertices.Add(left_pos);
+
+                    if (!first_calc)
+                    {
+                        int verts = vertices.Count - 4;
+                        //第一個三角形
+                        triangles.Add(verts);
+                        triangles.Add(verts + 2);
+                        triangles.Add(verts + 1);
+                        //第二個三角形
+                        triangles.Add(verts + 2);
+                        triangles.Add(verts + 3);
+                        triangles.Add(verts + 1);
+                    }
+                    first_calc = false;
+                    arc_length -= dis;
+                }
+                preQ = Q;
+                t += percent;
             }
 
-            t2 = t1;
-
-            int pos0OnPointIndex = (int)t0;
-            t0 -= pos0OnPointIndex;
-            int pos1OnPointIndex = (int)t1;
-            t1 -= pos1OnPointIndex;
-
-            // pos
-            Vector3 cp_pos_p1 = path_point[pos0OnPointIndex % path_point.Count];
-            Vector3 cp_pos_p2 = path_point[(pos0OnPointIndex + 1) % path_point.Count];
-
-            percent = 1.0f / DIVIDE_LINE;
-
-            //qt0 = (1 - t0) * cp_pos_p1 + t0 * cp_pos_p2;
-            qt0 = pc.path.GetPointAtDistance(travel);
-
-            // pos
-            cp_pos_p1 = path_point[pos1OnPointIndex % path_point.Count];
-            cp_pos_p2 = path_point[(pos1OnPointIndex + 1) % path_point.Count];
-
-            //qt1 = (1 - t1) * cp_pos_p1 + t1 * cp_pos_p2;
-            qt1 = pc.path.GetPointAtDistance(travel+1.0f);
-
-            // cross
-            cross_t = Vector3.Cross((qt1 - qt0), orient_t).normalized;
-            cross_t = cross_t * road_width;
-
-
-
-
-            travel += 1.0f;
-            Vector3 right_pos = qt0 + cross_t;
-            vertices.Add(right_pos);
-           
-            Vector3 left_pos = qt0 - cross_t;
-            vertices.Add(left_pos);
-
-            if (!first_calc)
-            {
-                int verts = vertices.Count - 4;
-                //第一個三角形
-                triangles.Add(verts);
-                triangles.Add(verts + 2);
-                triangles.Add(verts + 1);
-                //第二個三角形
-                triangles.Add(verts + 2);
-                triangles.Add(verts + 3);
-                triangles.Add(verts + 1);
-            }
-            t0 = t2; //next start t
-            first_calc = false;
         }
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
