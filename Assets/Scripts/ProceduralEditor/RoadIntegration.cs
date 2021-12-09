@@ -25,12 +25,15 @@ public class RoadIntegration : MonoBehaviour
         bicycle_way_list = new List<string>();
         bicycle_points_list = new List<string>();
         bicycle_roads_list = new List<GameObject>();
-        osm_reader = GetComponent<OSMEditor>().osm_reader;
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (GetComponent<OSMEditor>().osm_reader.read_finish)
+        {
+            osm_reader = GetComponent<OSMEditor>().osm_reader;
+        }
         if (write_file)
         {
             write_file = false;
@@ -151,10 +154,23 @@ public class RoadIntegration : MonoBehaviour
         {
             // move first point to origin because of pathCreator
             Vector3 origin_pos = osm_reader.points_lib[bicycle_points_list[0]].position;
-            foreach (string ref_id in bicycle_points_list)
+            for (int bicycle_points_list_index = 0; bicycle_points_list_index < bicycle_points_list.Count; bicycle_points_list_index++)
             {
-                Vector3 pos = osm_reader.points_lib[ref_id].position - origin_pos;
+                Vector3 pos = osm_reader.points_lib[bicycle_points_list[bicycle_points_list_index]].position - origin_pos;
                 sw.WriteLine($"{pos.x} {pos.y} {pos.z}");
+                if (bicycle_points_list_index + 1 == bicycle_points_list.Count)
+                    break;
+                List<string> house_polygon_ids = HouseIntegration.house_polygons_object_index[bicycle_points_list_index];
+                foreach (string house_polygon_id in house_polygon_ids)
+                {
+                    Vector3[] vertice = HouseIntegration.house_polygons_view_instances[house_polygon_id].points;
+                    sw.Write($"H {vertice.Length} ");
+                    foreach (Vector3 origin_vertex in vertice)
+                    {
+                        Vector3 vertex = origin_vertex - origin_pos;
+                        sw.Write($"{vertex.x} {vertex.y} {vertex.z} ");
+                    }
+                }
             }
 
             // old method

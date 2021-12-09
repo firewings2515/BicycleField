@@ -16,10 +16,11 @@ public class ViewInstance : MonoBehaviour
 
     // house information
     public bool is_house = false;
+    bool build_house = false;
     private string obj;
     private string mtl;
     public string house_id;
-    private Vector3 center;
+    public Vector3 center;
     GameObject house_mesh;
     public float building_height;
 
@@ -52,6 +53,7 @@ public class ViewInstance : MonoBehaviour
     public void setHouse(string house_id, string obj, string mtl, Vector3 center)
     {
         is_house = true;
+        build_house = true;
         this.house_id = house_id;
         this.obj = obj;
         this.mtl = mtl;
@@ -59,13 +61,14 @@ public class ViewInstance : MonoBehaviour
     }
 
     // set the house information if the instance is house polygon
-    public void setHouse(string house_id, Vector3[] points, GameObject cam, RoadIntegration road_integration)
+    public void setHouse(string house_id, Vector3[] points, Vector3 center, GameObject cam, RoadIntegration road_integration)
     {
         is_house = true;
         this.house_id = house_id;
         this.cam = cam;
         this.road_integration = road_integration;
         this.points = points;
+        this.center = center;
         setup(false);
         in_dist = 3200;
         mid_dist = 3200;
@@ -87,6 +90,16 @@ public class ViewInstance : MonoBehaviour
     public void setRoad(string path_id, List<Vector3> points, GameObject cam, RoadIntegration road_integration)
     {
         setRoad(path_id, points.ToArray(), cam, road_integration);
+    }
+
+    public float getDistance(Vector3 target)
+    {
+        float dist = float.MaxValue;
+        foreach (Vector3 point in points)
+        {
+            dist = Mathf.Min(dist, Vector3.Distance(target, point));
+        }
+        return dist;
     }
 
     private void Update()
@@ -114,7 +127,7 @@ public class ViewInstance : MonoBehaviour
                 }
             }
 
-            if (is_house)
+            if (is_house && build_house)
             {
                 // if instance is house and in view
                 if (in_view)

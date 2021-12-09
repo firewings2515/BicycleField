@@ -49,11 +49,27 @@ public class OSMHousePolygonRender : MonoBehaviour
         // generate polygon vertex
         Vector3[] vertex = new Vector3[house.ref_node.Count - 1];
         float ele_min = 100000.0f;
+        Vector2 max_len = Vector2.negativeInfinity;
+        Vector2 min_len = Vector2.positiveInfinity;
         for (int index = 0; index < house.ref_node.Count - 1; index++)
         {
             vertex[index] = osm_editor.osm_reader.points_lib[house.ref_node[index]].position;
             ele_min = Mathf.Min(ele_min, vertex[index].y);
+
+            // bound record
+            if (vertex[index].x > min_len.x)
+                max_len.x = vertex[index].x;
+            if (vertex[index].y > min_len.y)
+                max_len.y = vertex[index].y;
+            if (vertex[index].x < min_len.x)
+                max_len.x = vertex[index].x;
+            if (vertex[index].y < min_len.y)
+                max_len.y = vertex[index].y;
         }
+        Vector2 maxSize = max_len - min_len;
+        Vector2 center2d = (max_len + min_len) / 2;
+        Vector3 center = new Vector3(center2d.x, ele_min, center2d.y);
+
         // classification hierarchy area
         for (int index = 0; index < vertex.Length; index++)
         {
@@ -97,7 +113,7 @@ public class OSMHousePolygonRender : MonoBehaviour
         // managed by heirarchy
         GameObject instance_h = Instantiate(osm_editor.view_instance);
         instance_h.GetComponent<ViewInstance>().instance = house_polygon;
-        instance_h.GetComponent<ViewInstance>().setRoad(house.id, vertex, GetComponent<OSMEditor>().cam, GetComponent<RoadIntegration>());
+        instance_h.GetComponent<ViewInstance>().setHouse(house.id, vertex, center, GetComponent<OSMEditor>().cam, GetComponent<RoadIntegration>());
         instance_h.name = "housePolygon_" + house.id;
         instance_h.transform.parent = house_polygons_manager.transform;
 
