@@ -22,7 +22,7 @@ public class OSMReaderManager : MonoBehaviour
     public GameObject tree_prefab;
     public GameObject view_instance;
     public GameObject cam;
-    int DIVIDE_LINE = 200;
+    int DIVIDE_LINE = 1000;
     int count = 0;
     GameObject point_manager;
     GameObject house_polygon_manager;
@@ -277,7 +277,7 @@ public class OSMReaderManager : MonoBehaviour
         }
         pc.bezierPath = new BezierPath(trans, false, PathSpace.xyz);
         all_pc.Add(pc);
-
+        road_id_list.Add(path_id);
 
         int cp_size = path_point.Count;
         if (cp_size < 4) return;
@@ -292,7 +292,7 @@ public class OSMReaderManager : MonoBehaviour
         List<Vector3> vertices = new List<Vector3>();
         bool first_calc = true;
         Vector3 preQ = GMT(path_point[cp_size-1], path_point[0], path_point[1], path_point[2],2, 0.0f);
-        float dis = 1.0f;
+        float dis = 0.01f;
         
         for (int i = 0; i < cp_size-1; i++)
         {
