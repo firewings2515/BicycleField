@@ -144,6 +144,84 @@ public class OSMReaderManager : MonoBehaviour
         t1 = (t1 - pos) * gap / d + pos;
         next = posOnPointIndex % path_point.Count + t1;
     }
+    void getSmoothNextStep(int dir, float pos, float gap, ref float next, List<Vector3> path_point) // arcLength
+    {
+        Vector3 qt1, qt0;
+        float t0 = 0.0f, t1;
+        float d = 0.0f;
+        int posOnPointIndex = (int)pos;
+        pos -= posOnPointIndex;
+        t1 = t0 = pos;
+        //pos
+        Vector3 cp_pos_p1 = path_point[posOnPointIndex % path_point.Count];
+        Vector3 cp_pos_p2 = path_point[(posOnPointIndex + 1) % path_point.Count];
+
+        float percent = 1.0f / DIVIDE_LINE;
+
+        qt1 = (1 - t1) * cp_pos_p1 + t1 * cp_pos_p2;
+
+        while (d < gap)
+        {
+            qt0 = qt1;
+            t0 = t1;
+            t1 += dir * percent;
+            if (t1 < 0)
+            {
+                qt1 = path_point[posOnPointIndex % path_point.Count];
+                d += Vector3.Distance(qt0, qt1);
+
+                if (d > gap)
+                {
+                    t1 = -pos * gap / d + pos;
+                    next = posOnPointIndex % path_point.Count + t1;
+                    return;
+                }
+
+                t1 = 1.0f - percent;
+                pos = 1.0f;
+                gap -= d;
+                d = 0.0f;
+
+                posOnPointIndex--;
+                if (posOnPointIndex < 0)
+                    posOnPointIndex += path_point.Count;
+
+                cp_pos_p2 = cp_pos_p1;
+                cp_pos_p1 = path_point[posOnPointIndex % path_point.Count];
+                qt0 = cp_pos_p2;
+            }
+            else if (t1 > 1)
+            {
+                qt1 = path_point[(posOnPointIndex + 1) % path_point.Count];
+                d += Vector3.Distance(qt0, qt1);
+
+                if (d > gap)
+                {
+                    t1 = (1 - pos) * gap / d + pos;
+                    next = posOnPointIndex % path_point.Count + t1;
+                    return;
+                }
+                t1 = percent;
+                pos = 0.0f;
+                gap -= d;
+                d = 0.0f;
+
+                posOnPointIndex++;
+                if (posOnPointIndex >= path_point.Count)
+                    posOnPointIndex -= path_point.Count;
+
+                cp_pos_p1 = cp_pos_p2;
+                cp_pos_p2 = path_point[(posOnPointIndex + 1) % path_point.Count];
+                qt0 = cp_pos_p1;
+            }
+
+            qt1 = (1 - t1) * cp_pos_p1 + t1 * cp_pos_p2;
+            d += Vector3.Distance(qt0, qt1); //t:d=tx:gap tx=t/d*gap
+        }
+
+        t1 = (t1 - pos) * gap / d + pos;
+        next = posOnPointIndex % path_point.Count + t1;
+    }
 
     void createArcTree(List<Vector3> path_point, string path_id, float road_width)
     {
@@ -217,6 +295,121 @@ public class OSMReaderManager : MonoBehaviour
             count += 2;
             t0 = t2; //next start t
         }
+    }
+
+    void createSmoothRoadPolygons(List<Vector3> path_point, string path_id, float road_width)
+    {
+        Transform[] trans = new Transform[path_point.Count];
+        GameObject road_obj = new GameObject(path_id);
+        PathCreator pc = road_obj.AddComponent<PathCreator>();
+        road_obj.transform.parent = all_road_obj.transform;
+        for (int i = 0; i < path_point.Count; i++)
+        {
+            GameObject road_point_obj = new GameObject("road_point_" + i.ToString());
+            road_point_obj.transform.parent = road_obj.transform;
+            trans[i] = road_point_obj.transform;
+            trans[i].position = new Vector3(path_point[i].x, path_point[i].y, path_point[i].z);
+        }
+        pc.bezierPath = new BezierPath(trans, false, PathSpace.xyz);
+        all_pc.Add(pc);
+
+        float t0 = 0.0f;
+        float t1 = 0.0f;
+        float t2 = 0.0f;
+        float percent = 1.0f / DIVIDE_LINE;
+        bool breakLoop = false;
+        Vector3 qt0, qt1, cross_t;
+        Vector3 orient_t = new Vector3(0, 1, 0);
+        MeshFilter mf = road_obj.AddComponent<MeshFilter>();
+        MeshRenderer mr = road_obj.AddComponent<MeshRenderer>();
+        Mesh mesh = new Mesh();
+        List<int> triangles = new List<int>();
+        List<Vector3> vertices = new List<Vector3>();
+        bool first_calc = true;
+        float travel = 0.0f;
+        Debug.Log("mew" + pc.path.length.ToString());
+        while (travel <= pc.path.length-1.0f)
+        {
+            getNextStep(1, t0, 5.0f, ref t1, path_point);
+
+            if (t1 >= path_point.Count - 1 || t0 > t1)
+            {
+                breakLoop = true;
+                break;
+            }
+
+            t2 = t1;
+
+            int pos0OnPointIndex = (int)t0;
+            t0 -= pos0OnPointIndex;
+            int pos1OnPointIndex = (int)t1;
+            t1 -= pos1OnPointIndex;
+
+            // pos
+            Vector3 cp_pos_p1 = path_point[pos0OnPointIndex % path_point.Count];
+            Vector3 cp_pos_p2 = path_point[(pos0OnPointIndex + 1) % path_point.Count];
+
+            percent = 1.0f / DIVIDE_LINE;
+
+            //qt0 = (1 - t0) * cp_pos_p1 + t0 * cp_pos_p2;
+            qt0 = pc.path.GetPointAtDistance(travel);
+
+            // pos
+            cp_pos_p1 = path_point[pos1OnPointIndex % path_point.Count];
+            cp_pos_p2 = path_point[(pos1OnPointIndex + 1) % path_point.Count];
+
+            //qt1 = (1 - t1) * cp_pos_p1 + t1 * cp_pos_p2;
+            qt1 = pc.path.GetPointAtDistance(travel+1.0f);
+
+            // cross
+            cross_t = Vector3.Cross((qt1 - qt0), orient_t).normalized;
+            cross_t = cross_t * road_width;
+
+
+
+
+            travel += 1.0f;
+            Vector3 right_pos = qt0 + cross_t;
+            vertices.Add(right_pos);
+           
+            Vector3 left_pos = qt0 - cross_t;
+            vertices.Add(left_pos);
+
+            if (!first_calc)
+            {
+                int verts = vertices.Count - 4;
+                //第一個三角形
+                triangles.Add(verts);
+                triangles.Add(verts + 2);
+                triangles.Add(verts + 1);
+                //第二個三角形
+                triangles.Add(verts + 2);
+                triangles.Add(verts + 3);
+                triangles.Add(verts + 1);
+            }
+            t0 = t2; //next start t
+            first_calc = false;
+        }
+        mesh.vertices = vertices.ToArray();
+        mesh.triangles = triangles.ToArray();
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        mesh.Optimize();
+        mf.mesh = mesh;
+        mr.material = roads_polygon_mat;
+        road_obj.transform.parent = all_road_obj.transform;
+
+
+        //GameObject instance_p = Instantiate(view_instance);
+        //instance_p.GetComponent<ViewInstance>().cam = cam;
+        //instance_p.GetComponent<ViewInstance>().points = mesh.vertices;
+        //instance_p.GetComponent<ViewInstance>().instance = road_obj;
+        //instance_p.GetComponent<ViewInstance>().setRoad(path_id, vertices, cam, GetComponent<RoadIntegration>());
+        //instance_p.GetComponent<ViewInstance>().setup(false);
+        //instance_p.AddComponent<MeshCollider>();
+        //List<GameObject> path_objects = new List<GameObject>();
+        //path_objects.Add(instance_p);
+        //pathes_objects.Add(path_id, path_objects);
     }
 
     Mesh createRoadPolygon(int road_index, string road_name, float road_width) // generate a road
@@ -306,13 +499,14 @@ public class OSMReaderManager : MonoBehaviour
         }
         pc.bezierPath = new BezierPath(trans, false, PathSpace.xyz);
         all_pc.Add(pc);
-        RoadMeshCreator rm = road_obj.AddComponent<RoadMeshCreator>();
-        rm.pathCreator = pc;
-        rm.roadWidth = 6.0f;
-        rm.flattenSurface = true;
-        rm.roadMaterial = roads_polygon_mat;
-        rm.undersideMaterial = roads_polygon_mat;
-        rm.TriggerUpdate();
+
+        //RoadMeshCreator rm = road_obj.AddComponent<RoadMeshCreator>();
+        //rm.pathCreator = pc;
+        //rm.roadWidth = 6.0f;
+        //rm.flattenSurface = true;
+        //rm.roadMaterial = roads_polygon_mat;
+        //rm.undersideMaterial = roads_polygon_mat;
+        //rm.TriggerUpdate();
 
 
         //smooth road
@@ -758,8 +952,8 @@ public class OSMReaderManager : MonoBehaviour
                 //    continue;
 
                 // roads
-                createRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width, osm_reader.pathes[road_index].layer);
-
+                //createRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width, osm_reader.pathes[road_index].layer);
+                createSmoothRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width);
                 if (osm_reader.pathes[road_index].layer != 0)
                     continue;
 
@@ -770,8 +964,8 @@ public class OSMReaderManager : MonoBehaviour
             // new way
             for (; road_index < osm_reader.pathes.Count; road_index++)
             {
-                createRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width, osm_reader.pathes[road_index].layer);
-
+                //createRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width, osm_reader.pathes[road_index].layer);
+                createSmoothRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width);
                 if (osm_reader.pathes[road_index].layer != 0)
                     continue;
 
