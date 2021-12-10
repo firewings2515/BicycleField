@@ -68,6 +68,11 @@ public class RoadManager : MonoBehaviour
     private bool getNextSegment(out string point_data)
     {
         point_data = reader.ReadLine();
+        while (point_data != null && point_data[0] == 'H')
+        {
+            GetComponent<HouseManager>().addToBuffer(point_data);
+            point_data = reader.ReadLine();
+        }
         return point_data != null;
     }
 
