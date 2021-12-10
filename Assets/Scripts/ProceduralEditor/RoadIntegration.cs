@@ -164,7 +164,7 @@ public class RoadIntegration : MonoBehaviour
                 foreach (string house_polygon_id in house_polygon_ids)
                 {
                     Vector3[] vertice = HouseIntegration.house_polygons_view_instances[house_polygon_id].points;
-                    sw.Write($"H {vertice.Length} ");
+                    sw.Write($"H {vertice.Length + 1} ");
                     foreach (Vector3 origin_vertex in vertice)
                     {
                         Vector3 vertex = origin_vertex - origin_pos;
