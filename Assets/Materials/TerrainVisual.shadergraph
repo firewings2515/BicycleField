@@ -1812,7 +1812,7 @@
     "m_SourceType": 1,
     "m_FunctionName": "TerrainGradient",
     "m_FunctionSource": "",
-    "m_FunctionBody": "if (height < 245)\n    color = float3(0,1,0);\nelse if (height > 255 && height < 495)\n    color = float3(0.65625,0.832,0.6133);\nelse if (height > 505 && height < 995)\n    color = float3(0.836,0.906,0.8203);\nelse if (height > 1005 && height < 1495)\n    color = float3(0.875,0.875,0.742);\nelse if (height > 1505 && height < 1995)\n    color = float3(0.973,0.91,0.762);\nelse if (height > 2005 && height < 2495)\n    color = float3(0.922,0.824,0.707);\nelse if (height > 2505 && height < 2995)\n    color = float3(0.9375,0.6953,0.3672);\nelse if (height > 3005)\n    color = float3(0.738,0.543,0.2304);\nelse\n    color = float3(0.5,0.5,0.5);"
+    "m_FunctionBody": "if (height % 10 < 1 || height % 10 > 9)\n    color = float3(0.5,0.5,0.5);\nelse if (height < 245)\n    color = float3(0,1,0);\nelse if (height > 255 && height < 495)\n    color = float3(0.65625,0.832,0.6133);\nelse if (height > 505 && height < 995)\n    color = float3(0.836,0.906,0.8203);\nelse if (height > 1005 && height < 1495)\n    color = float3(0.875,0.875,0.742);\nelse if (height > 1505 && height < 1995)\n    color = float3(0.973,0.91,0.762);\nelse if (height > 2005 && height < 2495)\n    color = float3(0.922,0.824,0.707);\nelse if (height > 2505 && height < 2995)\n    color = float3(0.9375,0.6953,0.3672);\nelse if (height > 3005)\n    color = float3(0.738,0.543,0.2304);\nelse\n    color = float3(0.5,0.5,0.5);"
 }
 
 {
