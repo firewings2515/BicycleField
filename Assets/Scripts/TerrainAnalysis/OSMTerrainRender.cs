@@ -21,9 +21,9 @@ public class OSMTerrainRender : MonoBehaviour
         {
             is_initial = true;
             double[,,] terrain_points = new double[resolution + 1, resolution + 1, 3];
-            double[] lefttop_pos = new double[3] { 121.5394453f, 0.0f, 25.1679903f };
-            double rightbottom_pos_x = MercatorProjection.xToLon(MercatorProjection.lonToX(lefttop_pos[0]) + 4096.0);
-            double rightbottom_pos_z = MercatorProjection.yToLat(MercatorProjection.latToY(lefttop_pos[2]) + 4096.0);
+            double[] lefttop_pos = new double[3] { 121.5094453f, 0.0f, 25.1079903f };
+            double rightbottom_pos_x = MercatorProjection.xToLon(MercatorProjection.lonToX(lefttop_pos[0]) + 16384.0);
+            double rightbottom_pos_z = MercatorProjection.yToLat(MercatorProjection.latToY(lefttop_pos[2]) + 16384.0);
             double[] terrain_size = new double[2] { rightbottom_pos_x - lefttop_pos[0], rightbottom_pos_z - lefttop_pos[2] };
             double dx = terrain_size[0] / resolution;
             double dz = terrain_size[1] / resolution;
