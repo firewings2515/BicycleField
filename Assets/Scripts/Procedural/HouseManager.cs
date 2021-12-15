@@ -30,9 +30,10 @@ public class HouseManager : MonoBehaviour
     {
         string house_info = house_buffer[0];
         house_buffer.RemoveAt(0);
+        return; //#####DEBUG#####
 
         string[] house_infos = house_info.Split(' ');
-        Vector3[] points = new Vector3[int.Parse(house_infos[1]) + 1];
+        Vector3[] points = new Vector3[int.Parse(house_infos[1])];
         for (int point = 2; point < house_infos.Length; point += 3)
         {
             Debug.Log(point / 3);

@@ -7,6 +7,8 @@ using PathCreation;
 public class RoadManager : MonoBehaviour
 {
     private int current_segment = 2;
+    private int current_loaded_segment = 0;
+    private int current_running_segment = 0;
 
     private StreamReader reader;
 
@@ -34,6 +36,8 @@ public class RoadManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        Debug.Log(current_running_segment);
+        Debug.Log(current_loaded_segment);
         if (Info.MAX_LOADED_SEGMENT - current_segment <= Info.PRELOAD_SEGMENT)
         {
             getAndSetNextSegment();
@@ -47,18 +51,10 @@ public class RoadManager : MonoBehaviour
         if (getNextSegment(out string str_point))
         {
             Vector3 vec3_point = Functions.StrToVec3(str_point);
-
-            if ((vec3_point - last_segment).magnitude < 100)
-            {
-                getAndSetNextSegment();
-                return;
-            }
-            else 
-            {
-                last_segment = vec3_point;
-            }
+            last_segment = vec3_point;
 
             spawnAnchorCheckpoint(vec3_point);
+            current_loaded_segment += 1;
 
             generateRoad(vec3_point);
             if (path_creator.bezierPath.NumSegments > Info.MAX_LOADED_SEGMENT) removeEarliestRoad();
@@ -101,5 +97,6 @@ public class RoadManager : MonoBehaviour
     public void incrementCurrentSegment()
     {
         current_segment++;
+        current_running_segment++;
     }
 }
