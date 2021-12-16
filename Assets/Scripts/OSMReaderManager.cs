@@ -466,7 +466,6 @@ public class OSMReaderManager : MonoBehaviour
         instance_s.transform.parent = all_road_obj.transform;
 
         road_id_list.Add(road_id);
-        
         //rm.PathUpdated();
         //rm.CreateRoadMesh();
         //road.Clear();
@@ -898,8 +897,8 @@ public class OSMReaderManager : MonoBehaviour
                 //    continue;
 
                 // roads
-                //createRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width, osm_reader.pathes[road_index].layer);
-                createSmoothRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width);
+                createRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width, osm_reader.pathes[road_index].layer);
+                //createSmoothRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width);
                 if (osm_reader.pathes[road_index].layer != 0)
                     continue;
 
@@ -910,8 +909,8 @@ public class OSMReaderManager : MonoBehaviour
             // new way
             for (; road_index < osm_reader.pathes.Count; road_index++)
             {
-                //createRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width, osm_reader.pathes[road_index].layer);
-                createSmoothRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width);
+                createRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width, osm_reader.pathes[road_index].layer);
+                //createSmoothRoadPolygons(osm_reader.toPositions(osm_reader.pathes[road_index].ref_node), osm_reader.pathes[road_index].id, osm_reader.pathes[road_index].road_width);
                 if (osm_reader.pathes[road_index].layer != 0)
                     continue;
 
