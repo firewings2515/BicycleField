@@ -5,7 +5,7 @@ using UnityEngine;
 public class OSMTerrainRender : MonoBehaviour
 {
     OSMEditor osm_editor;
-    int resolution = 32; //128
+    int resolution = 64; //128
     public Material terrain_mat;
     public double[] center_pos = new double[2];
     double[] center_xyz = new double[3];
@@ -13,6 +13,8 @@ public class OSMTerrainRender : MonoBehaviour
     public bool is_initial = false;
     GameObject terrain;
     Mesh mesh;
+    int[] current_loc = new int[2];
+    double[] current_pos = new double[2];
     // Start is called before the first frame update
     void Start()
     {
@@ -27,18 +29,21 @@ public class OSMTerrainRender : MonoBehaviour
             is_initial = true;
             double[,,] terrain_points = new double[resolution + 1, resolution + 1, 3];
             center_xyz[0] = MercatorProjection.lonToX(center_pos[0]);
-            center_xyz[1] = 0.5;
+            center_xyz[1] = 15;
             center_xyz[2] = MercatorProjection.latToY(center_pos[1]);
             double[] lefttop_pos = new double[3] { MercatorProjection.xToLon(center_xyz[0] + cam.transform.position.x - 512),
                                                    0.0f,
                                                    MercatorProjection.yToLat(center_xyz[2] + cam.transform.position.z - 512)}; //121.5094453f, 0.0f, 25.1079903f 
-            Debug.Log(lefttop_pos[0]);
-            Debug.Log(lefttop_pos[2]);
             double rightbottom_pos_x = MercatorProjection.xToLon(MercatorProjection.lonToX(lefttop_pos[0]) + 1024); // + 16384.0
             double rightbottom_pos_z = MercatorProjection.yToLat(MercatorProjection.latToY(lefttop_pos[2]) + 1024); // + 16384.0
             double[] terrain_size = new double[2] { rightbottom_pos_x - lefttop_pos[0], rightbottom_pos_z - lefttop_pos[2] };
-            double dx = resolution;
-            double dz = resolution;
+            double dx = terrain_size[0] / resolution;
+            double dz = terrain_size[1] / resolution;
+
+            current_pos[0] = MercatorProjection.xToLon(center_xyz[0]);
+            current_pos[1] = MercatorProjection.yToLat(center_xyz[2]);
+            current_loc[0] = (int)(current_pos[0] / dx);
+            current_loc[1] = (int)(current_pos[1] / dz);
 
             //////////////////////////////get elevations/////////////////////////////////////////
             List<float> all_elevations = new List<float>();
@@ -68,9 +73,9 @@ public class OSMTerrainRender : MonoBehaviour
                 {
                     //float pos_x, pos_z;
                     //osm_editor.osm_reader.toUnityLocation(terrain_points[i, j].x, terrain_points[i, j].z, out pos_x, out pos_z);
-                    terrain_points[i, j, 0] = MercatorProjection.lonToX(terrain_points[i, j, 0]) + center_pos[0] - center_xyz[0];
-                    terrain_points[i, j, 1] = all_elevations[i * (resolution + 1) + j] - 2 * center_xyz[1];
-                    terrain_points[i, j, 2] = MercatorProjection.latToY(terrain_points[i, j, 2]) + center_pos[1] - center_xyz[2];
+                    terrain_points[i, j, 0] = MercatorProjection.lonToX(terrain_points[i, j, 0]) - center_xyz[0];
+                    terrain_points[i, j, 1] = all_elevations[i * (resolution + 1) + j] - center_xyz[1];
+                    terrain_points[i, j, 2] = MercatorProjection.latToY(terrain_points[i, j, 2]) - center_xyz[2];
                     //terrain_points[i, j].x = pos_x;
                     //terrain_points[i, j].y = all_elevations[i * (resolution + 1) + j];
                     //terrain_points[i, j].z = pos_z;
@@ -122,25 +127,31 @@ public class OSMTerrainRender : MonoBehaviour
             MeshRenderer mr = terrain.AddComponent<MeshRenderer>();
             mf.mesh = mesh;
             mr.material = terrain_mat;
-            Debug.Log("terrain:");
-            Debug.Log(terrain);
+            mr.material.SetFloat("Vector1_1827e4cc820e4294b95207d8f2b4bed7", (float)center_xyz[1]);
         }
         else if (is_initial)
         {
             double[,,] terrain_points = new double[resolution + 1, resolution + 1, 3];
             center_xyz[0] = MercatorProjection.lonToX(center_pos[0]);
-            center_xyz[1] = 0.5;
+            center_xyz[1] = 15;
             center_xyz[2] = MercatorProjection.latToY(center_pos[1]);
             double[] lefttop_pos = new double[3] { MercatorProjection.xToLon(center_xyz[0] + cam.transform.position.x - 512),
                                                    0.0f,
                                                    MercatorProjection.yToLat(center_xyz[2] + cam.transform.position.z - 512)}; //121.5094453f, 0.0f, 25.1079903f 
-            Debug.Log(lefttop_pos[0]);
-            Debug.Log(lefttop_pos[2]);
             double rightbottom_pos_x = MercatorProjection.xToLon(MercatorProjection.lonToX(lefttop_pos[0]) + 1024); // + 16384.0
             double rightbottom_pos_z = MercatorProjection.yToLat(MercatorProjection.latToY(lefttop_pos[2]) + 1024); // + 16384.0
             double[] terrain_size = new double[2] { rightbottom_pos_x - lefttop_pos[0], rightbottom_pos_z - lefttop_pos[2] };
             double dx = terrain_size[0] / resolution;
             double dz = terrain_size[1] / resolution;
+
+            current_pos[0] = MercatorProjection.xToLon(center_xyz[0] + cam.transform.position.x);
+            current_pos[1] = MercatorProjection.yToLat(center_xyz[2] + cam.transform.position.z);
+            if ((int)(current_pos[0] / dx) == current_loc[0] && (int)(current_pos[1] / dz) == current_loc[1])
+            {
+                return;
+            }
+            current_loc[0] = (int)(current_pos[0] / dx);
+            current_loc[1] = (int)(current_pos[1] / dz);
 
             //////////////////////////////get elevations/////////////////////////////////////////
             List<float> all_elevations = new List<float>();
@@ -169,9 +180,9 @@ public class OSMTerrainRender : MonoBehaviour
                 {
                     //float pos_x, pos_z;
                     //osm_editor.osm_reader.toUnityLocation(terrain_points[i, j].x, terrain_points[i, j].z, out pos_x, out pos_z);
-                    terrain_points[i, j, 0] = MercatorProjection.lonToX(terrain_points[i, j, 0]) + center_pos[0] - center_xyz[0];
-                    terrain_points[i, j, 1] = all_elevations[i * (resolution + 1) + j] - 2 * center_xyz[1];
-                    terrain_points[i, j, 2] = MercatorProjection.latToY(terrain_points[i, j, 2]) + center_pos[1] - center_xyz[2];
+                    terrain_points[i, j, 0] = MercatorProjection.lonToX(terrain_points[i, j, 0]) - center_xyz[0];
+                    terrain_points[i, j, 1] = all_elevations[i * (resolution + 1) + j] - center_xyz[1];
+                    terrain_points[i, j, 2] = MercatorProjection.latToY(terrain_points[i, j, 2]) - center_xyz[2];
                     //terrain_points[i, j].x = pos_x;
                     //terrain_points[i, j].y = all_elevations[i * (resolution + 1) + j];
                     //terrain_points[i, j].z = pos_z;
@@ -207,8 +218,6 @@ public class OSMTerrainRender : MonoBehaviour
             //Name the mesh
             mesh.name = "terrain_mesh";
 
-            Debug.Log("terraindd:");
-            Debug.Log(terrain);
             terrain.GetComponent<MeshFilter>().mesh = mesh;
         }
     }

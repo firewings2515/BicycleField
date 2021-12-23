@@ -2,7 +2,11 @@
     "m_SGVersion": 2,
     "m_Type": "UnityEditor.ShaderGraph.GraphData",
     "m_ObjectId": "c156287d0001405ea9b297641d157c1c",
-    "m_Properties": [],
+    "m_Properties": [
+        {
+            "m_Id": "1827e4cc820e4294b95207d8f2b4bed7"
+        }
+    ],
     "m_Keywords": [],
     "m_Nodes": [
         {
@@ -40,6 +44,9 @@
         },
         {
             "m_Id": "80d9e6e869504d958f1a21a363c780e7"
+        },
+        {
+            "m_Id": "cc20455466414299b62267b536a1a22b"
         }
     ],
     "m_GroupDatas": [],
@@ -71,6 +78,20 @@
                     "m_Id": "1e8b098cbf3049bd89267fa5b8ca3684"
                 },
                 "m_SlotId": 0
+            }
+        },
+        {
+            "m_OutputSlot": {
+                "m_Node": {
+                    "m_Id": "cc20455466414299b62267b536a1a22b"
+                },
+                "m_SlotId": 0
+            },
+            "m_InputSlot": {
+                "m_Node": {
+                    "m_Id": "f6cf23ce807b40cdbb06bc1eca012826"
+                },
+                "m_SlotId": 2
             }
         },
         {
@@ -255,6 +276,29 @@
     "m_Value": 0.0,
     "m_DefaultValue": 0.0,
     "m_Labels": []
+}
+
+{
+    "m_SGVersion": 1,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.Vector1ShaderProperty",
+    "m_ObjectId": "1827e4cc820e4294b95207d8f2b4bed7",
+    "m_Guid": {
+        "m_GuidSerialized": "030f3b6e-3783-439c-a983-934eb1532c43"
+    },
+    "m_Name": "bias",
+    "m_DefaultReferenceName": "Vector1_1827e4cc820e4294b95207d8f2b4bed7",
+    "m_OverrideReferenceName": "",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": 0.0,
+    "m_FloatType": 0,
+    "m_RangeValues": {
+        "x": 0.0,
+        "y": 1.0
+    }
 }
 
 {
@@ -599,6 +643,21 @@
 }
 
 {
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
+    "m_ObjectId": "9b72610f98164d849b1b9bddf4bf06a8",
+    "m_Id": 0,
+    "m_DisplayName": "h",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "h",
+    "m_StageCapability": 3,
+    "m_Value": 0.0,
+    "m_DefaultValue": 0.0,
+    "m_Labels": []
+}
+
+{
     "m_SGVersion": 1,
     "m_Type": "UnityEditor.ShaderGraph.PositionNode",
     "m_ObjectId": "a1426237e46049eeaf4a781b0e38b8fd",
@@ -629,21 +688,6 @@
         "m_SerializableColors": []
     },
     "m_Space": 2
-}
-
-{
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
-    "m_ObjectId": "b0a40c20c5c84453a8a6d37489d4b733",
-    "m_Id": 0,
-    "m_DisplayName": "height",
-    "m_SlotType": 0,
-    "m_Hidden": false,
-    "m_ShaderOutputName": "height",
-    "m_StageCapability": 3,
-    "m_Value": 0.0,
-    "m_DefaultValue": 0.0,
-    "m_Labels": []
 }
 
 {
@@ -715,6 +759,41 @@
     "m_TwoSided": false,
     "m_AlphaClip": false,
     "m_CustomEditorGUI": ""
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.PropertyNode",
+    "m_ObjectId": "cc20455466414299b62267b536a1a22b",
+    "m_Group": {
+        "m_Id": ""
+    },
+    "m_Name": "Property",
+    "m_DrawState": {
+        "m_Expanded": true,
+        "m_Position": {
+            "serializedVersion": "2",
+            "x": -1216.405029296875,
+            "y": 360.31890869140627,
+            "width": 0.0,
+            "height": 0.0
+        }
+    },
+    "m_Slots": [
+        {
+            "m_Id": "f319089564804aefb7de6175426dd9c4"
+        }
+    ],
+    "synonyms": [],
+    "m_Precision": 0,
+    "m_PreviewExpanded": true,
+    "m_PreviewMode": 0,
+    "m_CustomColors": {
+        "m_SerializableColors": []
+    },
+    "m_Property": {
+        "m_Id": "1827e4cc820e4294b95207d8f2b4bed7"
+    }
 }
 
 {
@@ -872,6 +951,36 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
+    "m_ObjectId": "ec9075134040430caaef5f164adb0538",
+    "m_Id": 2,
+    "m_DisplayName": "bias",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "bias",
+    "m_StageCapability": 3,
+    "m_Value": 0.0,
+    "m_DefaultValue": 0.0,
+    "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
+    "m_ObjectId": "f319089564804aefb7de6175426dd9c4",
+    "m_Id": 0,
+    "m_DisplayName": "bias",
+    "m_SlotType": 1,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "Out",
+    "m_StageCapability": 3,
+    "m_Value": 0.0,
+    "m_DefaultValue": 0.0,
+    "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector3MaterialSlot",
     "m_ObjectId": "f54d4ab96ae240e58db28ad431792c80",
     "m_Id": 0,
@@ -913,7 +1022,10 @@
     },
     "m_Slots": [
         {
-            "m_Id": "b0a40c20c5c84453a8a6d37489d4b733"
+            "m_Id": "9b72610f98164d849b1b9bddf4bf06a8"
+        },
+        {
+            "m_Id": "ec9075134040430caaef5f164adb0538"
         },
         {
             "m_Id": "03269a4cfca4426ebb2da2b70d26e8a8"
@@ -929,6 +1041,6 @@
     "m_SourceType": 1,
     "m_FunctionName": "TerrainGradient",
     "m_FunctionSource": "",
-    "m_FunctionBody": "if (height % 10 < 1 || height % 10 > 9)\n    color = float3(0.5,0.25,0.0);\nelse if (height < 245)\n    color = float3(0,1,0);\nelse if (height > 255 && height < 495)\n    color = float3(0.65625,0.832,0.6133);\nelse if (height > 505 && height < 995)\n    color = float3(0.836,0.906,0.8203);\nelse if (height > 1005 && height < 1495)\n    color = float3(0.875,0.875,0.742);\nelse if (height > 1505 && height < 1995)\n    color = float3(0.973,0.91,0.762);\nelse if (height > 2005 && height < 2495)\n    color = float3(0.922,0.824,0.707);\nelse if (height > 2505 && height < 2995)\n    color = float3(0.9375,0.6953,0.3672);\nelse if (height > 3005)\n    color = float3(0.738,0.543,0.2304);\nelse\n    color = float3(0.5,0.25,0.0);"
+    "m_FunctionBody": "float height = h + bias;\nif (height % 10 < 1 || height % 10 > 9)\n    color = float3(0.5,0.25,0.0);\nelse if (height < 245)\n    color = float3(0,1,0);\nelse if (height > 255 && height < 495)\n    color = float3(0.65625,0.832,0.6133);\nelse if (height > 505 && height < 995)\n    color = float3(0.836,0.906,0.8203);\nelse if (height > 1005 && height < 1495)\n    color = float3(0.875,0.875,0.742);\nelse if (height > 1505 && height < 1995)\n    color = float3(0.973,0.91,0.762);\nelse if (height > 2005 && height < 2495)\n    color = float3(0.922,0.824,0.707);\nelse if (height > 2505 && height < 2995)\n    color = float3(0.9375,0.6953,0.3672);\nelse if (height > 3005)\n    color = float3(0.738,0.543,0.2304);\nelse\n    color = float3(0.5,0.25,0.0);"
 }
 

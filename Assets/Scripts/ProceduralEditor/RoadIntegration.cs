@@ -155,7 +155,7 @@ public class RoadIntegration : MonoBehaviour
             // move first point to origin because of pathCreator
             Vector3 origin_pos = osm_reader.points_lib[bicycle_points_list[0]].position;
             double begin_lon = MercatorProjection.xToLon(osm_reader.points_lib[bicycle_points_list[0]].position.x + osm_reader.boundary_min.x);
-            double begin_ele = osm_reader.points_lib[bicycle_points_list[0]].position.y;
+            double begin_ele = origin_pos.y;
             double begin_lat = MercatorProjection.yToLat(osm_reader.points_lib[bicycle_points_list[0]].position.z + osm_reader.boundary_min.y);
             sw.WriteLine($"{begin_lon} {begin_ele} {begin_lat}");
             for (int bicycle_points_list_index = 0; bicycle_points_list_index < bicycle_points_list.Count; bicycle_points_list_index++)
