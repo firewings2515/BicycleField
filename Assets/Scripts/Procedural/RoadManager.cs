@@ -36,14 +36,12 @@ public class RoadManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Debug.Log(current_running_segment);
-        Debug.Log(current_loaded_segment);
         if (Info.MAX_LOADED_SEGMENT - current_segment <= Info.PRELOAD_SEGMENT)
         {
             getAndSetNextSegment();
-        }
 
-        path_creator.bezierPath = path_creator.bezierPath; //force update
+            path_creator.bezierPath = path_creator.bezierPath; //force update
+        }
     }
 
     private void getAndSetNextSegment()
