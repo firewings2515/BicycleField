@@ -16,6 +16,8 @@ public class OSMTerrainProcedural : MonoBehaviour
     int[] current_loc = new int[2];
     double[] current_pos = new double[2];
     double center_ele = 13.5;
+    Dictionary<Vector2, double> dp_ele = new Dictionary<Vector2, double>();
+    double near;
     // Start is called before the first frame update
     void Start()
     {
@@ -40,6 +42,7 @@ public class OSMTerrainProcedural : MonoBehaviour
             double[] terrain_size = new double[2] { rightbottom_pos_x - lefttop_pos[0], rightbottom_pos_z - lefttop_pos[2] };
             double dx = terrain_size[0] / resolution;
             double dz = terrain_size[1] / resolution;
+            near = dx / 1.1;
 
             current_pos[0] = MercatorProjection.xToLon(center_xyz[0]);
             current_pos[1] = MercatorProjection.yToLat(center_xyz[2]);
@@ -161,6 +164,7 @@ public class OSMTerrainProcedural : MonoBehaviour
             {
                 for (int j = 0; j < resolution + 1; j++)
                 {
+
                     terrain_points[i, j, 0] = lefttop_pos[0] + i * dx;
                     terrain_points[i, j, 1] = 0.0;
                     terrain_points[i, j, 2] = lefttop_pos[2] + j * dz;
@@ -182,7 +186,14 @@ public class OSMTerrainProcedural : MonoBehaviour
                     //float pos_x, pos_z;
                     //osm_editor.osm_reader.toUnityLocation(terrain_points[i, j].x, terrain_points[i, j].z, out pos_x, out pos_z);
                     terrain_points[i, j, 0] = MercatorProjection.lonToX(terrain_points[i, j, 0]) - center_xyz[0];
-                    terrain_points[i, j, 1] = all_elevations[i * (resolution + 1) + j] - center_xyz[1];
+                    double history_ele;
+                    if (searchClosing((float)terrain_points[i, j, 0], (float)terrain_points[i, j, 2], out history_ele))
+                        terrain_points[i, j, 1] = history_ele;
+                    else
+                    {
+                        terrain_points[i, j, 1] = all_elevations[i * (resolution + 1) + j] - center_xyz[1];
+                        dp_ele.Add(new Vector2((float)terrain_points[i, j, 0], (float)terrain_points[i, j, 2]), terrain_points[i, j, 1]);
+                    }
                     terrain_points[i, j, 2] = MercatorProjection.latToY(terrain_points[i, j, 2]) - center_xyz[2];
                     //terrain_points[i, j].x = pos_x;
                     //terrain_points[i, j].y = all_elevations[i * (resolution + 1) + j];
@@ -220,6 +231,25 @@ public class OSMTerrainProcedural : MonoBehaviour
             mesh.name = "terrain_mesh";
 
             terrain.GetComponent<MeshFilter>().mesh = mesh;
+        }
+
+        bool searchClosing(float x, float z, out double y)
+        {
+            if (dp_ele.ContainsKey(new Vector2(x, z)))
+            {
+                y = dp_ele[new Vector2(x, z)];
+                return true;
+            }
+            foreach (KeyValuePair<Vector2, double> point_info in dp_ele)
+            {
+                if (Vector2.Distance(point_info.Key, new Vector2(x, z)) < near)
+                {
+                    y = point_info.Value;
+                    return true;
+                }
+            }
+            y = 0;
+            return false;
         }
     }
 }
