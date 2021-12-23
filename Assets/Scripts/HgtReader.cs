@@ -9,7 +9,7 @@ public class HgtReader
 {
     static int resolution = 3601;
     static string hgt_file_location = "Assets\\Resources\\hgt\\";
-
+    static Dictionary<string, FileStream> hgt_file_map = new Dictionary<string, FileStream>();
     static int m_floor(float input)
     {
         return (int)Math.Floor(input);
@@ -60,7 +60,6 @@ public class HgtReader
 
     static public List<float> getElevations(List<EarthCoord> all_coords)
     {
-        Dictionary<string, FileStream> hgt_file_map = new Dictionary<string, FileStream>();
         List<KeyValuePair<string, int>> rows = new List<KeyValuePair<string, int>>();
         List<float> results = new List<float>();
         for (int i = 0; i < all_coords.Count; i++)
