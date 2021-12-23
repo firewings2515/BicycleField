@@ -381,6 +381,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   terrain_mat: {fileID: 2100000, guid: 0cac788e06cd93340be0c25f9a04e06f, type: 2}
+  center_pos:
+  - 121.6414614
+  - 25.217501
 --- !u!114 &1625938183
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -396,7 +399,7 @@ MonoBehaviour:
   osm3d_file_name: YangJin3D.osm
   is_initial: 0
   cam: {fileID: 1007382615}
-  initial_point: 1491311323
+  initial_point: 45263678_226830312+24
   view_instance: {fileID: 6379100898760342392, guid: 0070e3ca57a1355498c1e70df5223207, type: 3}
 --- !u!4 &1625938184
 Transform:
