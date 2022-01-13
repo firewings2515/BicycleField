@@ -8,7 +8,8 @@ using System.Xml;
 using System.Threading;
 using PathCreation;
 using PathCreation.Examples;
-
+using Unity.Jobs;
+using Unity.Burst;
 //using Cinemachine;
 
 public class OSMReaderManager : MonoBehaviour
@@ -761,10 +762,30 @@ public class OSMReaderManager : MonoBehaviour
         ShapeGrammarBuilder.setParam("height", building_height.ToString(), context_id);
         ShapeGrammarBuilder.setParam("splitfacade", Random.Range(2, 6).ToString(), context_id);
         ShapeGrammarBuilder.setParam("maxSize", Mathf.Max(Mathf.Abs(maxSize.x), Mathf.Abs(maxSize.y)).ToString(), context_id);
-
+        
+        yield return null;
         // build the house mesh
         bool done = false;
         //Debug.Log("Start Thread: " + id.ToString());
+        //System.Threading.ThreadPool.QueueUserWorkItem(o =>
+        //{
+        //    ShapeGrammarBuilder.buildShape(context_id);
+        //    done = true;
+        //});
+
+
+        BuildingCreationJob job = new BuildingCreationJob {
+            _context_id = context_id
+        };
+
+        var jobHandle = job.Schedule();
+
+        for (int i = 0; i < house_index / 3; i++)
+        {
+            yield return null;
+        }
+        jobHandle.Complete();
+        /*
         Thread thread = new Thread(() =>
         {
             ShapeGrammarBuilder.buildShape(context_id);
@@ -775,8 +796,10 @@ public class OSMReaderManager : MonoBehaviour
         // wait until function finish
         while (!done)
         {
+            Debug.Log("wait for creation");
             yield return null;
-        }
+        }*/
+
         Debug.Log("Finished Thread: " + house_index.ToString());
 
         // record the mesh in obj and mtl format
@@ -808,11 +831,13 @@ public class OSMReaderManager : MonoBehaviour
             hierarchy_c.heirarchy_master[belong_to_hier_x[belong_index], belong_to_hier_y[belong_index]].objects.Add(instance_h);
         }
 
-
+        Debug.Log("A building creation finished");
+        yield return null;
     }
 
     IEnumerator getIndexCreateMesh(int index)
     {
+        Debug.Log("A building creation Init-----");
         // wait for the free builder to build mesh
         int context_index = ShapeGrammarBuilder.getFreeStack();
         while (context_index == -1)
@@ -820,6 +845,7 @@ public class OSMReaderManager : MonoBehaviour
             context_index = ShapeGrammarBuilder.getFreeStack();
             yield return null;
         }
+        Debug.Log("A building creation start");
         StartCoroutine(createHousePolygon(osm_reader.houses[index].ref_node, index, osm_reader.houses[index].id, context_index));
     }
 
@@ -940,6 +966,7 @@ public class OSMReaderManager : MonoBehaviour
             hierarchy_c.beginHierarchy();
 
             finish_create = true;
+            Debug.Log("orm start finished");
         }
     }
 
@@ -1021,4 +1048,14 @@ public class OSMReaderManager : MonoBehaviour
     //    }
     //    Resources.UnloadUnusedAssets();
     //}
+}
+
+[BurstCompile]
+public struct BuildingCreationJob : IJob
+{
+    public int _context_id;
+    public void Execute()
+    {
+        ShapeGrammarBuilder.buildShape(this._context_id);
+    }
 }
