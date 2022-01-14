@@ -3,7 +3,9 @@ guid: 21e3e2c6b163fc042a64efc6b56a5300
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - road_material: {fileID: 2100000, guid: b5df4735192845740bd11076dc9cdc99, type: 2}
+  - road_underside_material: {fileID: 2100000, guid: c1d8d882244c5344fa86a8fd23246f81, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
