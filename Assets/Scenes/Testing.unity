@@ -508,11 +508,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 333408365}
-<<<<<<< Updated upstream
-  m_Mesh: {fileID: 183068028}
-=======
   m_Mesh: {fileID: 1121346974}
->>>>>>> Stashed changes
 --- !u!114 &333408374
 MonoBehaviour:
   m_ObjectHideFlags: 0
