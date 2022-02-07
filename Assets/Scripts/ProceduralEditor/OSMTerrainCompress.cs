@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using PathCreation;
 using PathCreation.Examples;
+using System.Linq;
 
 public class OSMTerrainCompress : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class OSMTerrainCompress : MonoBehaviour
     public bool is_initial = false;
     public GameObject test_ball;
     Vector3[] point_cloud;
+    public Material terrain_mat;
 
     // Start is called before the first frame update
     void Start()
@@ -75,6 +77,7 @@ public class OSMTerrainCompress : MonoBehaviour
             }
 
             point_cloud = point_cloud_list.ToArray();
+            showPoint(point_cloud);
 
             generateTINTerrain(point_cloud);
         }
@@ -82,11 +85,16 @@ public class OSMTerrainCompress : MonoBehaviour
 
     void showPoint(List<Vector3> path_points_dp)
     {
-        foreach (Vector3 point in path_points_dp)
+        showPoint(path_points_dp.ToArray());
+    }
+
+    void showPoint(Vector3[] path_points_dp)
+    {
+        for (int point_index = 0; point_index < path_points_dp.Length; point_index++)
         {
-            GameObject ball = Instantiate(test_ball, point, Quaternion.identity);
+            GameObject ball = Instantiate(test_ball, path_points_dp[point_index], Quaternion.identity);
             ball.transform.localScale = new Vector3(10, 10, 10);
-            ball.name = "ball";
+            ball.name = "ball_" + point_index.ToString();
         }
     }
 
@@ -128,7 +136,6 @@ public class OSMTerrainCompress : MonoBehaviour
             }
 
             terrain_feature_points[dir] = DouglasPeuckerAlgorithm.DouglasPeucker(terrain_feature_points[dir], 4.0f);
-            showPoint(terrain_feature_points[dir]);
         }
         
         return terrain_feature_points;
@@ -142,10 +149,11 @@ public class OSMTerrainCompress : MonoBehaviour
         List<int> point1_index_list = new List<int>();
         List<int> point2_index_list = new List<int>();
         pointsetPartition(ref point_index_list, ref alpha, is_vertical_alpha, ref point1_index_list, ref point2_index_list);
-
+        Debug.Log("alpha: " + alpha.ToString());
         if (afl.Count == 0)
         {
-
+            List<List<int>> simplex_list_t = makeFirstSimplex(point_index_list, alpha, is_vertical_alpha);
+            simplex_list = simplex_list_t; // temporary add
         }
 
         return simplex_list;
@@ -153,17 +161,17 @@ public class OSMTerrainCompress : MonoBehaviour
 
     void pointsetPartition(ref List<int> point_index_list, ref float alpha_pxz, bool is_vertical_alpha, ref List<int> point1_index_list, ref List<int> point2_index_list)
     {
-        mergeSortForPointCloud(ref point_index_list, 0, point_index_list.Count, point_index_list, is_vertical_alpha);
+        mergeSortForPointCloud(ref point_index_list, 0, point_index_list.Count, new List<int>(point_index_list), is_vertical_alpha);
         if (is_vertical_alpha)
         {
             alpha_pxz = (point_cloud[point_index_list[point_index_list.Count / 2 - 1]].x + point_cloud[point_index_list[point_index_list.Count / 2]].x) / 2;
 
-            foreach (int point_index in point_index_list)
+            for (int point_index_index = 0; point_index_index < point_index_list.Count; point_index_index++)
             {
-                if (point_cloud[point_index].x < alpha_pxz)
-                    point1_index_list.Add(point_index);
+                if (point_cloud[point_index_list[point_index_index]].x < alpha_pxz)
+                    point1_index_list.Add(point_index_list[point_index_index]);
                 else
-                    point2_index_list.Add(point_index);
+                    point2_index_list.Add(point_index_list[point_index_index]);
             }
             //float max_x = point_cloud[point_index_list[0]].x;
             //float min_x = point_cloud[point_index_list[0]].x;
@@ -186,29 +194,247 @@ public class OSMTerrainCompress : MonoBehaviour
         {
             alpha_pxz = (point_cloud[point_index_list[point_index_list.Count / 2 - 1]].z + point_cloud[point_index_list[point_index_list.Count / 2]].z) / 2;
 
-            foreach (int point_index in point_index_list)
+            for (int point_index_index = 0; point_index_index < point_index_list.Count; point_index_index++)
             {
-                if (point_cloud[point_index].z < alpha_pxz)
-                    point1_index_list.Add(point_index);
+                if (point_cloud[point_index_list[point_index_index]].z < alpha_pxz)
+                    point1_index_list.Add(point_index_list[point_index_index]);
                 else
-                    point2_index_list.Add(point_index);
+                    point2_index_list.Add(point_index_list[point_index_index]);
             }
         }
     }
 
-    void makeFirstSimplex()
+    List<List<int>> makeFirstSimplex(List<int> point_index_list, float alpha_pxz, bool is_vertical_alpha)
     {
+        List<List<int>> simplex_list_t = new List<List<int>>();
 
+        int p1_index = point_index_list[point_index_list.Count / 2 - 1];
+        int p2_index = point_index_list[point_index_list.Count / 2];
+        float dist_min = distance2D(point_cloud[p1_index], point_cloud[p2_index]);
+        for (int point_index_index = point_index_list.Count / 2 + 1; point_index_index < point_index_list.Count; point_index_index++)
+        {
+            float dist_min_t = distance2D(point_cloud[p1_index], point_cloud[point_index_list[point_index_index]]);
+            if (dist_min > dist_min_t)
+            {
+                dist_min = dist_min_t;
+                p2_index = point_index_list[point_index_index];
+            }
+        }
+
+        Queue<KeyValuePair<int, int>> line_q = new Queue<KeyValuePair<int, int>>();
+        Queue<int> side_q = new Queue<int>(); // 1 need left, 2 need right, 3 need all
+        HashSet<KeyValuePair<int, int>> line_q_lib = new HashSet<KeyValuePair<int, int>>();
+        line_q.Enqueue(new KeyValuePair<int, int>(p1_index, p2_index));
+        line_q.Enqueue(new KeyValuePair<int, int>(p1_index, p2_index));
+        side_q.Enqueue(-1);
+        side_q.Enqueue(1);
+        line_q_lib.Add(line_q.Peek());
+        while (line_q.Count > 0)
+        {
+            p1_index = line_q.Peek().Key;
+            p2_index = line_q.Peek().Value;
+            //Debug.Log(p1_index.ToString() + "~" + p2_index.ToString());
+            if ((is_vertical_alpha && point_cloud[p1_index].x < point_cloud[p2_index].x) ||
+                (!is_vertical_alpha && point_cloud[p1_index].z < point_cloud[p2_index].z))
+            {
+                int t = p1_index;
+                p1_index = p2_index;
+                p2_index = t;
+            }
+            //Debug.Log(p1_index);
+            //Debug.Log(p2_index);
+            int p3_index = -1; // only for initial 
+            float r_min = float.MaxValue;
+            bool is_afl1_point = false;
+            for (int point_index_index = point_index_list.Count / 2 + 1; point_index_index < point_index_list.Count; point_index_index++)
+            {
+                if (point_index_list[point_index_index] != p1_index && point_index_list[point_index_index] != p2_index && !line_q_lib.Contains(new KeyValuePair<int, int>(p1_index, point_index_list[point_index_index])) && !line_q_lib.Contains(new KeyValuePair<int, int>(point_index_list[point_index_index], p1_index)))
+                {
+                    float r = circumCircleRadius(point_cloud[p1_index], point_cloud[p2_index], point_cloud[point_index_list[point_index_index]]);
+                    //if (r_min > r && ((side_q.Peek() == 2 && pointSide(point_cloud[p1_index], point_cloud[p2_index], point_cloud[point_index_list[point_index_index]]) < 0) ||
+                    //                  (side_q.Peek() == 1 && pointSide(point_cloud[p1_index], point_cloud[p2_index], point_cloud[point_index_list[point_index_index]]) > 0)))
+                    if (r_min > r && side_q.Peek() == pointSide(point_cloud[p1_index], point_cloud[p2_index], point_cloud[point_index_list[point_index_index]]) && !isContainSimplex(ref simplex_list_t, clockwiseCorrect(new List<int>() { p1_index, p2_index, point_index_list[point_index_index] })))
+                    {
+                        r_min = r;
+                        p3_index = point_index_list[point_index_index];
+                        is_afl1_point = false;
+                    }
+                }
+            }
+            
+            //if (p3_index > -1)
+            //{
+            //    KeyValuePair<int, int> simplex_line = new KeyValuePair<int, int>(p1_index, p3_index);
+            //    List<int> simplex = clockwiseCorrect(new List<int>() { p1_index, p2_index, p3_index });
+            //    if (!simplex_list_t.Contains(simplex))
+            //    {
+            //        simplex_list_t.Add(simplex);
+            //        line_q.Enqueue(simplex_line);
+            //        side_q.Enqueue(!side_q.Peek()); // need left (vertical alpha)
+            //        Debug.Log(simplex[0].ToString() + ", " + simplex[1].ToString() + ", " + simplex[2].ToString());
+            //    }
+            //}
+
+            //if (found_afl1_point)
+            //{
+            //    line_q.Dequeue();
+            //    side_q.Dequeue();
+            //    continue;
+            //}
+
+            for (int point_index_index = point_index_list.Count / 2 - 2; point_index_index >= 0; point_index_index--)
+            {
+                if (point_index_list[point_index_index] != p1_index && point_index_list[point_index_index] != p2_index && !line_q_lib.Contains(new KeyValuePair<int, int>(p2_index, point_index_list[point_index_index])) && !line_q_lib.Contains(new KeyValuePair<int, int>(point_index_list[point_index_index], p2_index)))
+                {
+                    float r = circumCircleRadius(point_cloud[p1_index], point_cloud[p2_index], point_cloud[point_index_list[point_index_index]]);
+                    if (r_min > r && side_q.Peek() == pointSide(point_cloud[p1_index], point_cloud[p2_index], point_cloud[point_index_list[point_index_index]]) && !isContainSimplex(ref simplex_list_t, clockwiseCorrect(new List<int>() { p1_index, p2_index, point_index_list[point_index_index] })))
+                    //if (r_min > r && ((side_q.Peek() == 2 && pointSide(point_cloud[p1_index], point_cloud[p2_index], point_cloud[point_index_list[point_index_index]]) < 0) ||
+                    //                  (side_q.Peek() == 1 && pointSide(point_cloud[p1_index], point_cloud[p2_index], point_cloud[point_index_list[point_index_index]]) > 0)))
+                    {
+                        r_min = r;
+                        p3_index = point_index_list[point_index_index];
+                        is_afl1_point = true;
+                    }
+                }
+            }
+
+            if (p3_index > -1)
+            {
+                KeyValuePair<int, int> simplex_line;
+                if (is_afl1_point)
+                {
+                    if ((is_vertical_alpha && point_cloud[p1_index].x < point_cloud[p2_index].x) ||
+                        (!is_vertical_alpha && point_cloud[p1_index].z < point_cloud[p2_index].z))
+                        simplex_line = new KeyValuePair<int, int>(p2_index, p3_index);
+                    else
+                        simplex_line = new KeyValuePair<int, int>(p1_index, p3_index);
+                }
+                else
+                {
+                    if ((is_vertical_alpha && point_cloud[p1_index].x < point_cloud[p2_index].x) ||
+                        (!is_vertical_alpha && point_cloud[p1_index].z < point_cloud[p2_index].z))
+                        simplex_line = new KeyValuePair<int, int>(p1_index, p3_index);
+                    else
+                        simplex_line = new KeyValuePair<int, int>(p2_index, p3_index);
+                }
+                List<int> simplex = clockwiseCorrect(new List<int>() { p1_index, p2_index, p3_index });
+                if (!isContainSimplex(ref simplex_list_t, simplex))
+                {
+                    simplex_list_t.Add(simplex);
+                    line_q.Enqueue(simplex_line);
+                    //if (is_afl1_point)
+                    //    side_q.Enqueue(1); // need right (vertical alpha)
+                    //else
+                    //    side_q.Enqueue(-1); // need right (vertical alpha)
+                    side_q.Enqueue(side_q.Peek());
+                    //Debug.Log(simplex[0].ToString() + ", " + simplex[1].ToString() + ", " + simplex[2].ToString() + " is afl1:" + is_afl1_point.ToString());
+                }
+            }
+
+            line_q.Dequeue();
+            side_q.Dequeue();
+        }
+        //int first_point_index = 0;
+        //float point_xz_min;
+
+        //point_xz_min = point_cloud[first_point_index].z;
+        //foreach (int point_index in point_index_list) // find bottom
+        //{
+        //    if (point_xz_min > point_cloud[first_point_index].z)
+        //    {
+        //        point_xz_min = point_cloud[first_point_index].z;
+        //        first_point_index = point_index;
+        //    }
+        //}
+
+
+        //point_xz_min = point_cloud[first_point_index].x;
+        //foreach (int point_index in point_index_list) // find bottom
+        //{
+        //if (point_xz_min > point_cloud[first_point_index].x)
+        //{
+        //    point_xz_min = point_cloud[first_point_index].x;
+        //    first_point_index = point_index;
+        //}
+        //}
+        return simplex_list_t;
     }
 
     float circumCircleRadius(Vector3 P1, Vector3 P2, Vector3 P3)
     {
-        float a = Vector3.Distance(P1, P2);
-        float b = Vector3.Distance(P2, P3);
-        float c = Vector3.Distance(P1, P3);
+        float a = distance2D(P1, P2);
+        float b = distance2D(P2, P3);
+        float c = distance2D(P1, P3);
         float s = (a + b + c) / 2;
         float A = Mathf.Sqrt(s * (s - a) * (s - b) * (s - c));
         return a * b * c / (4 * A);
+    }
+
+    List<int> clockwiseCorrect(List<int> simplex)
+    {
+        //float m1 = (point_cloud[simplex[1]].z - point_cloud[simplex[0]].z) / (point_cloud[simplex[1]].x - point_cloud[simplex[0]].x);
+        //float m2 = (point_cloud[simplex[2]].z - point_cloud[simplex[1]].z) / (point_cloud[simplex[2]].x - point_cloud[simplex[1]].x);
+        //Debug.Log(simplex[0] + "~" + simplex[1] + "~" + simplex[2]);
+        //Debug.Log("m: " + m1.ToString() + " " + m2.ToString());
+        if ((point_cloud[simplex[1]].z - point_cloud[simplex[0]].z) * (point_cloud[simplex[2]].x - point_cloud[simplex[1]].x) - (point_cloud[simplex[2]].z - point_cloud[simplex[1]].z) * (point_cloud[simplex[1]].x - point_cloud[simplex[0]].x) < 0) // left
+        {
+            int t = simplex[2];
+            simplex[2] = simplex[0];
+            simplex[0] = t;
+        }
+        while (simplex[1] < simplex[0])
+        {
+            simplex.Add(simplex[0]);
+            simplex.RemoveAt(0);
+        }
+        return simplex;
+    }
+
+    //***********************************************************************
+    //
+    // * Returns which side of the edge the line (x,y) is on. The return value
+    //   is one of the constants defined above (LEFT, RIGHT, ON). See above
+    //   for a discussion of which side is left and which is right.
+    //=======================================================================
+    int pointSide(Vector3 side_p1, Vector3 side_p2, Vector3 p)
+    {
+        // Compute the determinant: | xs ys 1 |
+        //                          | xe ye 1 |
+        //                          | x  y  1 |
+        // Use its sign to get the answer.
+
+        float det;
+
+        det = side_p1.x *
+                (side_p2.z - p.z) -
+                side_p1.z *
+                (side_p2.x - p.x) +
+                side_p2.x * p.z -
+                side_p2.z * p.x;
+
+        if (det == 0.0)
+            return 0;
+        else if (det > 0.0)
+            return -1;
+        else
+            return 1;
+
+        //return sign((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax));
+    }
+
+    bool isLeft(Vector3 a, Vector3 b, Vector3 c)
+    {
+        return ((b.x - a.x) * (c.z - a.z) - (b.z - a.z) * (c.x - a.x)) > 0;
+    }
+
+    bool isContainSimplex(ref List<List<int>> simplex_list, List<int> simplex)
+    {
+        for (int simplex_list_index = 0; simplex_list_index < simplex_list.Count; simplex_list_index++)
+        {
+            if (simplex_list[simplex_list_index].SequenceEqual(simplex))
+                return true;
+        }
+        return false;
     }
 
     void generateTINTerrain(Vector3[] point_cloud)
@@ -219,12 +445,35 @@ public class OSMTerrainCompress : MonoBehaviour
             point_index_list.Add(point_index);
         }
 
-        DeWall(point_index_list, new List<List<int>>(), true);
+        List<List<int>> simplex_list = DeWall(point_index_list, new List<List<int>>(), true);
 
         Mesh mesh = new Mesh();
         Vector3[] vertice = new Vector3[point_cloud.Length];
+        int[] indices = new int[simplex_list.Count * 3];
 
-        //int[] indices = new int[6 * resolution * resolution];
+        List<int>[] simplex_list_array = new List<int>[simplex_list.Count];
+        simplex_list.CopyTo(simplex_list_array);
+        for (int simplex_index = 0; simplex_index < simplex_list_array.Length; simplex_index++)
+        {
+            indices[simplex_index * 3] = simplex_list_array[simplex_index][0];
+            indices[simplex_index * 3 + 1] = simplex_list_array[simplex_index][1];
+            indices[simplex_index * 3 + 2] = simplex_list_array[simplex_index][2];
+        }
+        Debug.Log("030" + simplex_list.Count);
+        mesh.vertices = point_cloud;
+        mesh.triangles = indices;
+        //Recalculations
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        mesh.Optimize();
+        //Name the mesh
+        mesh.name = "terrain_compress_mesh";
+        GameObject terrain = new GameObject("terrain_compress");
+        MeshFilter mf = terrain.AddComponent<MeshFilter>();
+        MeshRenderer mr = terrain.AddComponent<MeshRenderer>();
+        mf.mesh = mesh;
+        mr.material = terrain_mat;
+
         //int indices_index = 0;
         //for (int i = 0; i < resolution + 1; i++)
         //{
@@ -285,14 +534,14 @@ public class OSMTerrainCompress : MonoBehaviour
         if (y - x > 1)
         {
             int m = x + (y - x) / 2;
-            mergeSortForPointCloud(ref point_index_list, x, m, point_index_list, is_vertical_alpha);
-            mergeSortForPointCloud(ref point_index_list, m, y, point_index_list, is_vertical_alpha);
+            mergeSortForPointCloud(ref point_index_list, x, m, point_index_list_t, is_vertical_alpha);
+            mergeSortForPointCloud(ref point_index_list, m, y, point_index_list_t, is_vertical_alpha);
             int p = x, q = m;
             int index = x;
             while (p < m && q < y)
             {
                 if ((is_vertical_alpha && point_cloud[point_index_list[p]].x < point_cloud[point_index_list[q]].x) ||
-                    (point_cloud[point_index_list[p]].z < point_cloud[point_index_list[q]].z))
+                    (!is_vertical_alpha && point_cloud[point_index_list[p]].z < point_cloud[point_index_list[q]].z))
                     point_index_list_t[index++] = point_index_list[p++];
                 else
                     point_index_list_t[index++] = point_index_list[q++];
@@ -304,5 +553,10 @@ public class OSMTerrainCompress : MonoBehaviour
             for (int i = x; i < y; i++)
                 point_index_list[i] = point_index_list_t[i];
         }
+    }
+
+    float distance2D(Vector3 p1, Vector3 p2)
+    {
+        return Mathf.Sqrt(Mathf.Pow(p1.x - p2.x, 2) + Mathf.Pow(p1.z - p2.z, 2));
     }
 }
