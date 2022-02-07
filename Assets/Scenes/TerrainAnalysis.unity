@@ -361,6 +361,7 @@ GameObject:
   - component: {fileID: 1625938183}
   - component: {fileID: 1625938182}
   - component: {fileID: 1625938185}
+  - component: {fileID: 1625938186}
   m_Layer: 0
   m_Name: OSMReader
   m_TagString: Untagged
@@ -400,7 +401,7 @@ MonoBehaviour:
   osm3d_file_name: YangJin3D.osm
   is_initial: 0
   cam: {fileID: 1007382615}
-  initial_point: 45263678_226830312+24
+  initial_point: 288778545
   view_instance: {fileID: 6379100898760342392, guid: 0070e3ca57a1355498c1e70df5223207, type: 3}
 --- !u!4 &1625938184
 Transform:
@@ -431,3 +432,17 @@ MonoBehaviour:
   is_initial: 0
   roads_polygon_mat: {fileID: 2100000, guid: 5e3d6923654f8c2419ca4b91c25456bd, type: 2}
   road_name_prefab: {fileID: 9146525926992887130, guid: 6993db0a6ac333041b10714693e86c19, type: 3}
+--- !u!114 &1625938186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1625938181}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fec65d4b0cc903741a5ef1f0f641f9af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  is_initial: 0
+  test_ball: {fileID: 7606946595633192119, guid: 7a7e0a9491a268e4881caac315264c20, type: 3}

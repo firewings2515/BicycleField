@@ -31,6 +31,14 @@ public class OSMReader
         z = (float)MercatorProjection.latToY(lat) - boundary_min.y;
     }
 
+    public void toLonAndLat(float x, float z, out float lon, out float lat)
+    {
+        x += boundary_min.x;
+        z += boundary_min.y;
+        lon = (float)MercatorProjection.xToLon(x);
+        lat = (float)MercatorProjection.yToLat(z);
+    }
+
     public void readOSM(string file_path, bool write_osm3d = false, string osm3d_file_path = "")  //, Vector2 _OSM_size
     {
         if (!write_osm3d)
