@@ -11,6 +11,7 @@ public class OSMTerrainCompress : MonoBehaviour
     public bool is_initial = false;
     public GameObject test_ball;
     Vector3[] point_cloud;
+    bool[] point_cloud_valid;
     public Material terrain_mat;
     int p_c = 0;
 
@@ -70,7 +71,7 @@ public class OSMTerrainCompress : MonoBehaviour
             // W8D
             for (int point_index = 0; point_index < terrain_board_points.Count; point_index++)
             {
-                List<List<Vector3>> w8d = W8D(terrain_board_points[point_index]); // need to limit boundary
+                List<List<Vector3>> w8d = W8D(terrain_board_points[point_index], point_cloud_list); // need to limit boundary
                 foreach (List<Vector3> points in w8d)
                 {
                     point_cloud_list.AddRange(points);
@@ -78,6 +79,9 @@ public class OSMTerrainCompress : MonoBehaviour
             }
 
             point_cloud = point_cloud_list.ToArray();
+            point_cloud_valid = new bool[point_cloud_list.Count];
+            for (int point_cloud_valid_index = 0; point_cloud_valid_index < point_cloud_valid.Length; point_cloud_valid_index++)
+                point_cloud_valid[point_cloud_valid_index] = true;
             showPoint(point_cloud);
 
             generateTINTerrain(point_cloud);
@@ -104,7 +108,7 @@ public class OSMTerrainCompress : MonoBehaviour
         
     }
 
-    List<List<Vector3>> W8D(Vector3 center)
+    List<List<Vector3>> W8D(Vector3 center, List<Vector3> point_cloud_list)
     {
         Vector3[] directions = new Vector3[8] { new Vector3(1.0f,0.0f,0.0f), new Vector3(0.707f, 0.0f, 0.707f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(-0.707f, 0.0f, 0.707f), new Vector3(-1.0f, 0.0f, 0.0f), new Vector3(-0.707f, 0.0f, -0.707f), new Vector3(0.0f, 0.0f, -1.0f), new Vector3(0.707f, 0.0f, -0.707f) };
         List<List<Vector3>> terrain_feature_points = new List<List<Vector3>>();
@@ -133,7 +137,17 @@ public class OSMTerrainCompress : MonoBehaviour
             {
                 float unity_x, unity_z;
                 osm_editor.osm_reader.toUnityLocation(terrain_feature_lonlats[point_index].x, terrain_feature_lonlats[point_index].z, out unity_x, out unity_z);
-                terrain_feature_points[dir].Add(new Vector3(unity_x, all_elevations[point_index], unity_z));
+                bool is_too_near = false;
+                for (int point_cloud_index = 0; point_cloud_index < point_cloud_list.Count; point_cloud_index++)
+                {
+                    if (distance2D(point_cloud_list[point_cloud_index].x, point_cloud_list[point_cloud_index].z, unity_x, unity_z) < 25.0f)
+                    {
+                        is_too_near = true;
+                        break;
+                    }
+                }
+                if (!is_too_near)
+                    terrain_feature_points[dir].Add(new Vector3(unity_x, all_elevations[point_index], unity_z));
             }
 
             terrain_feature_points[dir] = DouglasPeuckerAlgorithm.DouglasPeucker(terrain_feature_points[dir], 4.0f);
@@ -142,10 +156,10 @@ public class OSMTerrainCompress : MonoBehaviour
         return terrain_feature_points;
     }
 
-    List<List<int>> DeWall(List<int> point_index_list, List<KeyValuePair<int, int>> afl, ref List<KeyValuePair<int, int>> afl_lib, bool is_vertical_alpha, int growth_dir, int p)
+    List<List<int>> DeWall(List<int> point_index_list, List<KeyValuePair<int, int>> afl, ref List<KeyValuePair<int, int>> afl_remain, bool is_vertical_alpha, int growth_dir, int p)
     {
         List<List<int>> simplex_list = new List<List<int>>();
-        //if (p >= 6) return simplex_list;
+        if (p >= 8) return simplex_list;
         float alpha = 0.0f;
         List<int> point1_index_list = new List<int>();
         List<int> point2_index_list = new List<int>();
@@ -155,30 +169,30 @@ public class OSMTerrainCompress : MonoBehaviour
         {
             pointsetPartition(ref point_index_list, ref alpha, is_vertical_alpha, ref point1_index_list, ref point2_index_list);
             Debug.Log("alpha: " + alpha.ToString());
-            List<List<int>> simplex_list_t = makeSimplex(point_index_list, alpha, is_vertical_alpha, ref afl_lib, ref afl1, ref afl2, 0, new KeyValuePair<int, int>()); // MakeFirstSimplex
+            List<List<int>> simplex_list_t = makeSimplex(point_index_list, alpha, is_vertical_alpha, ref afl_remain, ref afl1, ref afl2, 0, new KeyValuePair<int, int>()); // MakeFirstSimplex
             simplex_list.AddRange(simplex_list_t);
         }
         else
         {
             KeyValuePair<int, int> middle_afl = pointsetPartition(ref point_index_list, ref alpha, is_vertical_alpha, ref point1_index_list, ref point2_index_list, afl);
             Debug.Log("alpha: " + alpha.ToString() + "afl: " + middle_afl.ToString());
-            List<List<int>> simplex_list_t = makeSimplex(point_index_list, alpha, is_vertical_alpha, ref afl_lib, ref afl1, ref afl2, growth_dir, middle_afl); // MakeFirstSimplex
+            List<List<int>> simplex_list_t = makeSimplex(point_index_list, alpha, is_vertical_alpha, ref afl_remain, ref afl1, ref afl2, growth_dir, middle_afl); // MakeFirstSimplex
             simplex_list.AddRange(simplex_list_t);
         }
 
         if (afl1.Count > 0)
         {
             if (is_vertical_alpha)
-                simplex_list.AddRange(DeWall(point1_index_list, afl1, ref afl_lib, !is_vertical_alpha, 1, p + 1));
+                simplex_list.AddRange(DeWall(point1_index_list, afl1, ref afl_remain, !is_vertical_alpha, 1, p + 1));
             else
-                simplex_list.AddRange(DeWall(point1_index_list, afl1, ref afl_lib, !is_vertical_alpha, -1, p + 1));
+                simplex_list.AddRange(DeWall(point1_index_list, afl1, ref afl_remain, !is_vertical_alpha, -1, p + 1));
         }
         if (afl2.Count > 0)
         {
             if (is_vertical_alpha)
-                simplex_list.AddRange(DeWall(point2_index_list, afl2, ref afl_lib, !is_vertical_alpha, -1, p + 1));
+                simplex_list.AddRange(DeWall(point2_index_list, afl2, ref afl_remain, !is_vertical_alpha, -1, p + 1));
             else
-                simplex_list.AddRange(DeWall(point2_index_list, afl2, ref afl_lib, !is_vertical_alpha, 1, p + 1));
+                simplex_list.AddRange(DeWall(point2_index_list, afl2, ref afl_remain, !is_vertical_alpha, 1, p + 1));
         }
 
         return simplex_list;
@@ -253,7 +267,7 @@ public class OSMTerrainCompress : MonoBehaviour
         return afl[middle_xz[middle_xz.Count / 2].Value];
     }
 
-    List<List<int>> makeSimplex(List<int> point_index_list, float alpha_pxz, bool is_vertical_alpha, ref List<KeyValuePair<int, int>> afl_lib, ref List<KeyValuePair<int, int>> afl1, ref List<KeyValuePair<int, int>> afl2, int growth_dir, KeyValuePair<int, int> middle_afl)
+    List<List<int>> makeSimplex(List<int> point_index_list, float alpha_pxz, bool is_vertical_alpha, ref List<KeyValuePair<int, int>> afl_remain, ref List<KeyValuePair<int, int>> afl1, ref List<KeyValuePair<int, int>> afl2, int growth_dir, KeyValuePair<int, int> middle_afl)
     {
         List<List<int>> simplex_list_t = new List<List<int>>();
 
@@ -286,6 +300,10 @@ public class OSMTerrainCompress : MonoBehaviour
         else
         {
             line_q.Enqueue(middle_afl);
+            if (afl_remain.Contains(middle_afl))
+                afl_remain.Remove(middle_afl);
+            if (afl_remain.Contains(new KeyValuePair<int, int>(middle_afl.Value, middle_afl.Key)))
+                afl_remain.Remove(new KeyValuePair<int, int>(middle_afl.Value, middle_afl.Key));
             side_q.Enqueue(growth_dir);
         }
         line_q_lib.Add(line_q.Peek());
@@ -300,13 +318,18 @@ public class OSMTerrainCompress : MonoBehaviour
                 p1_index = p2_index;
                 p2_index = t;
             }
-            Debug.Log(p1_index.ToString() + "~" + p2_index.ToString());
+            Debug.Log(p1_index.ToString() + "~" + p2_index.ToString() + " isvertical: " + is_vertical_alpha + " alpha: " + alpha_pxz);
             int p3_index = -1; // only for initial 
             float r_min = float.MaxValue;
             bool is_afl1_point = false;
             bool counter_boundary = false;
+            KeyValuePair<int, int> boundary_afl = new KeyValuePair<int, int>();
             for (int point_index_index = 0; point_index_index < point_index_list.Count; point_index_index++)
             {
+                if (!point_cloud_valid[point_index_list[point_index_index]])
+                    continue;
+                if (p1_index == 330 && p2_index == 263)
+                    continue;
                 bool is_afl1_point_t = ((is_vertical_alpha && point_cloud[point_index_list[point_index_index]].x < alpha_pxz) || (!is_vertical_alpha && point_cloud[point_index_list[point_index_index]].z > alpha_pxz));
                 if (point_index_list[point_index_index] != p1_index && point_index_list[point_index_index] != p2_index &&
                     ((!is_afl1_point_t && !line_q_lib.Contains(new KeyValuePair<int, int>(p1_index, point_index_list[point_index_index])) && !line_q_lib.Contains(new KeyValuePair<int, int>(point_index_list[point_index_index], p1_index))) ||
@@ -317,12 +340,62 @@ public class OSMTerrainCompress : MonoBehaviour
                     //                  (side_q.Peek() == 1 && pointSide(point_cloud[p1_index], point_cloud[p2_index], point_cloud[point_index_list[point_index_index]]) > 0)))
                     if (r_min > r && side_q.Peek() == pointSide(point_cloud[p1_index], point_cloud[p2_index], point_cloud[point_index_list[point_index_index]]) && !isContainSimplex(ref simplex_list_t, clockwiseCorrect(new List<int>() { p1_index, p2_index, point_index_list[point_index_index] })))
                     {
+                        bool connect_valid = true;
+                        for (int point_check_index = 0; point_check_index < point_index_list.Count; point_check_index++)
+                        {
+                            if (!point_cloud_valid[point_index_list[point_check_index]] || point_index_list[point_check_index] == p1_index || point_index_list[point_check_index] == p2_index || point_index_list[point_check_index] == point_index_list[point_index_index])
+                                continue;
+                            if (pointInTriangle(point_cloud[point_index_list[point_check_index]], point_cloud[p1_index], point_cloud[p2_index], point_cloud[point_index_list[point_index_index]]))
+                            {
+                                connect_valid = false;
+                                break;
+                            }
+                        }
+
+                        if (!connect_valid)
+                            continue;
+
                         r_min = r;
                         p3_index = point_index_list[point_index_index];
                         is_afl1_point = is_afl1_point_t;
 
-                        counter_boundary = ((is_afl1_point_t && (afl_lib.Contains(new KeyValuePair<int, int>(p2_index, point_index_list[point_index_index])) || afl_lib.Contains(new KeyValuePair<int, int>(point_index_list[point_index_index], p2_index)))) ||
-                                            (!is_afl1_point_t && (afl_lib.Contains(new KeyValuePair<int, int>(p1_index, point_index_list[point_index_index])) || afl_lib.Contains(new KeyValuePair<int, int>(point_index_list[point_index_index], p1_index)))));
+                        //counter_boundary = ((is_afl1_point_t && (afl_lib.Contains(new KeyValuePair<int, int>(p2_index, point_index_list[point_index_index])) || afl_lib.Contains(new KeyValuePair<int, int>(point_index_list[point_index_index], p2_index)))) ||
+                        //                    (!is_afl1_point_t && (afl_lib.Contains(new KeyValuePair<int, int>(p1_index, point_index_list[point_index_index])) || afl_lib.Contains(new KeyValuePair<int, int>(point_index_list[point_index_index], p1_index)))));
+                        
+                        if (is_afl1_point_t)
+                        {
+                            if (afl_remain.Contains(new KeyValuePair<int, int>(p2_index, point_index_list[point_index_index])))
+                            {
+                                boundary_afl = new KeyValuePair<int, int>(p2_index, point_index_list[point_index_index]);
+                                counter_boundary = true;
+                            }
+                            else if (afl_remain.Contains(new KeyValuePair<int, int>(point_index_list[point_index_index], p2_index)))
+                            {
+                                boundary_afl = new KeyValuePair<int, int>(point_index_list[point_index_index], p2_index);
+                                counter_boundary = true;
+                            }
+                            else
+                            {
+                                counter_boundary = false;
+                            }
+                        }
+                        else
+                        {
+                            if (afl_remain.Contains(new KeyValuePair<int, int>(p1_index, point_index_list[point_index_index])))
+                            {
+                                boundary_afl = new KeyValuePair<int, int>(p1_index, point_index_list[point_index_index]);
+                                counter_boundary = true;
+                            }
+                            else if (afl_remain.Contains(new KeyValuePair<int, int>(point_index_list[point_index_index], p1_index)))
+                            {
+                                boundary_afl = new KeyValuePair<int, int>(point_index_list[point_index_index], p1_index);
+                                counter_boundary = true;
+                            }
+                            else
+                            {
+                                counter_boundary = false;
+                            }
+                        }
                     }
                 }
             }
@@ -369,17 +442,39 @@ public class OSMTerrainCompress : MonoBehaviour
                 if (is_afl1_point)
                 {
                     simplex_line = new KeyValuePair<int, int>(p2_index, p3_index);
-                    afl1.Add(new KeyValuePair<int, int>(p1_index, p3_index));
+                    bool remain_connect_1_3 = afl_remain.Contains(new KeyValuePair<int, int>(p1_index, p3_index));
+                    bool remain_connect_3_1 = afl_remain.Contains(new KeyValuePair<int, int>(p3_index, p1_index));
+                    if (!remain_connect_1_3 && !remain_connect_3_1)
+                        afl1.Add(new KeyValuePair<int, int>(p1_index, p3_index));
+                    else if (remain_connect_1_3)
+                        afl_remain.Remove(new KeyValuePair<int, int>(p1_index, p3_index));
+                    else if (remain_connect_3_1)
+                        afl_remain.Remove(new KeyValuePair<int, int>(p3_index, p1_index));
                 }
                 else
                 {
                     simplex_line = new KeyValuePair<int, int>(p1_index, p3_index);
-                    afl2.Add(new KeyValuePair<int, int>(p2_index, p3_index));
+                    bool remain_connect_2_3 = afl_remain.Contains(new KeyValuePair<int, int>(p2_index, p3_index));
+                    bool remain_connect_3_2 = afl_remain.Contains(new KeyValuePair<int, int>(p3_index, p2_index));
+                    if (!remain_connect_2_3 && !remain_connect_3_2)
+                        afl2.Add(new KeyValuePair<int, int>(p2_index, p3_index));
+                    else if (remain_connect_2_3)
+                        afl_remain.Remove(new KeyValuePair<int, int>(p2_index, p3_index));
+                    else if (remain_connect_3_2)
+                        afl_remain.Remove(new KeyValuePair<int, int>(p3_index, p2_index));
                 }
                 List<int> simplex = clockwiseCorrect(new List<int>() { p1_index, p2_index, p3_index });
                 if (!isContainSimplex(ref simplex_list_t, simplex))
                 {
                     simplex_list_t.Add(simplex);
+
+                    for (int point_cloude_index = 0; point_cloude_index < point_cloud.Length; point_cloude_index++)
+                    {
+                        if (point_cloud_valid[point_cloude_index] && point_cloude_index != p1_index && point_cloude_index != p2_index && point_cloude_index != p3_index && pointInTriangle(point_cloud[point_cloude_index], point_cloud[p1_index], point_cloud[p2_index], point_cloud[p3_index]))
+                        {
+                            point_cloud_valid[point_cloude_index] = false;
+                        }
+                    }
 
                     if (!counter_boundary)
                     {
@@ -390,6 +485,10 @@ public class OSMTerrainCompress : MonoBehaviour
                         //    side_q.Enqueue(-1); // need right (vertical alpha)
                         side_q.Enqueue(side_q.Peek());
                         Debug.Log(simplex[0].ToString() + ", " + simplex[1].ToString() + ", " + simplex[2].ToString() + " is afl1:" + is_afl1_point.ToString());
+                    }
+                    else
+                    {
+                        afl_remain.Remove(boundary_afl);
                     }
                 }
             }
@@ -420,8 +519,8 @@ public class OSMTerrainCompress : MonoBehaviour
         //    first_point_index = point_index;
         //}
         //}
-        afl_lib.AddRange(afl1);
-        afl_lib.AddRange(afl2);
+        afl_remain.AddRange(afl1);
+        afl_remain.AddRange(afl2);
         return simplex_list_t;
     }
 
@@ -511,8 +610,12 @@ public class OSMTerrainCompress : MonoBehaviour
             point_index_list.Add(point_index);
         }
 
-        List<KeyValuePair<int, int>> afl_lib = new List<KeyValuePair<int, int>>();
-        List<List<int>> simplex_list = DeWall(point_index_list, new List<KeyValuePair<int, int>>(), ref afl_lib, true, 0, 1);
+        List<KeyValuePair<int, int>> afl_remain = new List<KeyValuePair<int, int>>();
+        List<List<int>> simplex_list = DeWall(point_index_list, new List<KeyValuePair<int, int>>(), ref afl_remain, true, 0, 1);
+        //Debug.Log("cloud?");
+        //for (int i = 0; i < point_cloud_valid.Length; i++)
+        //    if (!point_cloud_valid[i])
+        //        Debug.Log(i);
 
         Mesh mesh = new Mesh();
         Vector3[] vertice = new Vector3[point_cloud.Length];
@@ -627,6 +730,11 @@ public class OSMTerrainCompress : MonoBehaviour
         return Mathf.Sqrt(Mathf.Pow(p1.x - p2.x, 2) + Mathf.Pow(p1.z - p2.z, 2));
     }
 
+    float distance2D(float x1, float z1, float x2, float z2)
+    {
+        return Mathf.Sqrt(Mathf.Pow(x1 - x2, 2) + Mathf.Pow(z1 - z2, 2));
+    }
+
     void mergeSortForAFL(ref List<KeyValuePair<float, int>> afl_middle_index_list, int x, int y, List<KeyValuePair<float, int>> afl_middle_index_list_t, bool is_vertical_alpha)
     {
         if (y - x > 1)
@@ -651,5 +759,26 @@ public class OSMTerrainCompress : MonoBehaviour
             for (int i = x; i < y; i++)
                 afl_middle_index_list[i] = afl_middle_index_list_t[i];
         }
+    }
+
+    // https://stackoverflow.com/questions/2049582/how-to-determine-if-a-point-is-in-a-2d-triangle
+    float sign(Vector3 p1, Vector3 p2, Vector3 p3)
+    {
+        return (p1.x - p3.x) * (p2.z - p3.z) - (p2.x - p3.x) * (p1.z - p3.z);
+    }
+
+    bool pointInTriangle(Vector3 pt, Vector3 v1, Vector3 v2, Vector3 v3)
+    {
+        float d1, d2, d3;
+        bool has_neg, has_pos;
+
+        d1 = sign(pt, v1, v2);
+        d2 = sign(pt, v2, v3);
+        d3 = sign(pt, v3, v1);
+
+        has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+        has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+        return !(has_neg && has_pos);
     }
 }
