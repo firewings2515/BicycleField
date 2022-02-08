@@ -145,7 +145,7 @@ public class OSMTerrainCompress : MonoBehaviour
     List<List<int>> DeWall(List<int> point_index_list, List<KeyValuePair<int, int>> afl, bool is_vertical_alpha, int growth_dir, int p)
     {
         List<List<int>> simplex_list = new List<List<int>>();
-        if (p >= 4) return simplex_list;
+        if (p >= 5) return simplex_list;
         float alpha = 0.0f;
         List<int> point1_index_list = new List<int>();
         List<int> point2_index_list = new List<int>();
@@ -168,9 +168,19 @@ public class OSMTerrainCompress : MonoBehaviour
         }
 
         if (afl1.Count > 0)
-            simplex_list.AddRange(DeWall(point1_index_list, afl1, !is_vertical_alpha, -1, p + 1));
+        {
+            if (is_vertical_alpha)
+                simplex_list.AddRange(DeWall(point1_index_list, afl1, !is_vertical_alpha, 1, p + 1));
+            else
+                simplex_list.AddRange(DeWall(point1_index_list, afl1, !is_vertical_alpha, -1, p + 1));
+        }
         if (afl2.Count > 0)
-            simplex_list.AddRange(DeWall(point2_index_list, afl2, !is_vertical_alpha, 1, p + 1));
+        {
+            if (is_vertical_alpha)
+                simplex_list.AddRange(DeWall(point2_index_list, afl2, !is_vertical_alpha, -1, p + 1));
+            else
+                simplex_list.AddRange(DeWall(point2_index_list, afl2, !is_vertical_alpha, 1, p + 1));
+        }
 
         return simplex_list;
     }
@@ -207,19 +217,20 @@ public class OSMTerrainCompress : MonoBehaviour
     KeyValuePair<int, int> pointsetPartition(ref List<int> point_index_list, ref float alpha_pxz, bool is_vertical_alpha, ref List<int> point1_index_list, ref List<int> point2_index_list, List<KeyValuePair<int, int>> afl)
     {
         mergeSortForPointCloud(ref point_index_list, 0, point_index_list.Count, new List<int>(point_index_list), is_vertical_alpha);
-        SortedList<float, int> middle_xz = new SortedList<float, int>();
+        List<KeyValuePair<float, int>> middle_xz = new List<KeyValuePair<float, int>>();
         for (int afl_index = 0; afl_index < afl.Count; afl_index++)
         {
             if (is_vertical_alpha)
             {
-                middle_xz.Add((point_cloud[afl[afl_index].Key].x + point_cloud[afl[afl_index].Value].x) / 2, afl_index);
+                middle_xz.Add(new KeyValuePair<float, int>((point_cloud[afl[afl_index].Key].x + point_cloud[afl[afl_index].Value].x) / 2, afl_index));
             }
             else
             {
-                middle_xz.Add((point_cloud[afl[afl_index].Key].z + point_cloud[afl[afl_index].Value].z) / 2, afl_index);
+                middle_xz.Add(new KeyValuePair<float, int>((point_cloud[afl[afl_index].Key].z + point_cloud[afl[afl_index].Value].z) / 2, afl_index));
             }
         }
-        alpha_pxz = middle_xz.Keys[middle_xz.Count / 2];
+        mergeSortForAFL(ref middle_xz, 0, middle_xz.Count, new List<KeyValuePair<float, int>>(middle_xz), is_vertical_alpha);
+        alpha_pxz = middle_xz[middle_xz.Count / 2].Key;
         if (is_vertical_alpha)
         {
             for (int point_index_index = 0; point_index_index < point_index_list.Count; point_index_index++)
@@ -240,7 +251,7 @@ public class OSMTerrainCompress : MonoBehaviour
                     point2_index_list.Add(point_index_list[point_index_index]);
             }
         }
-        return afl[middle_xz.Values[middle_xz.Count / 2]];
+        return afl[middle_xz[middle_xz.Count / 2].Value];
     }
 
     List<List<int>> makeSimplex(List<int> point_index_list, float alpha_pxz, bool is_vertical_alpha, ref List<KeyValuePair<int, int>> afl1, ref List<KeyValuePair<int, int>> afl2, int growth_dir, KeyValuePair<int, int> middle_afl)
@@ -280,8 +291,8 @@ public class OSMTerrainCompress : MonoBehaviour
         {
             p1_index = line_q.Peek().Key;
             p2_index = line_q.Peek().Value;
-            if ((is_vertical_alpha && point_cloud[p1_index].x < point_cloud[p2_index].x) ||
-                (!is_vertical_alpha && point_cloud[p1_index].z > point_cloud[p2_index].z))
+            if ((is_vertical_alpha && point_cloud[p1_index].x > point_cloud[p2_index].x) ||
+                (!is_vertical_alpha && point_cloud[p1_index].z < point_cloud[p2_index].z))
             {
                 int t = p1_index;
                 p1_index = p2_index;
@@ -350,31 +361,13 @@ public class OSMTerrainCompress : MonoBehaviour
                 KeyValuePair<int, int> simplex_line;
                 if (is_afl1_point)
                 {
-                    if ((is_vertical_alpha && point_cloud[p1_index].x < point_cloud[p2_index].x) ||
-                        (!is_vertical_alpha && point_cloud[p1_index].z > point_cloud[p2_index].z))
-                    {
-                        simplex_line = new KeyValuePair<int, int>(p2_index, p3_index);
-                        afl1.Add(new KeyValuePair<int, int>(p1_index, p3_index));
-                    }
-                    else
-                    {
-                        simplex_line = new KeyValuePair<int, int>(p1_index, p3_index);
-                        afl1.Add(new KeyValuePair<int, int>(p2_index, p3_index));
-                    }
+                    simplex_line = new KeyValuePair<int, int>(p2_index, p3_index);
+                    afl1.Add(new KeyValuePair<int, int>(p1_index, p3_index));
                 }
                 else
                 {
-                    if ((is_vertical_alpha && point_cloud[p1_index].x < point_cloud[p2_index].x) ||
-                        (!is_vertical_alpha && point_cloud[p1_index].z > point_cloud[p2_index].z))
-                    {
-                        simplex_line = new KeyValuePair<int, int>(p1_index, p3_index);
-                        afl2.Add(new KeyValuePair<int, int>(p2_index, p3_index));
-                    }
-                    else
-                    {
-                        simplex_line = new KeyValuePair<int, int>(p2_index, p3_index);
-                        afl2.Add(new KeyValuePair<int, int>(p1_index, p3_index));
-                    }
+                    simplex_line = new KeyValuePair<int, int>(p1_index, p3_index);
+                    afl2.Add(new KeyValuePair<int, int>(p2_index, p3_index));
                 }
                 List<int> simplex = clockwiseCorrect(new List<int>() { p1_index, p2_index, p3_index });
                 if (!isContainSimplex(ref simplex_list_t, simplex))
@@ -618,5 +611,31 @@ public class OSMTerrainCompress : MonoBehaviour
     float distance2D(Vector3 p1, Vector3 p2)
     {
         return Mathf.Sqrt(Mathf.Pow(p1.x - p2.x, 2) + Mathf.Pow(p1.z - p2.z, 2));
+    }
+
+    void mergeSortForAFL(ref List<KeyValuePair<float, int>> afl_middle_index_list, int x, int y, List<KeyValuePair<float, int>> afl_middle_index_list_t, bool is_vertical_alpha)
+    {
+        if (y - x > 1)
+        {
+            int m = x + (y - x) / 2;
+            mergeSortForAFL(ref afl_middle_index_list, x, m, afl_middle_index_list_t, is_vertical_alpha);
+            mergeSortForAFL(ref afl_middle_index_list, m, y, afl_middle_index_list_t, is_vertical_alpha);
+            int p = x, q = m;
+            int index = x;
+            while (p < m && q < y)
+            {
+                if ((is_vertical_alpha && afl_middle_index_list[p].Key < afl_middle_index_list[q].Key) ||
+                    (!is_vertical_alpha && afl_middle_index_list[p].Key > afl_middle_index_list[q].Key))
+                    afl_middle_index_list_t[index++] = afl_middle_index_list[p++];
+                else
+                    afl_middle_index_list_t[index++] = afl_middle_index_list[q++];
+            }
+            while (p < m)
+                afl_middle_index_list_t[index++] = afl_middle_index_list[p++];
+            while (q < y)
+                afl_middle_index_list_t[index++] = afl_middle_index_list[q++];
+            for (int i = x; i < y; i++)
+                afl_middle_index_list[i] = afl_middle_index_list_t[i];
+        }
     }
 }
