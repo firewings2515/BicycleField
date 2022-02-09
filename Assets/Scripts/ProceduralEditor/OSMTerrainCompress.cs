@@ -105,14 +105,14 @@ public class OSMTerrainCompress : MonoBehaviour
 
     void generateRoadBoards(List<Vector3> path_points_dp) // generate pieces of road
     {
-        
+
     }
 
     List<List<Vector3>> W8D(Vector3 center, List<Vector3> point_cloud_list)
     {
-        Vector3[] directions = new Vector3[8] { new Vector3(1.0f,0.0f,0.0f), new Vector3(0.707f, 0.0f, 0.707f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(-0.707f, 0.0f, 0.707f), new Vector3(-1.0f, 0.0f, 0.0f), new Vector3(-0.707f, 0.0f, -0.707f), new Vector3(0.0f, 0.0f, -1.0f), new Vector3(0.707f, 0.0f, -0.707f) };
+        Vector3[] directions = new Vector3[8] { new Vector3(1.0f, 0.0f, 0.0f), new Vector3(0.707f, 0.0f, 0.707f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(-0.707f, 0.0f, 0.707f), new Vector3(-1.0f, 0.0f, 0.0f), new Vector3(-0.707f, 0.0f, -0.707f), new Vector3(0.0f, 0.0f, -1.0f), new Vector3(0.707f, 0.0f, -0.707f) };
         List<List<Vector3>> terrain_feature_points = new List<List<Vector3>>();
-        
+
         for (int dir = 0; dir < 8; dir++)
         {
             List<Vector3> terrain_feature_lonlats = new List<Vector3>();
@@ -152,14 +152,14 @@ public class OSMTerrainCompress : MonoBehaviour
 
             terrain_feature_points[dir] = DouglasPeuckerAlgorithm.DouglasPeucker(terrain_feature_points[dir], 4.0f);
         }
-        
+
         return terrain_feature_points;
     }
 
     List<List<int>> DeWall(List<int> point_index_list, List<KeyValuePair<int, int>> afl, ref List<KeyValuePair<int, int>> afl_remain, bool is_vertical_alpha, int growth_dir, int p)
     {
         List<List<int>> simplex_list = new List<List<int>>();
-        if (p >= 8) return simplex_list;
+        //if (p >= 8) return simplex_list;
         float alpha = 0.0f;
         List<int> point1_index_list = new List<int>();
         List<int> point2_index_list = new List<int>();
@@ -328,8 +328,8 @@ public class OSMTerrainCompress : MonoBehaviour
             {
                 if (!point_cloud_valid[point_index_list[point_index_index]])
                     continue;
-                if (p1_index == 330 && p2_index == 263)
-                    continue;
+                //if (p1_index == 330 && p2_index == 263)
+                //    continue;
                 bool is_afl1_point_t = ((is_vertical_alpha && point_cloud[point_index_list[point_index_index]].x < alpha_pxz) || (!is_vertical_alpha && point_cloud[point_index_list[point_index_index]].z > alpha_pxz));
                 if (point_index_list[point_index_index] != p1_index && point_index_list[point_index_index] != p2_index &&
                     ((!is_afl1_point_t && !line_q_lib.Contains(new KeyValuePair<int, int>(p1_index, point_index_list[point_index_index])) && !line_q_lib.Contains(new KeyValuePair<int, int>(point_index_list[point_index_index], p1_index))) ||
@@ -355,13 +355,59 @@ public class OSMTerrainCompress : MonoBehaviour
                         if (!connect_valid)
                             continue;
 
-                        r_min = r;
-                        p3_index = point_index_list[point_index_index];
-                        is_afl1_point = is_afl1_point_t;
+                        for (int afl_remain_index = 0; afl_remain_index < afl_remain.Count; afl_remain_index++)
+                        {
+                            //if (p1_index == 316 && p2_index == 236)
+                            //    if ((afl_remain[afl_remain_index].Key == 238 && afl_remain[afl_remain_index].Value == 316) || (afl_remain[afl_remain_index].Key == 316 && afl_remain[afl_remain_index].Value == 238))
+                            //        Debug.Log("Hello");
+
+                            float cross_a = crossParam(point_cloud[afl_remain[afl_remain_index].Key], point_cloud[afl_remain[afl_remain_index].Value], point_cloud[p1_index], point_cloud[point_index_list[point_index_index]]);
+
+                            if ((afl_remain[afl_remain_index].Key == p1_index && afl_remain[afl_remain_index].Value == point_index_list[point_index_index]) ||
+                                (afl_remain[afl_remain_index].Value == p1_index && afl_remain[afl_remain_index].Key == point_index_list[point_index_index]))
+                                ;
+                            //else if (afl_remain[afl_remain_index].Key == p1_index || afl_remain[afl_remain_index].Value == p1_index || afl_remain[afl_remain_index].Key == point_index_list[point_index_index] || afl_remain[afl_remain_index].Value == point_index_list[point_index_index])
+                            //    ;
+                            //else if (isIntersect(point_cloud[afl_remain[afl_remain_index].Key], point_cloud[afl_remain[afl_remain_index].Value], point_cloud[p1_index], point_cloud[point_index_list[point_index_index]]))
+                            else if (cross_a > 1e-1 && cross_a < 1 - 1e-1 && isIntersect(point_cloud[afl_remain[afl_remain_index].Key], point_cloud[afl_remain[afl_remain_index].Value], point_cloud[p1_index], point_cloud[point_index_list[point_index_index]]))
+                            //else if (cross_a > 1e-1 && cross_a < 1 - 1e-1)
+                            {
+                                connect_valid = false;
+                                Debug.Log(afl_remain[afl_remain_index].Key.ToString() + ", " + afl_remain[afl_remain_index].Value.ToString() + " = " + p1_index.ToString() + ", " + point_index_list[point_index_index].ToString() + " -> " + cross_a.ToString());
+                                break;
+                            }
+
+                            //if (p1_index == 271 && p2_index == 338)
+                            //    if ((afl_remain[afl_remain_index].Key == 17 || afl_remain[afl_remain_index].Value == 17))
+                            //        Debug.Log("Hello 271 338 17 = " + cross_a.ToString());
+
+                            cross_a = crossParam(point_cloud[afl_remain[afl_remain_index].Key], point_cloud[afl_remain[afl_remain_index].Value], point_cloud[p2_index], point_cloud[point_index_list[point_index_index]]);
+
+                            if ((afl_remain[afl_remain_index].Key == p2_index && afl_remain[afl_remain_index].Value == point_index_list[point_index_index]) ||
+                                (afl_remain[afl_remain_index].Value == p2_index && afl_remain[afl_remain_index].Key == point_index_list[point_index_index]))
+                                ;
+                            //else if (afl_remain[afl_remain_index].Key == p2_index || afl_remain[afl_remain_index].Value == p2_index || afl_remain[afl_remain_index].Key == point_index_list[point_index_index] || afl_remain[afl_remain_index].Value == point_index_list[point_index_index])
+                            //    ;
+                            //else if (isIntersect(point_cloud[afl_remain[afl_remain_index].Key], point_cloud[afl_remain[afl_remain_index].Value], point_cloud[p2_index], point_cloud[point_index_list[point_index_index]]))
+                            else if (cross_a > 1e-1 && cross_a < 1 - 1e-1 && isIntersect(point_cloud[afl_remain[afl_remain_index].Key], point_cloud[afl_remain[afl_remain_index].Value], point_cloud[p2_index], point_cloud[point_index_list[point_index_index]]))
+                            //else if (cross_a > 1e-1 && cross_a < 1 - 1e-1)
+                            {
+                                connect_valid = false;
+                                Debug.Log(afl_remain[afl_remain_index].Key.ToString() + ", " + afl_remain[afl_remain_index].Value.ToString() + " = " + p2_index.ToString() + ", " + point_index_list[point_index_index].ToString() + " -> " + cross_a.ToString());
+                                break;
+                            }
+
+                            //if (p1_index == 271 && p2_index == 338)
+                            //    if ((afl_remain[afl_remain_index].Key == 17 || afl_remain[afl_remain_index].Value == 17))
+                            //        Debug.Log("Hello 271 338 17 = " + cross_a.ToString());
+                        }
+
+                        if (!connect_valid)
+                            continue;
 
                         //counter_boundary = ((is_afl1_point_t && (afl_lib.Contains(new KeyValuePair<int, int>(p2_index, point_index_list[point_index_index])) || afl_lib.Contains(new KeyValuePair<int, int>(point_index_list[point_index_index], p2_index)))) ||
                         //                    (!is_afl1_point_t && (afl_lib.Contains(new KeyValuePair<int, int>(p1_index, point_index_list[point_index_index])) || afl_lib.Contains(new KeyValuePair<int, int>(point_index_list[point_index_index], p1_index)))));
-                        
+
                         if (is_afl1_point_t)
                         {
                             if (afl_remain.Contains(new KeyValuePair<int, int>(p2_index, point_index_list[point_index_index])))
@@ -396,10 +442,14 @@ public class OSMTerrainCompress : MonoBehaviour
                                 counter_boundary = false;
                             }
                         }
+
+                        r_min = r;
+                        p3_index = point_index_list[point_index_index];
+                        is_afl1_point = is_afl1_point_t;
                     }
                 }
             }
-            
+
             //if (p3_index > -1)
             //{
             //    KeyValuePair<int, int> simplex_line = new KeyValuePair<int, int>(p1_index, p3_index);
@@ -450,6 +500,13 @@ public class OSMTerrainCompress : MonoBehaviour
                         afl_remain.Remove(new KeyValuePair<int, int>(p1_index, p3_index));
                     else if (remain_connect_3_1)
                         afl_remain.Remove(new KeyValuePair<int, int>(p3_index, p1_index));
+
+                    //bool remain_connect_2_3 = afl_remain.Contains(new KeyValuePair<int, int>(p2_index, p3_index));
+                    //bool remain_connect_3_2 = afl_remain.Contains(new KeyValuePair<int, int>(p3_index, p2_index));
+                    //if (remain_connect_2_3)
+                    //    afl_remain.Remove(new KeyValuePair<int, int>(p2_index, p3_index));
+                    //else if (remain_connect_3_2)
+                    //    afl_remain.Remove(new KeyValuePair<int, int>(p3_index, p2_index));
                 }
                 else
                 {
@@ -462,6 +519,13 @@ public class OSMTerrainCompress : MonoBehaviour
                         afl_remain.Remove(new KeyValuePair<int, int>(p2_index, p3_index));
                     else if (remain_connect_3_2)
                         afl_remain.Remove(new KeyValuePair<int, int>(p3_index, p2_index));
+
+                    //bool remain_connect_1_3 = afl_remain.Contains(new KeyValuePair<int, int>(p1_index, p3_index));
+                    //bool remain_connect_3_1 = afl_remain.Contains(new KeyValuePair<int, int>(p3_index, p1_index));
+                    //if (remain_connect_1_3)
+                    //    afl_remain.Remove(new KeyValuePair<int, int>(p1_index, p3_index));
+                    //else if (remain_connect_3_1)
+                    //    afl_remain.Remove(new KeyValuePair<int, int>(p3_index, p1_index));
                 }
                 List<int> simplex = clockwiseCorrect(new List<int>() { p1_index, p2_index, p3_index });
                 if (!isContainSimplex(ref simplex_list_t, simplex))
@@ -491,6 +555,12 @@ public class OSMTerrainCompress : MonoBehaviour
                         afl_remain.Remove(boundary_afl);
                     }
                 }
+            }
+            else
+            {
+                afl_remain.Add(new KeyValuePair<int, int>(p1_index, p2_index));
+                //if (afl_remain.Contains(new KeyValuePair<int, int>(271, 16)) || afl_remain.Contains(new KeyValuePair<int, int>(16, 271)))
+                //    Debug.Log("271 16");
             }
 
             line_q.Dequeue();
@@ -698,7 +768,7 @@ public class OSMTerrainCompress : MonoBehaviour
         //mf.mesh = mesh;
         //mr.material = terrain_mat;
     }
-    
+
     void mergeSortForPointCloud(ref List<int> point_index_list, int x, int y, List<int> point_index_list_t, bool is_vertical_alpha)
     {
         if (y - x > 1)
@@ -780,5 +850,61 @@ public class OSMTerrainCompress : MonoBehaviour
         has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
 
         return !(has_neg && has_pos);
+    }
+    int orientation(Vector3 p, Vector3 q, Vector3 r)
+    {
+        // See https://www.geeksforgeeks.org/orientation-3-ordered-points/
+        // for details of below formula.
+        float val = (q.z - p.z) * (r.x - q.x) - (q.x - p.x) * (r.z - q.z);
+
+        if (Mathf.Abs(val) < 1e-6) return 0; // collinear
+
+        return (val > 0) ? 1 : 2; // clock or counterclock wise
+    }
+
+    bool isIntersect(Vector3 p1, Vector3 q1, Vector3 p2, Vector3 q2)
+    {
+        // Find the four orientations needed for general and
+        // special cases
+        int o1 = orientation(p1, q1, p2);
+        int o2 = orientation(p1, q1, q2);
+        int o3 = orientation(p2, q2, p1);
+        int o4 = orientation(p2, q2, q1);
+
+        // General case
+        if (o1 != o2 && o3 != o4)
+            return true;
+
+        return false;
+    }
+
+    //**********************************************************************
+    //
+    // * Return the parameter value at which this segment crosses the given
+    //   segment. This will return parameter values outside the range 0,1
+    //   THIS FUNCTION IS EXTREMELY USEFUL FOR CLIPPING, but it 
+    //   DOES NOT tell you whether the edge is "entering" or "leaving".
+    //   But you can use tests like Edge::Point_Side() to figure that out.
+    //======================================================================
+    float crossParam(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+    {
+        float dx1, dy1, dx2, dy2;
+        float denom, s;
+
+        // This computation comes from writing each segment in parametric form,
+        // and solving a simulataneous equation to determine the parameter
+        // value of the intersection point on this LineSeg.
+        dx1 = d.x - c.x;
+        dy1 = d.z - c.z;
+        dx2 = b.x - a.x;
+        dy2 = b.z - a.z;
+
+        if ((denom = dx2 * dy1 - dy2 * dx1) == 0.0)
+            // Parallel segments.
+            return 1.0e20f;
+
+        s = (c.x - a.x) * dy1 - (c.z - a.z) * dx1;
+
+        return s / denom;
     }
 }
