@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 9d1fb609bc68fa04c90c2dfa4d56691c
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - road: {instanceID: 0}
+  - underside: {instanceID: 0}
+  - cyclist: {fileID: 7236446630721755002, guid: d049438542cb1384b82e847504e19533, type: 3}
+  - cam: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
