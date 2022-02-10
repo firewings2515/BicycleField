@@ -22,6 +22,7 @@ public class Checkpoint : MonoBehaviour
         if (other.gameObject.tag == "Player")
         {
             EventSystem.current.GetComponent<ObjectManager>().need_update = true;
+            Destroy(this.gameObject);
         }
     }
 }
