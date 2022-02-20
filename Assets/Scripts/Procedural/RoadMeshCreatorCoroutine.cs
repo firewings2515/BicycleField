@@ -33,7 +33,7 @@ namespace PathCreation.Examples
             {
                 AssignMeshComponents();
                 AssignMaterials();
-                //StartCoroutine(CreateRoadMesh());
+                StartCoroutine(CreateRoadMesh());
             }
         }
 
