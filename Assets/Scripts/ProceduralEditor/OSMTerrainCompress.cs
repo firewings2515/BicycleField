@@ -42,7 +42,7 @@ public class OSMTerrainCompress : MonoBehaviour
             }
 
             // terrain board points test
-            List<Vector3> terrain_board_points = new List<Vector3>() { new Vector3(8302.3f, 0.0f, 7605.3f), new Vector3(8459.0f, 0.0f, 8052.4f), new Vector3(8640.0f, 0.0f, 8133.8f), new Vector3(9204.0f, 0.0f, 8206.0f), new Vector3(9387.0f, 0.0f, 8022.0f), new Vector3(9411.0f, 0.0f, 7412.7f) };
+            Vector3[] terrain_board_points = new Vector3[] { new Vector3(8302.3f, 0.0f, 7605.3f), new Vector3(8459.0f, 0.0f, 8052.4f), new Vector3(8640.0f, 0.0f, 8133.8f), new Vector3(9204.0f, 0.0f, 8206.0f), new Vector3(9387.0f, 0.0f, 8022.0f), new Vector3(9411.0f, 0.0f, 7412.7f) };
             List<Vector3> terrain_board_lonlats = new List<Vector3>();
             foreach (Vector3 terrain_board_point in terrain_board_points)
             {
@@ -65,14 +65,14 @@ public class OSMTerrainCompress : MonoBehaviour
                 osm_editor.osm_reader.toUnityLocation(terrain_board_lonlats[point_index].x, terrain_board_lonlats[point_index].z, out unity_x, out unity_z);
                 terrain_board_points[point_index] = new Vector3(unity_x, all_elevations[point_index], unity_z);
             }
-            //showPoint(terrain_board_points);
+            showPoint(terrain_board_points, "board");
 
             List<Vector3> point_cloud_list = new List<Vector3>();
 
             // W8D
-            for (int point_index = 0; point_index < terrain_board_points.Count; point_index++)
+            for (int point_index = 0; point_index < terrain_board_points.Length; point_index++)
             {
-                List<List<Vector3>> w8d = W8D(terrain_board_points[point_index], point_cloud_list); // need to limit boundary
+                List<List<Vector3>> w8d = W8D(terrain_board_points, terrain_board_points[point_index], point_cloud_list); // need to limit boundary
                 foreach (List<Vector3> points in w8d)
                 {
                     point_cloud_list.AddRange(points);
@@ -86,25 +86,25 @@ public class OSMTerrainCompress : MonoBehaviour
                 point_cloud_valid[point_cloud_valid_index] = true;
             for (int point_cloud_inside_index = 0; point_cloud_inside_index < point_cloud_inside.Length; point_cloud_inside_index++)
                 point_cloud_inside[point_cloud_inside_index] = false;
-            showPoint(point_cloud);
+            showPoint(point_cloud, "feature");
 
             generateIDWTerrain(point_cloud);
             //generateTINTerrain(point_cloud);
         }
     }
 
-    void showPoint(List<Vector3> path_points_dp)
+    void showPoint(List<Vector3> path_points_dp, string tag)
     {
-        showPoint(path_points_dp.ToArray());
+        showPoint(path_points_dp.ToArray(), tag);
     }
 
-    void showPoint(Vector3[] path_points_dp)
+    void showPoint(Vector3[] path_points_dp, string tag)
     {
         for (int point_index = 0; point_index < path_points_dp.Length; point_index++)
         {
             GameObject ball = Instantiate(test_ball, path_points_dp[point_index], Quaternion.identity);
             ball.transform.localScale = new Vector3(10, 10, 10);
-            ball.name = "ball_" + point_index.ToString();
+            ball.name = tag + "_" + point_index.ToString();
         }
     }
 
@@ -113,7 +113,7 @@ public class OSMTerrainCompress : MonoBehaviour
 
     }
 
-    List<List<Vector3>> W8D(Vector3 center, List<Vector3> point_cloud_list)
+    List<List<Vector3>> W8D(Vector3[] terrain_board_points, Vector3 center, List<Vector3> point_cloud_list)
     {
         Vector3[] directions = new Vector3[8] { new Vector3(1.0f, 0.0f, 0.0f), new Vector3(0.707f, 0.0f, 0.707f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(-0.707f, 0.0f, 0.707f), new Vector3(-1.0f, 0.0f, 0.0f), new Vector3(-0.707f, 0.0f, -0.707f), new Vector3(0.0f, 0.0f, -1.0f), new Vector3(0.707f, 0.0f, -0.707f) };
         List<List<Vector3>> terrain_feature_points = new List<List<Vector3>>();
@@ -125,6 +125,8 @@ public class OSMTerrainCompress : MonoBehaviour
             for (float d = 0.0f; d < 1300.0f; d += 50.0f)
             {
                 Vector3 terrain_feature_point = center + d * directions[dir];
+                if (!isInBoard(terrain_board_points, terrain_feature_point))
+                    break;
                 Vector3 terrain_feature_lonlat = new Vector3();
                 osm_editor.osm_reader.toLonAndLat(terrain_feature_point.x, terrain_feature_point.z, out terrain_feature_lonlat.x, out terrain_feature_lonlat.z);
                 terrain_feature_lonlats.Add(terrain_feature_lonlat);
@@ -1100,5 +1102,15 @@ public class OSMTerrainCompress : MonoBehaviour
         s = (c.x - a.x) * dy1 - (c.z - a.z) * dx1;
 
         return s / denom;
+    }
+
+    bool isInBoard(Vector3[] terrain_board_points, Vector3 point)
+    {
+        for (int board_index = 0; board_index < terrain_board_points.Length; board_index++)
+        {
+            if (pointSide(terrain_board_points[board_index], terrain_board_points[(board_index + 1) % terrain_board_points.Length], point) < 0)
+                return false;
+        }
+        return true;
     }
 }
