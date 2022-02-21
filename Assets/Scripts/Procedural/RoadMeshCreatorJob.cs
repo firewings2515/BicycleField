@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using PathCreation.Utility;
+using Unity.Jobs;
 using UnityEngine;
 
 namespace PathCreation.Examples
@@ -31,6 +32,14 @@ namespace PathCreation.Examples
                 AssignMeshComponents();
                 AssignMaterials();
                 CreateRoadMesh();
+            }
+        }
+
+        public struct RoadJob : IJobParallelFor
+        {
+            public void Execute(int index)
+            {
+                
             }
         }
 
