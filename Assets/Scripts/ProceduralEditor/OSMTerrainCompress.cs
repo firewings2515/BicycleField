@@ -88,7 +88,8 @@ public class OSMTerrainCompress : MonoBehaviour
                 point_cloud_inside[point_cloud_inside_index] = false;
             showPoint(point_cloud);
 
-            generateTINTerrain(point_cloud);
+            generateIDWTerrain(point_cloud);
+            //generateTINTerrain(point_cloud);
         }
     }
 
@@ -163,7 +164,7 @@ public class OSMTerrainCompress : MonoBehaviour
     List<List<int>> DeWall(List<int> point_index_list, List<KeyValuePair<int, int>> afl, ref List<KeyValuePair<int, int>> afl_remain, ref int[] afl_point_connect_count, bool is_vertical_alpha, int growth_dir, int p)
     {
         List<List<int>> simplex_list = new List<List<int>>();
-        //if (p >= 8) return simplex_list;
+        //if (p >= 3) return simplex_list;
         float alpha = 0.0f;
         List<int> point1_index_list = new List<int>();
         List<int> point2_index_list = new List<int>();
@@ -233,6 +234,76 @@ public class OSMTerrainCompress : MonoBehaviour
 
     KeyValuePair<int, int> pointsetPartition(ref List<int> point_index_list, ref float alpha_pxz, bool is_vertical_alpha, ref List<int> point1_index_list, ref List<int> point2_index_list, List<KeyValuePair<int, int>> afl)
     {
+        //if (point_index_list.Count < 2)
+        //    return afl[0];
+        //mergeSortForPointCloud(ref point_index_list, 0, point_index_list.Count, new List<int>(point_index_list), is_vertical_alpha);
+        //int select_middle = -1;
+        //if (is_vertical_alpha)
+        //{
+        //    alpha_pxz = (point_cloud[point_index_list[point_index_list.Count / 2 - 1]].x + point_cloud[point_index_list[point_index_list.Count / 2]].x) / 2;
+
+        //    for (int afl_index = 0; afl_index < afl.Count; afl_index++)
+        //    {
+        //        if ((point_cloud[afl[afl_index].Key].x < alpha_pxz && alpha_pxz < point_cloud[afl[afl_index].Value].x) ||
+        //            (point_cloud[afl[afl_index].Value].x < alpha_pxz && alpha_pxz < point_cloud[afl[afl_index].Key].x))
+        //        {
+        //            select_middle = afl_index; // may two
+        //            Debug.Log("--" + afl[afl_index].Key + ", " + afl[afl_index].Value);
+        //        }
+
+        //        if (point_cloud[afl[afl_index].Key].x < alpha_pxz && !point1_index_list.Contains(afl[afl_index].Key))
+        //        {
+        //            point1_index_list.Add(afl[afl_index].Key);
+        //        }
+        //        if (point_cloud[afl[afl_index].Value].x < alpha_pxz && !point1_index_list.Contains(afl[afl_index].Value))
+        //        {
+        //            point1_index_list.Add(afl[afl_index].Value);
+        //        }
+        //        if (point_cloud[afl[afl_index].Key].x > alpha_pxz && !point2_index_list.Contains(afl[afl_index].Key))
+        //        {
+        //            point2_index_list.Add(afl[afl_index].Key);
+        //        }
+        //        if (point_cloud[afl[afl_index].Value].x > alpha_pxz && !point2_index_list.Contains(afl[afl_index].Value))
+        //        {
+        //            point2_index_list.Add(afl[afl_index].Value);
+        //        }
+        //    }
+        //}
+        //else
+        //{
+        //    alpha_pxz = (point_cloud[point_index_list[point_index_list.Count / 2 - 1]].z + point_cloud[point_index_list[point_index_list.Count / 2]].z) / 2;
+
+        //    for (int afl_index = 0; afl_index < afl.Count; afl_index++)
+        //    {
+        //        if ((point_cloud[afl[afl_index].Key].z < alpha_pxz && alpha_pxz < point_cloud[afl[afl_index].Value].z) ||
+        //            (point_cloud[afl[afl_index].Value].z < alpha_pxz && alpha_pxz < point_cloud[afl[afl_index].Key].z))
+        //        {
+        //            select_middle = afl_index; // may two
+        //            Debug.Log("--" + afl[afl_index].Key + ", " + afl[afl_index].Value);
+        //        }
+
+        //        if (point_cloud[afl[afl_index].Key].z > alpha_pxz && !point1_index_list.Contains(afl[afl_index].Key))
+        //        {
+        //            point1_index_list.Add(afl[afl_index].Key);
+        //        }
+        //        if (point_cloud[afl[afl_index].Value].z > alpha_pxz && !point1_index_list.Contains(afl[afl_index].Value))
+        //        {
+        //            point1_index_list.Add(afl[afl_index].Value);
+        //        }
+        //        if (point_cloud[afl[afl_index].Key].z < alpha_pxz && !point2_index_list.Contains(afl[afl_index].Key))
+        //        {
+        //            point2_index_list.Add(afl[afl_index].Key);
+        //        }
+        //        if (point_cloud[afl[afl_index].Value].z < alpha_pxz && !point2_index_list.Contains(afl[afl_index].Value))
+        //        {
+        //            point2_index_list.Add(afl[afl_index].Value);
+        //        }
+        //    }
+        //}
+
+        //if (select_middle == -1)
+        //    Debug.Log("--qq");
+
         mergeSortForPointCloud(ref point_index_list, 0, point_index_list.Count, new List<int>(point_index_list), is_vertical_alpha);
         List<KeyValuePair<float, int>> middle_xz = new List<KeyValuePair<float, int>>();
         for (int afl_index = 0; afl_index < afl.Count; afl_index++)
@@ -269,6 +340,7 @@ public class OSMTerrainCompress : MonoBehaviour
             }
         }
         return afl[middle_xz[middle_xz.Count / 2].Value];
+        //return afl[select_middle];
     }
 
     List<List<int>> makeSimplex(List<int> point_index_list, float alpha_pxz, bool is_vertical_alpha, ref List<KeyValuePair<int, int>> afl_remain, ref int[] afl_point_connect_count, ref List<KeyValuePair<int, int>> afl1, ref List<KeyValuePair<int, int>> afl2, int growth_dir, KeyValuePair<int, int> middle_afl)
@@ -740,6 +812,63 @@ public class OSMTerrainCompress : MonoBehaviour
         return false;
     }
 
+    void generateIDWTerrain(Vector3[] point_cloud)
+    {
+        Mesh mesh = new Mesh();
+        int resolution = 64;
+        float[,,] terrain_points = new float[resolution + 1, resolution + 1, 3];
+        Vector3[] vertice = new Vector3[(resolution + 1) * (resolution + 1)];
+        int[] indices = new int[6 * resolution * resolution];
+        int indices_index = 0;
+        float mse = 0.0f;
+        List<float> all_elevations = new List<float>();
+        List<EarthCoord> all_coords = new List<EarthCoord>();
+        for (int i = 0; i < resolution + 1; i++)
+        {
+            for (int j = 0; j < resolution + 1; j++)
+            {
+                terrain_points[i, j, 0] = 8070.0f + i * 28;
+                terrain_points[i, j, 2] = 6560.0f + j * 28;
+                terrain_points[i, j, 1] = IDW.inverseDistanceWeighting(point_cloud, terrain_points[i, j, 0], terrain_points[i, j, 2]);
+                all_coords.Add(new EarthCoord((float)MercatorProjection.xToLon(terrain_points[i, j, 0]), (float)MercatorProjection.yToLat(terrain_points[i, j, 2])));
+                vertice[i * (resolution + 1) + j] = new Vector3(terrain_points[i, j, 0], terrain_points[i, j, 1], terrain_points[i, j, 2]);
+            }
+        }
+        all_elevations = HgtReader.getElevations(all_coords);
+        for (int i = 0; i < all_elevations.Count; i++)
+        {
+            mse += Mathf.Pow(all_elevations[i] - vertice[i].y, 2) / all_elevations.Count;
+        }
+        Debug.Log("mse: " + mse);
+        for (int i = 0; i < resolution; i++)
+        {
+            for (int j = 0; j < resolution; j++)
+            {
+                // counter-clockwise
+                indices[indices_index++] = i * (resolution + 1) + j;
+                indices[indices_index++] = (i + 1) * (resolution + 1) + j + 1;
+                indices[indices_index++] = (i + 1) * (resolution + 1) + j;
+                indices[indices_index++] = i * (resolution + 1) + j;
+                indices[indices_index++] = i * (resolution + 1) + j + 1;
+                indices[indices_index++] = (i + 1) * (resolution + 1) + j + 1;
+            }
+        }
+
+        mesh.vertices = vertice;
+        mesh.triangles = indices;
+        //Recalculations
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        mesh.Optimize();
+        //Name the mesh
+        mesh.name = "terrain_mesh";
+        GameObject terrain = new GameObject("terrain");
+        MeshFilter mf = terrain.AddComponent<MeshFilter>();
+        MeshRenderer mr = terrain.AddComponent<MeshRenderer>();
+        mf.mesh = mesh;
+        mr.material = terrain_mat;
+    }
+
     void generateTINTerrain(Vector3[] point_cloud)
     {
         List<int> point_index_list = new List<int>();
@@ -751,10 +880,6 @@ public class OSMTerrainCompress : MonoBehaviour
         List<KeyValuePair<int, int>> afl_remain = new List<KeyValuePair<int, int>>();
         int[] afl_point_connect_count = new int[point_cloud.Length];
         List<List<int>> simplex_list = DeWall(point_index_list, new List<KeyValuePair<int, int>>(), ref afl_remain, ref afl_point_connect_count, true, 0, 1);
-        //Debug.Log("cloud?");
-        //for (int i = 0; i < point_cloud_valid.Length; i++)
-        //    if (!point_cloud_valid[i])
-        //        Debug.Log(i);
 
         Mesh mesh = new Mesh();
         Vector3[] vertice = new Vector3[point_cloud.Length];
