@@ -1,7 +1,18 @@
 using System.Collections.Generic;
 using PathCreation.Utility;
 using Unity.Jobs;
+using UnityEngine.Jobs;
 using UnityEngine;
+using Unity.Burst;
+
+[BurstCompile]
+public struct RoadJob : IJobParallelForTransform
+{
+    public void Execute(int index, TransformAccess transform)
+    {
+
+    }
+}
 
 namespace PathCreation.Examples
 {
@@ -32,14 +43,6 @@ namespace PathCreation.Examples
                 AssignMeshComponents();
                 AssignMaterials();
                 CreateRoadMesh();
-            }
-        }
-
-        public struct RoadJob : IJobParallelFor
-        {
-            public void Execute(int index)
-            {
-                
             }
         }
 

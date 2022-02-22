@@ -39,13 +39,6 @@ namespace PathCreation.Examples
 
         public IEnumerator CreateRoadMesh()
         {
-            if (time > 0.0f) 
-            {
-                time -= Time.deltaTime;
-                yield return null;
-            }
-            time = 1.0f;
-
             Vector3[] verts = new Vector3[path.NumPoints * 8];
             Vector2[] uvs = new Vector2[verts.Length];
             Vector3[] normals = new Vector3[verts.Length];
