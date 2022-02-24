@@ -26,7 +26,15 @@ public struct RoadJob : IJob
     public NativeArray<int> sideOfRoadTrianglesJ;
 
     //path
-    PathCreation.VertexPath path;
+    //PathCreation.VertexPath path;
+    public PathSpace spaceJ;
+    public int NumPointsJ;
+    public bool isClosedLoopJ;
+    public float3 upJ;
+    public NativeArray<float> timesJ;
+    public NativeArray<float3> GetPointJ;
+    public NativeArray<float3> GetTangentJ;
+    public NativeArray<float3> GetNormalJ;
 
     public void Execute()
     {
@@ -40,16 +48,19 @@ public struct RoadJob : IJob
         int[] triangleMap = { 0, 8, 1, 1, 8, 9 };
         int[] sidesTriangleMap = { 4, 6, 14, 12, 4, 14, 5, 15, 7, 13, 15, 5 };
 
-        bool usePathNormals = !(path.space == PathSpace.xyz && flattenSurfaceJ);
+        bool usePathNormals = !(spaceJ == PathSpace.xyz && flattenSurfaceJ);
 
-        for (int i = 0; i < path.NumPoints; i++)
+        for (int i = 0; i < NumPointsJ; i++)
         {
-            Vector3 localUp = (usePathNormals) ? Vector3.Cross(path.GetTangent(i), path.GetNormal(i)) : path.up;
-            Vector3 localRight = (usePathNormals) ? path.GetNormal(i) : Vector3.Cross(localUp, path.GetTangent(i));
+            float3 tangent = GetTangentJ[i];
+            float3 normal = GetNormalJ[i];
+            float3 localUp = (usePathNormals) ? new float3(tangent[1] * normal[2] - tangent[2] * normal[1], tangent[2] * normal[0] - tangent[0] * normal[2], tangent[0] * normal[1] - tangent[1] * normal[0]) : upJ;
+
+            float3 localRight = (usePathNormals) ? normal : new float3(localUp[1] * tangent[2] - localUp[2] * tangent[1], localUp[2] * tangent[0] - localUp[0] * tangent[2], localUp[0] * tangent[1] - localUp[1] * tangent[0]);
 
             // Find position to left and right of current path vertex
-            Vector3 vertSideA = path.GetPoint(i) - localRight * Mathf.Abs(roadWidthJ);
-            Vector3 vertSideB = path.GetPoint(i) + localRight * Mathf.Abs(roadWidthJ);
+            float3 vertSideA = GetPointJ[i] - localRight * Mathf.Abs(roadWidthJ);
+            float3 vertSideB = GetPointJ[i] + localRight * Mathf.Abs(roadWidthJ);
 
             // Add top of road vertices
             vertsJ[vertIndex + 0] = vertSideA;
@@ -65,8 +76,8 @@ public struct RoadJob : IJob
             vertsJ[vertIndex + 7] = vertsJ[vertIndex + 3];
 
             // Set uv on y axis to path time (0 at start of path, up to 1 at end of path)
-            uvsJ[vertIndex + 0] = new Vector2(0, path.times[i]);
-            uvsJ[vertIndex + 1] = new Vector2(1, path.times[i]);
+            uvsJ[vertIndex + 0] = new Vector2(0, timesJ[i]);
+            uvsJ[vertIndex + 1] = new Vector2(1, timesJ[i]);
 
             // Top of road normals
             normalsJ[vertIndex + 0] = localUp;
@@ -81,7 +92,7 @@ public struct RoadJob : IJob
             normalsJ[vertIndex + 7] = localRight;
 
             // Set triangle indices
-            if (i < path.NumPoints - 1 || path.isClosedLoop)
+            if (i < NumPointsJ - 1 || isClosedLoopJ)
             {
                 for (int j = 0; j < triangleMap.Length; j++)
                 {
@@ -150,6 +161,40 @@ namespace PathCreation.Examples
             NativeArray<int> underRoadTriangles = new NativeArray<int>(numTris * 3, Allocator.TempJob);
             NativeArray<int> sideOfRoadTriangles = new NativeArray<int>(numTris * 2 * 3, Allocator.TempJob);
 
+            //path
+            NativeArray<float3> GetPointArray = new NativeArray<float3>(path.NumPoints, Allocator.TempJob);
+            NativeArray<float3> GetTangentArray = new NativeArray<float3>(path.NumPoints, Allocator.TempJob);
+            NativeArray<float3> GetNormalArray = new NativeArray<float3>(path.NumPoints, Allocator.TempJob);
+
+            for (int id = 0; id < verts.Length; id++)
+            {
+                uvs[id] = float2.zero;
+                normals[id] = float3.zero;
+            }
+
+            for (int id = 0; id < numTris * 3; id++)
+            {
+                roadTriangles[id] = 0;
+                underRoadTriangles[id] = 0;
+                sideOfRoadTriangles[id * 2] = 0;
+                sideOfRoadTriangles[id * 2 + 1] = 0;
+            }
+
+            for (int id = 0; id < path.NumPoints; id++)
+            {
+                verts[id * 8] = float3.zero;
+                verts[id * 8 + 1] = float3.zero;
+                verts[id * 8 + 2] = float3.zero;
+                verts[id * 8 + 3] = float3.zero;
+                verts[id * 8 + 4] = float3.zero;
+                verts[id * 8 + 5] = float3.zero;
+                verts[id * 8 + 6] = float3.zero;
+                verts[id * 8 + 7] = float3.zero;
+                GetPointArray[id] = path.GetPoint(id);
+                GetTangentArray[id] = path.GetTangent(id);
+                GetNormalArray[id] = path.GetNormal(id);
+            }
+
             RoadJob roadJob = new RoadJob
             {
                 //basic
@@ -164,8 +209,18 @@ namespace PathCreation.Examples
                 normalsJ = normals,
                 roadTrianglesJ = roadTriangles,
                 underRoadTrianglesJ = underRoadTriangles,
-                sideOfRoadTrianglesJ = sideOfRoadTriangles
-        };
+                sideOfRoadTrianglesJ = sideOfRoadTriangles,
+
+                //path
+                spaceJ = path.space,
+                NumPointsJ = path.NumPoints,
+                isClosedLoopJ = path.isClosedLoop,
+                upJ = path.up,
+                timesJ = new NativeArray<float>(path.times, Allocator.TempJob),
+                GetPointJ = new NativeArray<float3>(GetPointArray, Allocator.TempJob),
+                GetTangentJ = new NativeArray<float3>(GetTangentArray, Allocator.TempJob),
+                GetNormalJ = new NativeArray<float3>(GetNormalArray, Allocator.TempJob)
+            };
 
             JobHandle jobHandle = RoadJobTask();
             GetComponent<RoadInfo>().addJob(jobHandle);
@@ -179,6 +234,17 @@ namespace PathCreation.Examples
             mesh.SetTriangles(underRoadTriangles.ToArray(), 1);
             mesh.SetTriangles(sideOfRoadTriangles.ToArray(), 2);
             mesh.RecalculateBounds();
+
+            verts.Dispose();
+            uvs.Dispose();
+            normals.Dispose();
+            roadTriangles.Dispose();
+            underRoadTriangles.Dispose();
+            sideOfRoadTriangles.Dispose();
+            GetPointArray.Dispose();
+            GetTangentArray.Dispose();
+            GetNormalArray.Dispose();
+
             /*
             Vector3[] verts = new Vector3[path.NumPoints * 8];
             Vector2[] uvs = new Vector2[verts.Length];
