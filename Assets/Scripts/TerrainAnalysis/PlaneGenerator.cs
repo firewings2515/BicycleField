@@ -8,6 +8,7 @@ public class PlaneGenerator : MonoBehaviour
     int resolution = 180;
     public Material heightmap_mat;
     public bool generate;
+    public bool export;
     // Start is called before the first frame update
     void Start()
     {
@@ -58,15 +59,7 @@ public class PlaneGenerator : MonoBehaviour
                 indices[indices_index++] = (i + 1) * (resolution + 1) + j + 1;
             }
         }
-        //for (int i = 0; i < resolution * resolution * 6; i++)
-        //{
-        //    if (i % 6 == 0)
-        //        Debug.Log("==============");
-        //    Debug.Log(indices[i]);
-        //}
-        // Use the triangulator to get indices for creating triangles
-        //Triangulator tr = new Triangulator(vertice2D);
-        //int[] indices = tr.Triangulate();
+
         //Assign data to mesh
         mesh.vertices = vertice;
         mesh.uv = uv;
