@@ -28,7 +28,7 @@ public class ExportPNG : MonoBehaviour
         //first Make sure you're using RGB24 as your texture format
         Texture mainTexture = GetComponent<Renderer>().sharedMaterial.GetTexture("Texture2D_a7d369ab60fc42b2b7cc47413405165f");
         Texture2D texture2D = new Texture2D(mainTexture.width, mainTexture.height, TextureFormat.RGBA32, false);
-
+        Debug.Log(mainTexture.width);
         RenderTexture currentRT = RenderTexture.active;
 
         RenderTexture renderTexture = new RenderTexture(mainTexture.width, mainTexture.height, 32);
