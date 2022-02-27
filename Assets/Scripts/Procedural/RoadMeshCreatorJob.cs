@@ -128,12 +128,12 @@ namespace PathCreation.Examples
         public Material undersideMaterial;
         public float textureTiling = 1;
 
-        [SerializeField, HideInInspector]
-        GameObject meshHolder;
+        //[SerializeField, HideInInspector]
+        public GameObject meshHolder;
 
-        MeshFilter meshFilter;
-        MeshRenderer meshRenderer;
-        Mesh mesh;
+        public MeshFilter meshFilter;
+        public MeshRenderer meshRenderer;
+        public Mesh mesh;
 
         public override void PathUpdated()
         {
@@ -143,12 +143,6 @@ namespace PathCreation.Examples
                 AssignMaterials();
                 CreateRoadMesh();
             }
-        }
-
-        private JobHandle RoadJobTask()
-        {
-            RoadJob job = new RoadJob();
-            return job.Schedule();
         }
 
         public void CreateRoadMesh()
@@ -222,13 +216,17 @@ namespace PathCreation.Examples
                 GetNormalJ = new NativeArray<float3>(GetNormalArray, Allocator.TempJob)
             };
 
-            JobHandle jobHandle = RoadJobTask();
-            GetComponent<RoadInfo>().addJob(jobHandle);
+            //JobHandle jobHandle = RoadJobTask();
+            //GetComponent<RoadInfo>().addJob(jobHandle);
+            roadJob.Schedule().Complete();
 
             mesh.Clear();
-            verts.Reinterpret<Vector3>().CopyTo(mesh.vertices);
-            uvs.Reinterpret<Vector2>().CopyTo(mesh.uv);
-            normals.Reinterpret<Vector3>().CopyTo(mesh.normals);
+            mesh.vertices = new Vector3[path.NumPoints * 8];
+            mesh.vertices = verts.Reinterpret<Vector3>().ToArray();
+            mesh.uv = new Vector2[verts.Length];
+            mesh.uv = uvs.Reinterpret<Vector2>().ToArray();
+            mesh.normals = new Vector3[verts.Length];
+            mesh.normals = normals.Reinterpret<Vector3>().ToArray();
             mesh.subMeshCount = 3;
             mesh.SetTriangles(roadTriangles.ToArray(), 0);
             mesh.SetTriangles(underRoadTriangles.ToArray(), 1);
@@ -244,6 +242,11 @@ namespace PathCreation.Examples
             GetPointArray.Dispose();
             GetTangentArray.Dispose();
             GetNormalArray.Dispose();
+
+            roadJob.timesJ.Dispose();
+            roadJob.GetPointJ.Dispose();
+            roadJob.GetTangentJ.Dispose();
+            roadJob.GetNormalJ.Dispose();
 
             /*
             Vector3[] verts = new Vector3[path.NumPoints * 8];
