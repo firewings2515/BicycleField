@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 [ExecuteInEditMode]
 public class HeightmapCompress : MonoBehaviour
 {
     public Texture2D heightmap_edge;
+    public Texture2D heightmap;
     float map_size = 22.5f;
     int resolution = 2048;
     public bool get_feature;
@@ -23,15 +25,16 @@ public class HeightmapCompress : MonoBehaviour
         if (get_feature)
         {
             get_feature = false;
+            Debug.Log("Get feature start");
             GameObject feature_manager = new GameObject("feature_manager");
             List<Vector3> point_cloud_list = new List<Vector3>();
 
             // W8D
             //for (int point_index = 0; point_index < terrain_board_points.Length; point_index++)
             //{
-            for (float edge_x = 0.0f; edge_x < map_size; edge_x += 0.1f)
+            for (float edge_x = 0.0f; edge_x < map_size; edge_x += 0.5f)
             {
-                for (float edge_z = 0.0f; edge_z < map_size; edge_z += 0.1f)
+                for (float edge_z = 0.0f; edge_z < map_size; edge_z += 0.5f)
                 {
                     Color gray = heightmap_edge.GetPixel(Mathf.FloorToInt(edge_x / map_size * heightmap_edge.width), Mathf.FloorToInt(edge_z / map_size * heightmap_edge.height));
                     if (gray.r > 0.5f)
@@ -48,6 +51,15 @@ public class HeightmapCompress : MonoBehaviour
 
             point_cloud = point_cloud_list.ToArray();
             showPoint(point_cloud, "Feature", feature_manager.transform);
+
+            using (StreamWriter sw = new StreamWriter(Application.streamingAssetsPath + "//features.f"))
+            {
+                for (int point_index = 0; point_index < point_cloud.Length; point_index++)
+                {
+                    sw.WriteLine(point_cloud[point_index].x + " " + point_cloud[point_index].y + " " + point_cloud[point_index].z);
+                }
+            }
+            Debug.Log("Get feature finish");
         }
     }
 
@@ -65,7 +77,7 @@ public class HeightmapCompress : MonoBehaviour
                 Vector3 terrain_feature_ready = center + d * directions[dir];
                 if (terrain_feature_ready.x < 0.0f || terrain_feature_ready.z < 0.0f || terrain_feature_ready.x > width_boundary || terrain_feature_ready.z > height_boundary)
                     break;
-                Color gray = heightmap_edge.GetPixel(Mathf.FloorToInt(terrain_feature_ready.x / map_size * heightmap_edge.width), Mathf.FloorToInt(terrain_feature_ready.z / map_size * heightmap_edge.height));
+                Color gray = heightmap.GetPixel(Mathf.FloorToInt(terrain_feature_ready.x / map_size * heightmap.width), Mathf.FloorToInt(terrain_feature_ready.z / map_size * heightmap.height));
                 //terrain_feature_lonlats.Add(terrain_feature_lonlat);
                 terrain_feature_ready.y = gray.r;
                 terrain_feature_readys.Add(terrain_feature_ready);
@@ -109,7 +121,7 @@ public class HeightmapCompress : MonoBehaviour
         for (int point_index = 0; point_index < path_points_dp.Length; point_index++)
         {
             GameObject ball = Instantiate(test_ball, path_points_dp[point_index], Quaternion.identity);
-            ball.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
+            ball.transform.localScale = new Vector3(0.0625f, 0.0625f, 0.0625f);
             ball.name = tag + "_" + point_index.ToString();
             ball.transform.parent = parent;
         }
