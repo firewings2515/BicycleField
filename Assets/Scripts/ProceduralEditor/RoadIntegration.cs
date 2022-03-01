@@ -11,6 +11,11 @@ public class RoadIntegration : MonoBehaviour
     List<string> bicycle_points_list;
     List<GameObject> bicycle_roads_list;
     OSMReader osm_reader;
+    float view_max_x;
+    float view_max_z;
+    float view_min_x;
+    float view_min_z;
+    float vision_length = 200.0f;
 
     [Header("Edit Bicycle Road List")]
     public bool edit_mode = true;
@@ -25,6 +30,11 @@ public class RoadIntegration : MonoBehaviour
         bicycle_way_list = new List<string>();
         bicycle_points_list = new List<string>();
         bicycle_roads_list = new List<GameObject>();
+
+        view_max_x = float.MinValue;
+        view_max_z = float.MinValue;
+        view_min_x = float.MaxValue;
+        view_min_z = float.MaxValue;
     }
 
     // Update is called once per frame
@@ -138,6 +148,8 @@ public class RoadIntegration : MonoBehaviour
                     }
                 }
 
+                largeVision(new_road_index);
+
                 Debug.Log("Road " + new_road_id + " Linked Successfully!");
             }
             else
@@ -205,5 +217,25 @@ public class RoadIntegration : MonoBehaviour
             //sw.WriteLine(" </way>");
         }
         Debug.Log("Write Successfully!");
+    }
+
+    void largeVision(int new_road_index)
+    {
+        for (int new_road_ref_index = 0; new_road_ref_index < osm_reader.pathes[new_road_index].ref_node.Count; new_road_ref_index++)
+        {
+            Vector3 point = osm_reader.points_lib[osm_reader.pathes[new_road_index].ref_node[new_road_ref_index]].position;
+            view_max_x = Mathf.Max(view_max_x, point.x + vision_length);
+            view_max_z = Mathf.Max(view_max_z, point.z + vision_length);
+            view_min_x = Mathf.Min(view_min_x, point.x - vision_length);
+            view_min_z = Mathf.Min(view_min_z, point.z - vision_length);
+        }
+        Debug.Log(view_max_x + " " + view_max_z + " " + view_min_x + " " + view_min_z);
+        float view_max_lon = 0.0f;
+        float view_max_lat = 0.0f;
+        float view_min_lon = 0.0f;
+        float view_min_lat = 0.0f;
+        osm_reader.toLonAndLat(view_max_x, view_max_z, out view_max_lon, out view_max_lat);
+        osm_reader.toLonAndLat(view_min_x, view_min_z, out view_min_lon, out view_min_lat);
+        Debug.Log(view_max_lon + " " + view_max_lat + " " + view_min_lon + " " + view_min_lat);
     }
 }
