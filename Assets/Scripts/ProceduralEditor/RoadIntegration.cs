@@ -11,10 +11,10 @@ public class RoadIntegration : MonoBehaviour
     List<string> bicycle_points_list;
     List<GameObject> bicycle_roads_list;
     OSMReader osm_reader;
-    float view_max_x;
-    float view_max_z;
-    float view_min_x;
-    float view_min_z;
+    public float view_max_x;
+    public float view_max_z;
+    public float view_min_x;
+    public float view_min_z;
     float vision_length = 200.0f;
 
     [Header("Edit Bicycle Road List")]

@@ -11,7 +11,8 @@ public class HeightmapCompress : MonoBehaviour
     float map_size = 22.5f;
     int resolution = 2048;
     public bool get_feature;
-    public GameObject test_ball;
+    public GameObject blue_ball;
+    public GameObject red_ball;
     Vector3[] point_cloud;
     // Start is called before the first frame update
     void Start()
@@ -32,14 +33,18 @@ public class HeightmapCompress : MonoBehaviour
             // W8D
             //for (int point_index = 0; point_index < terrain_board_points.Length; point_index++)
             //{
-            for (float edge_x = 0.0f; edge_x < map_size; edge_x += 0.5f)
+            for (float edge_x = 0.0f; edge_x < map_size; edge_x += 0.1f)
             {
-                for (float edge_z = 0.0f; edge_z < map_size; edge_z += 0.5f)
+                for (float edge_z = 0.0f; edge_z < map_size; edge_z += 0.1f)
                 {
                     Color gray = heightmap_edge.GetPixel(Mathf.FloorToInt(edge_x / map_size * heightmap_edge.width), Mathf.FloorToInt(edge_z / map_size * heightmap_edge.height));
                     if (gray.r > 0.5f)
                     {
                         List<List<Vector3>> w8d = W8D(map_size, map_size, new Vector3(edge_x, 0.0f, edge_z), point_cloud_list); // need to limit boundary
+                        Vector3[] w8d_center = new Vector3[1];
+                        Color height = heightmap.GetPixel(Mathf.FloorToInt(edge_x / map_size * heightmap.width), Mathf.FloorToInt(edge_z / map_size * heightmap.height));
+                        w8d_center[0] = new Vector3(edge_x, height.r, edge_z);
+                        showPoint(w8d_center, "Feature_Center", feature_manager.transform, red_ball, 0.125f);
                         for (int w8d_index = 0; w8d_index < w8d.Count; w8d_index++)
                         {
                             point_cloud_list.AddRange(w8d[w8d_index]);
@@ -50,7 +55,7 @@ public class HeightmapCompress : MonoBehaviour
             //}
 
             point_cloud = point_cloud_list.ToArray();
-            showPoint(point_cloud, "Feature", feature_manager.transform);
+            showPoint(point_cloud, "Feature", feature_manager.transform, blue_ball, 0.0625f);
 
             using (StreamWriter sw = new StreamWriter(Application.streamingAssetsPath + "//features.f"))
             {
@@ -82,22 +87,22 @@ public class HeightmapCompress : MonoBehaviour
                 terrain_feature_ready.y = gray.r;
                 terrain_feature_readys.Add(terrain_feature_ready);
                 // no near detection
-                //terrain_feature_points[dir].Add(terrain_feature_ready);
+                terrain_feature_points[dir].Add(terrain_feature_ready);
             }
-            for (int point_index = 0; point_index < terrain_feature_readys.Count; point_index++)
-            {
-                bool is_too_near = false;
-                for (int point_cloud_index = 0; point_cloud_index < point_cloud_list.Count; point_cloud_index++)
-                {
-                    if (distance2D(point_cloud_list[point_cloud_index].x, point_cloud_list[point_cloud_index].z, terrain_feature_readys[point_index].x, terrain_feature_readys[point_index].z) < 0.1f)
-                    {
-                        is_too_near = true;
-                        break;
-                    }
-                }
-                if (!is_too_near)
-                    terrain_feature_points[dir].Add(terrain_feature_readys[point_index]);
-            }
+            //for (int point_index = 0; point_index < terrain_feature_readys.Count; point_index++)
+            //{
+            //    bool is_too_near = false;
+            //    for (int point_cloud_index = 0; point_cloud_index < point_cloud_list.Count; point_cloud_index++)
+            //    {
+            //        if (distance2D(point_cloud_list[point_cloud_index].x, point_cloud_list[point_cloud_index].z, terrain_feature_readys[point_index].x, terrain_feature_readys[point_index].z) < 0.1f)
+            //        {
+            //            is_too_near = true;
+            //            break;
+            //        }
+            //    }
+            //    if (!is_too_near)
+            //        terrain_feature_points[dir].Add(terrain_feature_readys[point_index]);
+            //}
 
             if (terrain_feature_points[dir].Count > 1)
                 terrain_feature_points[dir] = DouglasPeuckerAlgorithm.DouglasPeucker(terrain_feature_points[dir], 0.1f);
@@ -111,17 +116,17 @@ public class HeightmapCompress : MonoBehaviour
         return Mathf.Sqrt(Mathf.Pow(x1 - x2, 2) + Mathf.Pow(z1 - z2, 2));
     }
 
-    void showPoint(List<Vector3> path_points_dp, string tag, Transform parent)
+    void showPoint(List<Vector3> path_points_dp, string tag, Transform parent, GameObject ball_prefab, float ball_size)
     {
-        showPoint(path_points_dp.ToArray(), tag, parent);
+        showPoint(path_points_dp.ToArray(), tag, parent, ball_prefab, ball_size);
     }
 
-    void showPoint(Vector3[] path_points_dp, string tag, Transform parent)
+    void showPoint(Vector3[] path_points_dp, string tag, Transform parent, GameObject ball_prefab, float ball_size)
     {
         for (int point_index = 0; point_index < path_points_dp.Length; point_index++)
         {
-            GameObject ball = Instantiate(test_ball, path_points_dp[point_index], Quaternion.identity);
-            ball.transform.localScale = new Vector3(0.0625f, 0.0625f, 0.0625f);
+            GameObject ball = Instantiate(ball_prefab, path_points_dp[point_index], Quaternion.identity);
+            ball.transform.localScale = new Vector3(ball_size, ball_size, ball_size);
             ball.name = tag + "_" + point_index.ToString();
             ball.transform.parent = parent;
         }
