@@ -507,7 +507,7 @@ MonoBehaviour:
   osm3d_file_name: YangJin3D.osm
   is_initial: 0
   cam: {fileID: 1989431606}
-  initial_point: 45263678_226830312+24
+  initial_point: 2091208127
   view_instance: {fileID: 6379100898760342392, guid: 0070e3ca57a1355498c1e70df5223207, type: 3}
 --- !u!114 &2144769852
 MonoBehaviour:
@@ -538,3 +538,5 @@ MonoBehaviour:
   generate: 0
   heightmap_mat: {fileID: 2100000, guid: ba035e347e7300247adf36dfd5c9e27b, type: 2}
   heightmap: {fileID: 2800000, guid: 2b576072e2ec3604597c057129311126, type: 3}
+  blue_ball: {fileID: 7606946595633192119, guid: 7a7e0a9491a268e4881caac315264c20, type: 3}
+  red_ball: {fileID: 7606946595633192119, guid: 5c778351e0128cf4dae06c542dfa2c5d, type: 3}

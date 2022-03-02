@@ -8,11 +8,17 @@ public class HeightmapCompress : MonoBehaviour
 {
     public Texture2D heightmap_edge;
     public Texture2D heightmap;
-    float map_size = 22.5f;
-    int resolution = 2048;
+    public float map_size_width = 22.5f;
+    public float map_size_height = 22.5f;
+    public float piece_length = 32.0f; //2048
+    public float min_x;
+    public float min_z;
+    public float gray_height;
     public bool get_feature;
     public GameObject blue_ball;
     public GameObject red_ball;
+    public float threshold;
+    public float epsilon;
     Vector3[] point_cloud;
     // Start is called before the first frame update
     void Start()
@@ -33,18 +39,18 @@ public class HeightmapCompress : MonoBehaviour
             // W8D
             //for (int point_index = 0; point_index < terrain_board_points.Length; point_index++)
             //{
-            for (float edge_x = 0.0f; edge_x < map_size; edge_x += 0.1f)
+            for (float edge_x = 0.0f; edge_x < map_size_width; edge_x += piece_length)
             {
-                for (float edge_z = 0.0f; edge_z < map_size; edge_z += 0.1f)
+                for (float edge_z = 0.0f; edge_z < map_size_height; edge_z += piece_length)
                 {
-                    Color gray = heightmap_edge.GetPixel(Mathf.FloorToInt(edge_x / map_size * heightmap_edge.width), Mathf.FloorToInt(edge_z / map_size * heightmap_edge.height));
-                    if (gray.r > 0.5f)
+                    Color gray = heightmap_edge.GetPixel(Mathf.FloorToInt(edge_x / map_size_width * heightmap_edge.width), Mathf.FloorToInt(edge_z / map_size_height * heightmap_edge.height));
+                    if (gray.r > threshold)
                     {
-                        List<List<Vector3>> w8d = W8D(map_size, map_size, new Vector3(edge_x, 0.0f, edge_z), point_cloud_list); // need to limit boundary
+                        List<List<Vector3>> w8d = W8D(map_size_width, map_size_height, new Vector3(edge_x, 0.0f, edge_z), point_cloud_list); // need to limit boundary
                         Vector3[] w8d_center = new Vector3[1];
-                        Color height = heightmap.GetPixel(Mathf.FloorToInt(edge_x / map_size * heightmap.width), Mathf.FloorToInt(edge_z / map_size * heightmap.height));
-                        w8d_center[0] = new Vector3(edge_x, height.r, edge_z);
-                        showPoint(w8d_center, "Feature_Center", feature_manager.transform, red_ball, 0.125f);
+                        Color height = heightmap.GetPixel(Mathf.FloorToInt(edge_x / map_size_width * heightmap.width), Mathf.FloorToInt(edge_z / map_size_height * heightmap.height));
+                        w8d_center[0] = new Vector3(min_x + edge_x, height.r * gray_height, min_z + edge_z);
+                        showPoint(w8d_center, "Feature_Center", feature_manager.transform, red_ball, 16.0f);
                         for (int w8d_index = 0; w8d_index < w8d.Count; w8d_index++)
                         {
                             point_cloud_list.AddRange(w8d[w8d_index]);
@@ -55,7 +61,7 @@ public class HeightmapCompress : MonoBehaviour
             //}
 
             point_cloud = point_cloud_list.ToArray();
-            showPoint(point_cloud, "Feature", feature_manager.transform, blue_ball, 0.0625f);
+            showPoint(point_cloud, "Feature", feature_manager.transform, blue_ball, 8.0f);
 
             using (StreamWriter sw = new StreamWriter(Application.streamingAssetsPath + "//features.f"))
             {
@@ -77,14 +83,15 @@ public class HeightmapCompress : MonoBehaviour
         {
             List<Vector3> terrain_feature_readys = new List<Vector3>();
             terrain_feature_points.Add(new List<Vector3>());
-            for (float d = 0.0f; d < map_size * map_size; d += 0.125f)
+            for (float d = 0.0f; d < width_boundary * height_boundary; d += piece_length)
             {
                 Vector3 terrain_feature_ready = center + d * directions[dir];
                 if (terrain_feature_ready.x < 0.0f || terrain_feature_ready.z < 0.0f || terrain_feature_ready.x > width_boundary || terrain_feature_ready.z > height_boundary)
                     break;
-                Color gray = heightmap.GetPixel(Mathf.FloorToInt(terrain_feature_ready.x / map_size * heightmap.width), Mathf.FloorToInt(terrain_feature_ready.z / map_size * heightmap.height));
+                Color gray = heightmap.GetPixel(Mathf.FloorToInt(terrain_feature_ready.x / map_size_width * heightmap.width), Mathf.FloorToInt(terrain_feature_ready.z / map_size_height * heightmap.height));
                 //terrain_feature_lonlats.Add(terrain_feature_lonlat);
-                terrain_feature_ready.y = gray.r;
+                terrain_feature_ready.y = gray.r * gray_height;
+                terrain_feature_ready += new Vector3(min_x, 0.0f, min_z);
                 terrain_feature_readys.Add(terrain_feature_ready);
                 // no near detection
                 terrain_feature_points[dir].Add(terrain_feature_ready);
@@ -105,7 +112,7 @@ public class HeightmapCompress : MonoBehaviour
             //}
 
             if (terrain_feature_points[dir].Count > 1)
-                terrain_feature_points[dir] = DouglasPeuckerAlgorithm.DouglasPeucker(terrain_feature_points[dir], 0.1f);
+                terrain_feature_points[dir] = DouglasPeuckerAlgorithm.DouglasPeucker(terrain_feature_points[dir], epsilon);
         }
 
         return terrain_feature_points;

@@ -1,15 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public class SmallTerrainGenerator : MonoBehaviour
 {
     OSMEditor osm_editor;
     RoadIntegration road_integration;
-    float piece_length = 128.0f; //128
+    float piece_length = 32.0f; //128
     public bool generate;
     public Material heightmap_mat;
     public Texture2D heightmap;
+    public GameObject blue_ball;
+    public GameObject red_ball;
     // Start is called before the first frame update
     void Start()
     {
@@ -64,17 +67,20 @@ public class SmallTerrainGenerator : MonoBehaviour
                 all_coords.Add(new EarthCoord(terrain_lon, terrain_lat));
                 //terrain_points[i, j, 1] = heightmap.GetPixel(Mathf.FloorToInt((min_u + i * du) * 2048), Mathf.FloorToInt((min_v + j * dv) * 2048)).r * 100.0f;
 
-                uv[i * z_length + j] = new Vector2(min_u + i * du, min_v + j * dv);
+                //uv[i * z_length + j] = new Vector2(min_u + i * du, min_v + j * dv);
+                uv[i * z_length + j] = new Vector2((float)i / x_length, (float)j / z_length);
             }
         }
         //////////////////////////////get elevations/////////////////////////////////////////
         List<float> all_elevations = HgtReader.getElevations(all_coords);
         /////////////////////////////////////////////////////////////////////////////////////
+        float max_height = float.MinValue;
         for (int i = 0; i < x_length; i++)
         {
             for (int j = 0; j < z_length; j++)
             {
                 vertice[i * z_length + j] = new Vector3((float)terrain_points[i, j, 0], all_elevations[i * z_length + j], (float)terrain_points[i, j, 2]);
+                max_height = Mathf.Max(max_height, all_elevations[i * z_length + j]);
             }
         }
         for (int i = 0; i < x_length - 1; i++)
@@ -105,6 +111,45 @@ public class SmallTerrainGenerator : MonoBehaviour
         MeshFilter mf = terrain.AddComponent<MeshFilter>();
         MeshRenderer mr = terrain.AddComponent<MeshRenderer>();
         mf.mesh = mesh;
+
+        Texture2D texture = exportSmallTexture(x_length, z_length, vertice, max_height);
+        heightmap_mat.SetTexture("Texture2D", texture);
         mr.material = heightmap_mat;
+        terrain.AddComponent<ExportPNG>();
+        terrain.AddComponent<HeightmapCompress>();
+        terrain.GetComponent<HeightmapCompress>().heightmap = texture;
+        terrain.GetComponent<HeightmapCompress>().min_x = min_x;
+        terrain.GetComponent<HeightmapCompress>().min_z = min_z;
+        terrain.GetComponent<HeightmapCompress>().map_size_width = max_x - min_x;
+        terrain.GetComponent<HeightmapCompress>().map_size_height = max_z - min_z;
+        terrain.GetComponent<HeightmapCompress>().gray_height = max_height;
+        terrain.GetComponent<HeightmapCompress>().blue_ball = blue_ball;
+        terrain.GetComponent<HeightmapCompress>().red_ball = red_ball;
+    }
+
+    Texture2D exportSmallTexture(int x_length, int z_length, Vector3[] vertice, float max_height)
+    {
+        //first Make sure you're using RGB24 as your texture format
+        Texture2D texture2D = new Texture2D(x_length, z_length, TextureFormat.RGBA32, false);
+
+        for (int i = 0; i < x_length; i++)
+        {
+            for (int j = 0; j < z_length; j++)
+            {
+                float gray = vertice[i * z_length + j].y / max_height;
+                texture2D.SetPixel(i, j, new Color(gray, gray, gray));
+            }
+        }
+
+        //then Save To Disk as PNG
+        byte[] bytes = texture2D.EncodeToPNG();
+        var dirPath = Application.dataPath + "/Resources/";
+        if (!Directory.Exists(dirPath))
+        {
+            Directory.CreateDirectory(dirPath);
+        }
+        File.WriteAllBytes(dirPath + "smallImage" + ".png", bytes);
+
+        return texture2D;
     }
 }

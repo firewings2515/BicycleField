@@ -44,11 +44,11 @@ public class ExportPNG : MonoBehaviour
 
         //then Save To Disk as PNG
         byte[] bytes = texture2D.EncodeToPNG();
-        var dirPath = Application.dataPath + "/../SaveImages/";
+        var dirPath = Application.dataPath + "/Resources/";
         if (!Directory.Exists(dirPath))
         {
             Directory.CreateDirectory(dirPath);
         }
-        File.WriteAllBytes(dirPath + "Image" + ".png", bytes);
+        File.WriteAllBytes(dirPath + "smallEdge" + ".png", bytes);
     }
 }
