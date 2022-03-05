@@ -69,9 +69,7 @@ public class RoadManager : MonoBehaviour
         point_data = reader.ReadLine();
         while (point_data != null && point_data[0] == 'H')
         {
-            string[] house_infos = point_data.Split(' ');
-            Vector3 single_point = new Vector3(int.Parse(house_infos[2]), int.Parse(house_infos[3]), int.Parse(house_infos[4]));
-            HouseGenerator.generateHouse(current_loaded_segment, house_id, single_point);
+            HouseGenerator.generateHouse(current_loaded_segment, house_id, point_data);
             house_id++;
 
             //GetComponent<HouseManager>().addToBuffer(point_data);
