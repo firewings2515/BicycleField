@@ -38,17 +38,15 @@ public class SmallTerrainGenerator : MonoBehaviour
         float min_lat;
         osm_editor.osm_reader.toLonAndLat(max_x, max_z, out max_lon, out max_lat);
         osm_editor.osm_reader.toLonAndLat(min_x, min_z, out min_lon, out min_lat);
-        float max_u = max_lon - (int)max_lon;
-        float max_v = max_lat - (int)max_lat;
-        float min_u = min_lon - (int)min_lon;
-        float min_v = min_lat - (int)min_lat;
+        Debug.Log("lon: " + min_lon + " lat: " + min_lat + " ~ lon: " + max_lon + " lat: " + max_lat);
+        //float max_u = max_lon - (int)max_lon;
+        //float max_v = max_lat - (int)max_lat;
+        //float min_u = min_lon - (int)min_lon;
+        //float min_v = min_lat - (int)min_lat;
 
         Mesh mesh = new Mesh();
         int x_length = Mathf.CeilToInt((max_x - min_x) / piece_length);
         int z_length = Mathf.CeilToInt((max_z - min_z) / piece_length);
-        float du = (max_u - min_u) / (x_length - 1);
-        float dv = (max_v - min_v) / (z_length - 1);
-        Debug.Log("xz====" + x_length + " " + z_length);
         double[,,] terrain_points = new double[x_length, z_length, 3];
         Vector3[] vertice = new Vector3[x_length * z_length];
         Vector2[] uv = new Vector2[x_length * z_length];
