@@ -61,6 +61,7 @@ public class FeatureReconstruction : MonoBehaviour
         Mesh mesh = new Mesh();
         float[,,] terrain_points = new float[x_length, z_length, 3];
         Vector3[] vertice = new Vector3[x_length * z_length];
+        Vector2[] uv = new Vector2[x_length * z_length];
         int[] indices = new int[6 * (x_length - 1) * (z_length - 1)];
         int indices_index = 0;
         for (int i = 0; i < x_length; i++)
@@ -71,6 +72,7 @@ public class FeatureReconstruction : MonoBehaviour
                 terrain_points[i, j, 2] = min_z + j * piece_length;
                 terrain_points[i, j, 1] = IDW.inverseDistanceWeighting(features, terrain_points[i, j, 0], terrain_points[i, j, 2]);
                 vertice[i * z_length + j] = new Vector3(terrain_points[i, j, 0], terrain_points[i, j, 1], terrain_points[i, j, 2]);
+                uv[i * z_length + j] = new Vector2((float)i / x_length, (float)j / z_length);
             }
         }
 
@@ -89,6 +91,7 @@ public class FeatureReconstruction : MonoBehaviour
         }
 
         mesh.vertices = vertice;
+        mesh.uv = uv;
         mesh.triangles = indices;
         //Recalculations
         mesh.RecalculateNormals();
