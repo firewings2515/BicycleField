@@ -38,7 +38,7 @@ namespace PathCreation.Examples
 
         public void CreateRoadMesh()
         {
-            if (loaded) return;
+            //if (loaded) return;
             loaded = true;
 
             Vector3[] verts = new Vector3[path.NumPoints * 8];

@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 using PathCreation;
+using UnityEditor;
 
 public class RoadManager : MonoBehaviour
 {
     private int current_segment = 2;
     private int current_loaded_segment = 0;
     private int current_running_segment = 0;
+    private int house_id = 0;
 
     private StreamReader reader;
 
@@ -61,10 +63,16 @@ public class RoadManager : MonoBehaviour
 
     private bool getNextSegment(out string point_data)
     {
+        current_loaded_segment++;
+        house_id = 0;
+
         point_data = reader.ReadLine();
         while (point_data != null && point_data[0] == 'H')
         {
-            GetComponent<HouseManager>().addToBuffer(point_data);
+            HouseGenerator.generateHouse(current_loaded_segment, house_id, point_data);
+            house_id++;
+
+            //GetComponent<HouseManager>().addToBuffer(point_data);
             point_data = reader.ReadLine();
         }
         return point_data != null;
@@ -77,10 +85,13 @@ public class RoadManager : MonoBehaviour
         path_creator.bezierPath = new_bezier;
 
         path_creator.bezierPath.AddSegmentToEnd(road);
+        //force display
+        Selection.activeGameObject = this.gameObject;
     }
 
     private void removeEarliestRoad()
     {
+        HouseGenerator.destroyEarliestSegment();
         path_creator.bezierPath.DeleteSegment(0);
         current_segment--;
     }
