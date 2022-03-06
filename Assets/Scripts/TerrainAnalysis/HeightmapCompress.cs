@@ -116,8 +116,8 @@ public class HeightmapCompress : MonoBehaviour
                 if (x < 0 || x >= x_length || z < 0 || z >= z_length)
                     break;
                 flag[x * z_length + z] = true;
-
                 terrain_feature_points[dir].Add(vertice[x * z_length + z]);
+                d++;
             }
 
             if (terrain_feature_points[dir].Count > 1)
