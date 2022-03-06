@@ -86,9 +86,13 @@ public class HeightmapCompress : MonoBehaviour
 
             using (StreamWriter sw = new StreamWriter(Application.streamingAssetsPath + "//features.f"))
             {
+                sw.WriteLine(x_length + " " + z_length);
+                sw.WriteLine((min_x - PublicOutputInfo.origin_pos.x).ToString() + " " + (min_z - PublicOutputInfo.origin_pos.z).ToString());
+                sw.WriteLine(point_cloud.Length);
                 for (int point_index = 0; point_index < point_cloud.Length; point_index++)
                 {
-                    sw.WriteLine(point_cloud[point_index].x + " " + point_cloud[point_index].y + " " + point_cloud[point_index].z);
+                    Vector3 feature_out = point_cloud[point_index] - PublicOutputInfo.origin_pos;
+                    sw.WriteLine(feature_out.x + " " + feature_out.y + " " + feature_out.z);
                 }
             }
             Debug.Log("Get feature finish");
@@ -109,7 +113,7 @@ public class HeightmapCompress : MonoBehaviour
             {
                 int x = center_x + d * dx[dir];
                 int z = center_z + d * dz[dir];
-                if (x < 0 || x >= x_length || z < 0 || z >= z_length || flag[x * z_length + z])
+                if (x < 0 || x >= x_length || z < 0 || z >= z_length)
                     break;
                 flag[x * z_length + z] = true;
 

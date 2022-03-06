@@ -165,14 +165,14 @@ public class RoadIntegration : MonoBehaviour
         using (StreamWriter sw = new StreamWriter(file_path))
         {
             // move first point to origin because of pathCreator
-            Vector3 origin_pos = osm_reader.points_lib[bicycle_points_list[0]].position;
+            PublicOutputInfo.origin_pos = osm_reader.points_lib[bicycle_points_list[0]].position;
             double begin_lon = MercatorProjection.xToLon(osm_reader.points_lib[bicycle_points_list[0]].position.x + osm_reader.boundary_min.x);
-            double begin_ele = origin_pos.y;
+            double begin_ele = PublicOutputInfo.origin_pos.y;
             double begin_lat = MercatorProjection.yToLat(osm_reader.points_lib[bicycle_points_list[0]].position.z + osm_reader.boundary_min.y);
             sw.WriteLine($"{begin_lon} {begin_ele} {begin_lat}");
             for (int bicycle_points_list_index = 0; bicycle_points_list_index < bicycle_points_list.Count; bicycle_points_list_index++)
             {
-                Vector3 pos = osm_reader.points_lib[bicycle_points_list[bicycle_points_list_index]].position - origin_pos;
+                Vector3 pos = osm_reader.points_lib[bicycle_points_list[bicycle_points_list_index]].position - PublicOutputInfo.origin_pos;
                 sw.WriteLine($"{pos.x} {pos.y} {pos.z}");
                 if (bicycle_points_list_index + 1 == bicycle_points_list.Count)
                     break;
@@ -183,7 +183,7 @@ public class RoadIntegration : MonoBehaviour
                     sw.Write($"H {vertice.Length + 1} ");
                     foreach (Vector3 origin_vertex in vertice)
                     {
-                        Vector3 vertex = origin_vertex - origin_pos;
+                        Vector3 vertex = origin_vertex - PublicOutputInfo.origin_pos;
                         sw.Write($"{vertex.x} {vertex.y} {vertex.z} ");
                     }
                 }
