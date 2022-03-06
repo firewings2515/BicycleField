@@ -114,10 +114,15 @@ public class SmallTerrainGenerator : MonoBehaviour
 
         Texture2D texture = exportSmallTexture(x_length, z_length, vertice, max_height);
         heightmap_mat.SetTexture("Texture2D", texture);
+        float[] edges = getTerrainEdgeDetection(vertice, x_length, z_length);
         mr.material = heightmap_mat;
         terrain.AddComponent<ExportPNG>();
         terrain.AddComponent<HeightmapCompress>();
         terrain.GetComponent<HeightmapCompress>().heightmap = texture;
+        terrain.GetComponent<HeightmapCompress>().vertice = vertice;
+        terrain.GetComponent<HeightmapCompress>().edges = edges;
+        terrain.GetComponent<HeightmapCompress>().x_length = x_length;
+        terrain.GetComponent<HeightmapCompress>().z_length = z_length;
         terrain.GetComponent<HeightmapCompress>().min_x = min_x;
         terrain.GetComponent<HeightmapCompress>().min_z = min_z;
         terrain.GetComponent<HeightmapCompress>().map_size_width = max_x - min_x;
@@ -151,5 +156,48 @@ public class SmallTerrainGenerator : MonoBehaviour
         File.WriteAllBytes(dirPath + "smallImage" + ".png", bytes);
 
         return texture2D;
+    }
+
+    float[] getTerrainEdgeDetection(Vector3[] vertice, int x_length, int z_length)
+    {
+        float[] edges = new float[vertice.Length];
+        float[] value = new float[8];
+        int[] dx = new int[8] { 1, 1, 1, 0, -1, -1, -1, 0 };
+        int[] dz = new int[8] { 1, 0, -1, -1, -1, 0, 1, 1 };
+        for (int x = 0; x < x_length; x++)
+        {
+            for (int z = 0; z < z_length; z++)
+            {
+                for (int dir = 0; dir < 8; dir++)
+                {
+                    int get_x = x + dx[dir];
+                    int get_z = z + dz[dir];
+                    if (get_x < 0) get_x = 0;
+                    if (get_x >= x_length) get_x = x_length - 1;
+                    if (get_z < 0) get_z = 0;
+                    if (get_z >= z_length) get_z = z_length - 1;
+                    value[dir] = vertice[get_x * z_length + get_z].y;
+                }
+
+                float colorX =
+                    value[6] * 1.0f +
+                    value[7] * 2.0f +
+                    value[0] * 1.0f +
+                    value[2] * -1.0f +
+                    value[3] * -2.0f +
+                    value[4] * -1.0f;
+
+                float colorZ =
+                    value[0] * 1.0f +
+                    value[1] * 2.0f +
+                    value[2] * 1.0f +
+                    value[4] * -1.0f +
+                    value[5] * -2.0f +
+                    value[6] * -1.0f;
+
+                edges[x * z_length + z] = Mathf.Sqrt(colorX * colorX + colorZ * colorZ);
+            }
+        }
+        return edges;
     }
 }

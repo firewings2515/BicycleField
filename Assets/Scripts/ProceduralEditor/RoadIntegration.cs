@@ -15,7 +15,7 @@ public class RoadIntegration : MonoBehaviour
     public float view_max_z;
     public float view_min_x;
     public float view_min_z;
-    float vision_length = 200.0f;
+    float vision_length = 2048.0f;
 
     [Header("Edit Bicycle Road List")]
     public bool edit_mode = true;
