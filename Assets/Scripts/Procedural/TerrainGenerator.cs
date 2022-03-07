@@ -18,6 +18,7 @@ static public class TerrainGenerator
     static public void loadTerrain()
     {
         //load terrain info
+        readFeatureFile(Application.streamingAssetsPath + "//" + file_path);
     }
 
     static public void generateTerrain(Vector3 position)
