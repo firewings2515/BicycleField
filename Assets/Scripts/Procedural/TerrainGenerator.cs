@@ -15,6 +15,11 @@ static public class TerrainGenerator
     static public bool generate;
     static public float piece_length = 32.0f; //2048
 
+    static public void loadTerrain()
+    {
+        //load terrain info
+    }
+
     static public void generateTerrain(Vector3 position)
     {
         //generate terrain near position
