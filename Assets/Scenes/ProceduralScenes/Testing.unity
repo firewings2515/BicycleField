@@ -207,7 +207,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1539c9e3551916a4389164526b332203, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  file_name: NTUSTCG.bpf
+  file_name: arclength_100.bpf
   path_creator: {fileID: 333408371}
 --- !u!114 &333408370
 MonoBehaviour:
@@ -327,7 +327,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 333408365}
-  m_Mesh: {fileID: 1632241396}
+  m_Mesh: {fileID: 1248622674}
 --- !u!114 &333408374
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -571,7 +571,7 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 1
---- !u!43 &1632241396
+--- !u!43 &1248622674
 Mesh:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
