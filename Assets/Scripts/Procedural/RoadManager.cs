@@ -80,6 +80,9 @@ public class RoadManager : MonoBehaviour
 
     private void generateRoad(Vector3 road)
     {
+        //terrain
+        TerrainGenerator.generateTerrain(road);
+
         BezierPath new_bezier = new BezierPath(path_creator.bezierPath[0]);
         new_bezier = path_creator.bezierPath;
         path_creator.bezierPath = new_bezier;
