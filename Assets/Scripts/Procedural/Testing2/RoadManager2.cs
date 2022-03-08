@@ -73,7 +73,7 @@ public class RoadManager2 : MonoBehaviour
         point_data = reader.ReadLine();
         while (point_data != null && point_data[0] == 'H')
         {
-            GetComponent<HouseManager>().addToBuffer(point_data);
+            //GetComponent<HouseManager>().addToBuffer(point_data);
             point_data = reader.ReadLine();
         }
         return point_data != null;

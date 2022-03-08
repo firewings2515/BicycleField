@@ -24,7 +24,7 @@ public class RoadManager : MonoBehaviour
         reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
 
         //remove first default segment
-        removeEarliestRoad();
+        removeEarliestRoad(false);
 
         while (path_creator.bezierPath.NumSegments < Info.MAX_LOADED_SEGMENT)
         {
@@ -54,7 +54,6 @@ public class RoadManager : MonoBehaviour
             last_segment = vec3_point;
 
             spawnAnchorCheckpoint(vec3_point);
-            current_loaded_segment += 1;
 
             generateRoad(vec3_point);
             if (path_creator.bezierPath.NumSegments > Info.MAX_LOADED_SEGMENT) removeEarliestRoad();
@@ -81,7 +80,7 @@ public class RoadManager : MonoBehaviour
     private void generateRoad(Vector3 road)
     {
         //terrain
-        TerrainGenerator.generateTerrain(road);
+        //TerrainGenerator.generateTerrain(road);
 
         BezierPath new_bezier = new BezierPath(path_creator.bezierPath[0]);
         new_bezier = path_creator.bezierPath;
@@ -92,9 +91,9 @@ public class RoadManager : MonoBehaviour
         Selection.activeGameObject = this.gameObject;
     }
 
-    private void removeEarliestRoad()
+    private void removeEarliestRoad(bool destroy = true)
     {
-        HouseGenerator.destroyEarliestSegment();
+        if (destroy) HouseGenerator.destroySegment(current_running_segment - (Info.MAX_LOADED_SEGMENT / 2) + 2);
         path_creator.bezierPath.DeleteSegment(0);
         current_segment--;
     }

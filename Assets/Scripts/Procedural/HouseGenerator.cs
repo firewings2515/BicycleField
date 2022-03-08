@@ -8,14 +8,14 @@ static public class HouseGenerator
     static string[] grammar_files_path = new string[] {
         @"Assets\Grammars\test.txt"
     };
-    static public bgBuilder builder;
-    static Dictionary<int, Dictionary<int, GameObject>> gobj_db;
-    static List<int> segment_id_q;
+    static public bgBuilder builder = new bgBuilder(grammar_files_path);
+    static Dictionary<int, Dictionary<int, GameObject>> gobj_db = new Dictionary<int, Dictionary<int, GameObject>>();
+    static List<int> segment_id_q = new List<int>();
 
     static public void init() {
-        builder = new bgBuilder(grammar_files_path);
-        gobj_db = new Dictionary<int, Dictionary<int, GameObject>>();
-        segment_id_q = new List<int>();
+        //builder = new bgBuilder(grammar_files_path);
+        //gobj_db = new Dictionary<int, Dictionary<int, GameObject>>();
+        //segment_id_q = new List<int>();
     }
 
     static public void generateHouse(int segment_id, int house_id, string info)
@@ -26,6 +26,7 @@ static public class HouseGenerator
         GameObject gobj = builder.build(component_name);
         gobj.transform.position = single_point;
         if (!gobj_db.ContainsKey(segment_id)) {
+            Debug.Log("########################################################################################Add:" + segment_id);
             gobj_db.Add(segment_id, new Dictionary<int, GameObject>());
             segment_id_q.Add(segment_id);
         }
@@ -43,6 +44,8 @@ static public class HouseGenerator
 
     static public void destroySegment(int segment_id)
     {
+        Debug.Log("########################################################################################Destroy:" + segment_id);
+        if (!gobj_db.ContainsKey(segment_id)) return;
         //destroy all houses in segment_id
         foreach (var item in gobj_db[segment_id])
         {
