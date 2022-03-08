@@ -13,7 +13,7 @@ static public class TerrainGenerator
     static Vector3[] features;
     static public Material terrain_mat;
     static public bool generate;
-    static public float piece_length = 32.0f; //2048
+    static public int vision_piece = 10;
 
     static public void loadTerrain()
     {
@@ -65,14 +65,18 @@ static public class TerrainGenerator
         Vector2[] uv = new Vector2[x_small_length * z_small_length];
         int[] indices = new int[6 * (x_small_length - 1) * (z_small_length - 1)];
         int indices_index = 0;
+        float center_x = min_x + (2 * x_small_min + x_small_length - 1) * PublicOutputInfo.piece_length / 2;
+        float center_z = min_z + (2 * z_small_min + z_small_length - 1) * PublicOutputInfo.piece_length / 2;
+        float center_y = IDW.inverseDistanceWeighting(features, center_x, center_z);
+        Vector3 center = new Vector3(center_x, center_y, center_z);
         for (int i = 0; i < x_small_length; i++)
         {
             for (int j = 0; j < z_small_length; j++)
             {
-                terrain_points[i, j, 0] = min_x + (x_small_min + i) * piece_length;
-                terrain_points[i, j, 2] = min_z + (z_small_min + j) * piece_length;
+                terrain_points[i, j, 0] = min_x + (x_small_min + i) * PublicOutputInfo.piece_length;
+                terrain_points[i, j, 2] = min_z + (z_small_min + j) * PublicOutputInfo.piece_length;
                 terrain_points[i, j, 1] = IDW.inverseDistanceWeighting(features, terrain_points[i, j, 0], terrain_points[i, j, 2]);
-                vertice[i * z_small_length + j] = new Vector3(terrain_points[i, j, 0], terrain_points[i, j, 1], terrain_points[i, j, 2]);
+                vertice[i * z_small_length + j] = new Vector3(terrain_points[i, j, 0] - center.x, terrain_points[i, j, 1] - center.y, terrain_points[i, j, 2] - center.z);
                 uv[i * z_small_length + j] = new Vector2((float)(x_small_min + i) / x_length, (float)(z_small_min + j) / z_length);
             }
         }
@@ -105,19 +109,21 @@ static public class TerrainGenerator
         MeshRenderer mr = terrain.AddComponent<MeshRenderer>();
         mf.mesh = mesh;
         mr.material = terrain_mat;
+        terrain.transform.position = center;
         Debug.Log("Generate Successfully");
     }
 
     static void getAreaTerrain(float x, float z)
     {
-        int x_index = Mathf.FloorToInt((x - min_x) / x_length);
-        int z_index = Mathf.FloorToInt((z - min_z) / z_length);
+        int x_index = Mathf.FloorToInt((x - min_x) / PublicOutputInfo.piece_length);
+        int z_index = Mathf.FloorToInt((z - min_z) / PublicOutputInfo.piece_length);
         int piece = 4;
+        Debug.Log(x_index + ", " + z_index);
         int x_begin_index = x_index - x_index % piece;
         int z_begin_index = z_index - z_index % piece;
-        for (int i = -1; i <= 1; i++)
+        for (int i = -vision_piece; i <= vision_piece; i++)
         {
-            for (int j = -1; j <= 1; j++)
+            for (int j = -vision_piece; j <= vision_piece; j++)
             {
                 generateSmallIDWTerrain(features, x_begin_index + i * piece, z_begin_index + j * piece, piece + 1, piece + 1);
             }

@@ -11,11 +11,14 @@ public class RoadIntegration : MonoBehaviour
     List<string> bicycle_points_list;
     List<GameObject> bicycle_roads_list;
     OSMReader osm_reader;
+    float piece_min_x;
+    float piece_min_z;
     public float view_max_x;
     public float view_max_z;
     public float view_min_x;
     public float view_min_z;
     float vision_length = 2048.0f;
+    bool is_initial;
 
     [Header("Edit Bicycle Road List")]
     public bool edit_mode = true;
@@ -40,9 +43,18 @@ public class RoadIntegration : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (GetComponent<OSMEditor>().osm_reader.read_finish)
+        if (GetComponent<OSMEditor>().osm_reader.read_finish && !is_initial)
         {
+            is_initial = true;
             osm_reader = GetComponent<OSMEditor>().osm_reader;
+
+            PublicOutputInfo.origin_pos = osm_reader.points_lib[GetComponent<OSMEditor>().initial_point].position;
+            piece_min_x = PublicOutputInfo.origin_pos.x - PublicOutputInfo.piece_length / 2;
+            piece_min_z = PublicOutputInfo.origin_pos.z - PublicOutputInfo.piece_length / 2;
+            view_min_x = piece_min_x;
+            view_min_z = piece_min_z;
+            view_max_x = piece_min_x + PublicOutputInfo.piece_length;
+            view_max_z = piece_min_z + PublicOutputInfo.piece_length;
         }
         if (write_file)
         {
@@ -165,7 +177,7 @@ public class RoadIntegration : MonoBehaviour
         using (StreamWriter sw = new StreamWriter(file_path))
         {
             // move first point to origin because of pathCreator
-            PublicOutputInfo.origin_pos = osm_reader.points_lib[bicycle_points_list[0]].position;
+            
             double begin_lon = MercatorProjection.xToLon(osm_reader.points_lib[bicycle_points_list[0]].position.x + osm_reader.boundary_min.x);
             double begin_ele = PublicOutputInfo.origin_pos.y;
             double begin_lat = MercatorProjection.yToLat(osm_reader.points_lib[bicycle_points_list[0]].position.z + osm_reader.boundary_min.y);
@@ -224,10 +236,18 @@ public class RoadIntegration : MonoBehaviour
         for (int new_road_ref_index = 0; new_road_ref_index < osm_reader.pathes[new_road_index].ref_node.Count; new_road_ref_index++)
         {
             Vector3 point = osm_reader.points_lib[osm_reader.pathes[new_road_index].ref_node[new_road_ref_index]].position;
-            view_max_x = Mathf.Max(view_max_x, point.x + vision_length);
-            view_max_z = Mathf.Max(view_max_z, point.z + vision_length);
-            view_min_x = Mathf.Min(view_min_x, point.x - vision_length);
-            view_min_z = Mathf.Min(view_min_z, point.z - vision_length);
+            if (point.x > view_max_x)
+                view_max_x = piece_min_x + (Mathf.CeilToInt((point.x - piece_min_x) / PublicOutputInfo.piece_length) + 1 + TerrainGenerator.vision_piece) * PublicOutputInfo.piece_length;
+            if (point.z > view_max_z)
+                view_max_z = piece_min_z + (Mathf.CeilToInt((point.z - piece_min_z) / PublicOutputInfo.piece_length) + 1 + TerrainGenerator.vision_piece) * PublicOutputInfo.piece_length;
+            if (point.x < view_min_x)
+                view_min_x = piece_min_x - (Mathf.CeilToInt((piece_min_x - point.x) / PublicOutputInfo.piece_length) + TerrainGenerator.vision_piece) * PublicOutputInfo.piece_length;
+            if (point.z < view_min_z)
+                view_min_z = piece_min_z - (Mathf.CeilToInt((piece_min_z - point.z) / PublicOutputInfo.piece_length) + TerrainGenerator.vision_piece) * PublicOutputInfo.piece_length;
+            //view_max_x = Mathf.Max(view_max_x, point.x + vision_length);
+            //view_max_z = Mathf.Max(view_max_z, point.z + vision_length);
+            //view_min_x = Mathf.Min(view_min_x, point.x - vision_length);
+            //view_min_z = Mathf.Min(view_min_z, point.z - vision_length);
         }
         Debug.Log(view_max_x + " " + view_max_z + " " + view_min_x + " " + view_min_z);
         float view_max_lon = 0.0f;

@@ -14,7 +14,6 @@ public class FeatureReconstruction : MonoBehaviour
     Vector3[] features;
     public Material terrain_mat;
     public bool generate;
-    public float piece_length = 32.0f; //2048
     // Start is called before the first frame update
     void Start()
     {
@@ -49,8 +48,8 @@ public class FeatureReconstruction : MonoBehaviour
         {
             for (int j = 0; j < z_length; j++)
             {
-                terrain_points[i, j, 0] = min_x + i * piece_length;
-                terrain_points[i, j, 2] = min_z + j * piece_length;
+                terrain_points[i, j, 0] = min_x + i * PublicOutputInfo.piece_length;
+                terrain_points[i, j, 2] = min_z + j * PublicOutputInfo.piece_length;
                 terrain_points[i, j, 1] = IDW.inverseDistanceWeighting(features, terrain_points[i, j, 0], terrain_points[i, j, 2]);
                 vertice[i * z_length + j] = new Vector3(terrain_points[i, j, 0], terrain_points[i, j, 1], terrain_points[i, j, 2]);
                 uv[i * z_length + j] = new Vector2((float)i / x_length, (float)j / z_length);

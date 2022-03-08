@@ -5,4 +5,5 @@ using UnityEngine;
 public static class PublicOutputInfo
 {
     public static Vector3 origin_pos;
+    public static float piece_length = 32.0f; // 128.0f
 }

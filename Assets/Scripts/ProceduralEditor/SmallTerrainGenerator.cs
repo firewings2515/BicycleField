@@ -7,7 +7,6 @@ public class SmallTerrainGenerator : MonoBehaviour
 {
     OSMEditor osm_editor;
     RoadIntegration road_integration;
-    float piece_length = 32.0f; //128
     public bool generate;
     public Material heightmap_mat;
     public Texture2D heightmap;
@@ -45,8 +44,9 @@ public class SmallTerrainGenerator : MonoBehaviour
         //float min_v = min_lat - (int)min_lat;
 
         Mesh mesh = new Mesh();
-        int x_length = Mathf.CeilToInt((max_x - min_x) / piece_length);
-        int z_length = Mathf.CeilToInt((max_z - min_z) / piece_length);
+        int x_length = Mathf.CeilToInt((max_x - min_x) / PublicOutputInfo.piece_length) + 1;
+        int z_length = Mathf.CeilToInt((max_z - min_z) / PublicOutputInfo.piece_length) + 1;
+        Debug.Log(x_length + ", " + z_length);
         double[,,] terrain_points = new double[x_length, z_length, 3];
         Vector3[] vertice = new Vector3[x_length * z_length];
         Vector2[] uv = new Vector2[x_length * z_length];
@@ -59,8 +59,8 @@ public class SmallTerrainGenerator : MonoBehaviour
             {
                 float terrain_lon, terrain_lat;
                 //osm_editor.osm_reader.toUnityLocation(terrain_points[i, j].x, terrain_points[i, j].z, out pos_x, out pos_z);
-                terrain_points[i, j, 0] = min_x + i * piece_length;
-                terrain_points[i, j, 2] = min_z + j * piece_length;
+                terrain_points[i, j, 0] = min_x + i * PublicOutputInfo.piece_length;
+                terrain_points[i, j, 2] = min_z + j * PublicOutputInfo.piece_length;
                 osm_editor.osm_reader.toLonAndLat((float)terrain_points[i, j, 0], (float)terrain_points[i, j, 2], out terrain_lon, out terrain_lat);
                 all_coords.Add(new EarthCoord(terrain_lon, terrain_lat));
                 //terrain_points[i, j, 1] = heightmap.GetPixel(Mathf.FloorToInt((min_u + i * du) * 2048), Mathf.FloorToInt((min_v + j * dv) * 2048)).r * 100.0f;

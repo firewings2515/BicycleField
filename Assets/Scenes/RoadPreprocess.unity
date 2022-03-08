@@ -798,7 +798,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5e60d516bff30347ab46b8ab32873d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  file_path: features.f
+  file_path: YangJing1/features_150_32.f
   terrain_mat: {fileID: 2100000, guid: 1139cb01ce8964a40ac93cebd01747a5, type: 2}
   generate: 0
-  piece_length: 32
