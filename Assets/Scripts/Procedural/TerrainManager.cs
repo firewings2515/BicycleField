@@ -23,6 +23,22 @@ public class TerrainManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (TerrainGenerator.is_initial)
+        {
+            while (TerrainGenerator.loading_vec3s.Count > 0)
+            {
+                Vector3 loading_vec3 = TerrainGenerator.loading_vec3s.Dequeue();
+                int x_index = Mathf.FloorToInt((loading_vec3.x - TerrainGenerator.min_x) / PublicOutputInfo.piece_length);
+                int z_index = Mathf.FloorToInt((loading_vec3.z - TerrainGenerator.min_z) / PublicOutputInfo.piece_length);
+                int center_x = x_index - x_index % piece;
+                int center_z = z_index - z_index % piece;
+                TerrainGenerator.generate_center_x.Enqueue(center_x);
+                TerrainGenerator.generate_center_z.Enqueue(center_z);
+                TerrainGenerator.need_update = true;
+                Debug.Log(center_x + ", " + center_z);
+            }
+        }
+
         if (TerrainGenerator.need_update)
         {
             TerrainGenerator.need_update = false;

@@ -6,11 +6,11 @@ using System.IO;
 static public class TerrainGenerator
 {
     static public string file_path = "YangJing1/features_150_32.f";
-    static bool is_initial = false;
+    static public bool is_initial = false;
     static public int x_length;
     static public int z_length;
-    static float min_x;
-    static float min_z;
+    static public float min_x;
+    static public float min_z;
     static Vector3[] features;
     static public Material terrain_mat;
     static public bool generate;
@@ -22,6 +22,7 @@ static public class TerrainGenerator
     static public Queue<Vector3> loading_vec3s = new Queue<Vector3>();
     static public Queue<int> generate_center_x = new Queue<int>();
     static public Queue<int> generate_center_z = new Queue<int>();
+    static int bias = 10;
 
     static public void loadTerrain()
     {
@@ -39,11 +40,6 @@ static public class TerrainGenerator
         }
         else
         {
-            while(loading_vec3s.Count > 0)
-            {
-                Vector3 loading_vec3 = loading_vec3s.Dequeue();
-                getAreaTerrain(loading_vec3.x, loading_vec3.z);
-            }
             getAreaTerrain(position.x, position.z);
         }
     }
@@ -86,7 +82,7 @@ static public class TerrainGenerator
 
     static void generateSmallIDWTerrain(Vector3[] features, int x_small_min, int z_small_min, int x_small_length, int z_small_length)
     {
-        Debug.Log("Calculating: " + x_small_min + "_" + z_small_min);
+        //Debug.Log("Calculating: " + x_small_min + "_" + z_small_min);
         Mesh mesh = new Mesh();
         float[,,] terrain_points = new float[x_small_length, z_small_length, 3];
         Vector3[] vertice = new Vector3[x_small_length * z_small_length];
@@ -95,7 +91,7 @@ static public class TerrainGenerator
         int indices_index = 0;
         float center_x = min_x + (2 * x_small_min + x_small_length - 1) * PublicOutputInfo.piece_length / 2;
         float center_z = min_z + (2 * z_small_min + z_small_length - 1) * PublicOutputInfo.piece_length / 2;
-        float center_y = IDW.inverseDistanceWeighting(features, center_x, center_z);
+        float center_y = IDW.inverseDistanceWeighting(features, center_x, center_z) - bias;
         Vector3 center = new Vector3(center_x, center_y, center_z);
         for (int i = 0; i < x_small_length; i++)
         {
@@ -103,7 +99,7 @@ static public class TerrainGenerator
             {
                 terrain_points[i, j, 0] = min_x + (x_small_min + i) * PublicOutputInfo.piece_length;
                 terrain_points[i, j, 2] = min_z + (z_small_min + j) * PublicOutputInfo.piece_length;
-                terrain_points[i, j, 1] = IDW.inverseDistanceWeighting(features, terrain_points[i, j, 0], terrain_points[i, j, 2]);
+                terrain_points[i, j, 1] = IDW.inverseDistanceWeighting(features, terrain_points[i, j, 0], terrain_points[i, j, 2]) - bias;
                 vertice[i * z_small_length + j] = new Vector3(terrain_points[i, j, 0] - center.x, terrain_points[i, j, 1] - center.y, terrain_points[i, j, 2] - center.z);
                 uv[i * z_small_length + j] = new Vector2((float)(x_small_min + i) / x_length, (float)(z_small_min + j) / z_length);
             }
@@ -139,7 +135,7 @@ static public class TerrainGenerator
         mr.material = terrain_mat;
         terrain.transform.position = center;
         terrains.Add(terrain);
-        Debug.Log("Success: " + x_small_min + "_" + z_small_min);
+        //Debug.Log("Success: " + x_small_min + "_" + z_small_min);
     }
 
     static void getAreaTerrain(float x, float z)
@@ -152,7 +148,7 @@ static public class TerrainGenerator
         generate_center_x.Enqueue(center_x);
         generate_center_z.Enqueue(center_z);
         need_update = true;
-        Debug.Log(center_x + ", " + center_z);
+        //Debug.Log(center_x + ", " + center_z);
         //int x_begin_index = x_index - x_index % piece;
         //int z_begin_index = z_index - z_index % piece;
 
