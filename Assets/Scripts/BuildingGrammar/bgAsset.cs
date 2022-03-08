@@ -37,12 +37,20 @@ public class bgAsset : bgComponent
     public override GameObject build() 
     {
         Debug.Log("type: Asset");
-        go = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        go.name = "Asset:" + name;
+        if (go != null)
+        {
+            go = GameObject.Instantiate(go);
+            go.name = "Asset:" + name;
+        }
+        else
+        {
+            go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            go.name = "Asset:" + name;
+            MeshRenderer mr = go.GetComponent<MeshRenderer>();
+            mr.material.mainTexture = image;
+        }
         float divide = 200.0f;
         go.transform.localScale = new Vector3(image.width/ divide, image.height / divide,1.0f);
-        MeshRenderer mr = go.GetComponent<MeshRenderer>();
-        mr.material.mainTexture = image;
         return go;
     }
 
