@@ -68,7 +68,7 @@ public class RoadManager : MonoBehaviour
         point_data = reader.ReadLine();
         while (point_data != null && point_data[0] == 'H')
         {
-            HouseGenerator.generateHouse(current_loaded_segment, house_id, point_data);
+            //HouseGenerator.generateHouse(current_loaded_segment, house_id, point_data);
             house_id++;
 
             //GetComponent<HouseManager>().addToBuffer(point_data);
@@ -80,11 +80,11 @@ public class RoadManager : MonoBehaviour
     private void generateRoad(Vector3 road)
     {
         //terrain
-        //TerrainGenerator.generateTerrain(road);
-
-        BezierPath new_bezier = new BezierPath(path_creator.bezierPath[0]);
-        new_bezier = path_creator.bezierPath;
-        path_creator.bezierPath = new_bezier;
+        TerrainGenerator.generateTerrain(road);
+        Debug.Log("##########################################################################" + road);
+        //BezierPath new_bezier = new BezierPath(path_creator.bezierPath[0]);
+        //new_bezier = path_creator.bezierPath;
+        //path_creator.bezierPath = new_bezier;
 
         path_creator.bezierPath.AddSegmentToEnd(road);
         //force display
@@ -93,7 +93,7 @@ public class RoadManager : MonoBehaviour
 
     private void removeEarliestRoad(bool destroy = true)
     {
-        if (destroy) HouseGenerator.destroySegment(current_running_segment - (Info.MAX_LOADED_SEGMENT / 2) + 2);
+        //if (destroy) HouseGenerator.destroySegment(current_running_segment - (Info.MAX_LOADED_SEGMENT / 2) + 2);
         path_creator.bezierPath.DeleteSegment(0);
         current_segment--;
     }
