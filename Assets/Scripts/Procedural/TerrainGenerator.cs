@@ -5,17 +5,19 @@ using System.IO;
 
 static public class TerrainGenerator
 {
-    static public string file_path = "features.f";
-    static int x_length;
-    static int z_length;
+    static public string file_path = "YangJing1/features_150_32.f";
+    static public int x_length;
+    static public int z_length;
     static float min_x;
     static float min_z;
     static Vector3[] features;
     static public Material terrain_mat;
     static public bool generate;
     static public int vision_piece = 10;
-    static bool[] is_generated;
     static List<GameObject> terrains;
+    static public bool need_update = false;
+    static public int center_x;
+    static public int center_z;
 
     static public void loadTerrain()
     {
@@ -29,10 +31,10 @@ static public class TerrainGenerator
         getAreaTerrain(position.x, position.z);
     }
 
-    static public void removeTerrain(Vector3 position, Vector3 current_position)
+    static public void removeTerrain(Vector3 position)
     {
         //remove terrain not near position
-        removeAreaTerrain(position.x, position.z, current_position.x, current_position.z);
+        removeAreaTerrain(position.x, position.z);
     }
 
     static public void readFeatureFile(string file_path)
@@ -57,8 +59,12 @@ static public class TerrainGenerator
             }
             Debug.Log("Read Successfully");
         }
-        is_generated = new bool[x_length * z_length];
         terrains = new List<GameObject>();
+    }
+
+    static public void generateSmallIDWTerrain(int x_small_min, int z_small_min, int piece)
+    {
+        generateSmallIDWTerrain(features, x_small_min, z_small_min, piece + 1, piece + 1);
     }
 
     static void generateSmallIDWTerrain(Vector3[] features, int x_small_min, int z_small_min, int x_small_length, int z_small_length)
@@ -123,71 +129,76 @@ static public class TerrainGenerator
         int x_index = Mathf.FloorToInt((x - min_x) / PublicOutputInfo.piece_length);
         int z_index = Mathf.FloorToInt((z - min_z) / PublicOutputInfo.piece_length);
         int piece = 4;
-        int x_begin_index = x_index - x_index % piece;
-        int z_begin_index = z_index - z_index % piece;
-        for (int i = -2; i <= 2; i++)
-        {
-            for (int j = -2; j <= 2; j++)
-            {
-                int x_small_min = x_begin_index + i * piece;
-                int z_small_min = z_begin_index + j * piece;
-                if (x_small_min < 0 || x_small_min >= x_length || z_small_min < 0 || z_small_min >= z_length)
-                    continue;
-                if (!is_generated[x_small_min * z_length + z_small_min])
-                {
-                    is_generated[x_small_min * z_length + z_small_min] = true;
-                    generateSmallIDWTerrain(features, x_begin_index + i * piece, z_begin_index + j * piece, piece + 1, piece + 1);
-                }
-            }
-        }
+        center_x = x_index - x_index % piece;
+        center_z = z_index - z_index % piece;
+        need_update = true;
+        Debug.Log(center_x + ", " + center_z);
+        //int x_begin_index = x_index - x_index % piece;
+        //int z_begin_index = z_index - z_index % piece;
+
+        //for (int i = -2; i <= 2; i++)
+        //{
+        //    for (int j = -2; j <= 2; j++)
+        //    {
+        //        int x_small_min = x_begin_index + i * piece;
+        //        int z_small_min = z_begin_index + j * piece;
+        //        if (x_small_min < 0 || x_small_min >= x_length || z_small_min < 0 || z_small_min >= z_length)
+        //            continue;
+        //        if (!is_generated[x_small_min * z_length + z_small_min])
+        //        {
+        //            is_generated[x_small_min * z_length + z_small_min] = true;
+        //            generateSmallIDWTerrain(features, x_begin_index + i * piece, z_begin_index + j * piece, piece + 1, piece + 1);
+        //        }
+        //    }
+        //}
     }
 
-    static void removeAreaTerrain(float x, float z, float current_x, float current_z)
+    static void removeAreaTerrain(float x, float z)
     {
-        int piece = 4;
-        int x_index = Mathf.FloorToInt((current_x - min_x) / PublicOutputInfo.piece_length);
-        int z_index = Mathf.FloorToInt((current_z - min_z) / PublicOutputInfo.piece_length);
-        int x_begin_index = x_index - x_index % piece;
-        int z_begin_index = z_index - z_index % piece;
-        bool[] is_reserved = new bool[x_length * z_length];
-        for (int i = -2; i <= 2; i++)
-        {
-            for (int j = -2; j <= 2; j++)
-            {
-                int x_small_min = x_begin_index + i * piece;
-                int z_small_min = z_begin_index + j * piece;
-                if (x_small_min < 0 || x_small_min >= x_length || z_small_min < 0 || z_small_min >= z_length)
-                    continue;
-                is_reserved[x_small_min * z_length + z_small_min] = true;
-            }
-        }
+        ////int piece = 4;
+        ////int x_index = Mathf.FloorToInt((current_x - min_x) / PublicOutputInfo.piece_length);
+        ////int z_index = Mathf.FloorToInt((current_z - min_z) / PublicOutputInfo.piece_length);
+        ////int x_begin_index = x_index - x_index % piece;
+        ////int z_begin_index = z_index - z_index % piece;
+        ////bool[] is_reserved = new bool[x_length * z_length];
+        ////for (int i = -2; i <= 2; i++)
+        ////{
+        ////    for (int j = -2; j <= 2; j++)
+        ////    {
+        ////        int x_small_min = x_begin_index + i * piece;
+        ////        int z_small_min = z_begin_index + j * piece;
+        ////        if (x_small_min < 0 || x_small_min >= x_length || z_small_min < 0 || z_small_min >= z_length)
+        ////            continue;
+        ////        is_reserved[x_small_min * z_length + z_small_min] = true;
+        ////    }
+        ////}
 
-        x_index = Mathf.FloorToInt((x - min_x) / PublicOutputInfo.piece_length);
-        z_index = Mathf.FloorToInt((z - min_z) / PublicOutputInfo.piece_length);
-        x_begin_index = x_index - x_index % piece;
-        z_begin_index = z_index - z_index % piece;
-        for (int i = -2; i <= 2; i++)
-        {
-            for (int j = -2; j <= 2; j++)
-            {
-                int x_small_min = x_begin_index + i * piece;
-                int z_small_min = z_begin_index + j * piece;
-                if (x_small_min < 0 || x_small_min >= x_length || z_small_min < 0 || z_small_min >= z_length)
-                    continue;
-                if (is_generated[x_small_min * z_length + z_small_min] && !is_reserved[x_small_min * z_length + z_small_min])
-                {
-                    is_generated[x_small_min * z_length + z_small_min] = false;
-                    Debug.Log("Delete" + x_small_min + "_" + z_small_min);
-                    for (int terrain_index = 0; terrain_index < terrains.Count; terrain_index++)
-                    {
-                        if (terrains[terrain_index].name == "terrain_IDW_" + x_small_min + "_" + z_small_min)
-                        {
-                            GameObject.Destroy(terrains[terrain_index]);
-                            terrains.RemoveAt(terrain_index);
-                        }    
-                    }
-                }
-            }
-        }
+        //x_index = Mathf.FloorToInt((x - min_x) / PublicOutputInfo.piece_length);
+        //z_index = Mathf.FloorToInt((z - min_z) / PublicOutputInfo.piece_length);
+        //x_begin_index = x_index - x_index % piece;
+        //z_begin_index = z_index - z_index % piece;
+        //for (int i = -2; i <= 2; i++)
+        //{
+        //    for (int j = -2; j <= 2; j++)
+        //    {
+        //        int x_small_min = x_begin_index + i * piece;
+        //        int z_small_min = z_begin_index + j * piece;
+        //        if (x_small_min < 0 || x_small_min >= x_length || z_small_min < 0 || z_small_min >= z_length)
+        //            continue;
+        //        //if (is_generated[x_small_min * z_length + z_small_min] && !is_reserved[x_small_min * z_length + z_small_min])
+        //        //{
+        //        //    is_generated[x_small_min * z_length + z_small_min] = false;
+        //        //    Debug.Log("Delete" + x_small_min + "_" + z_small_min);
+        //        //    for (int terrain_index = 0; terrain_index < terrains.Count; terrain_index++)
+        //        //    {
+        //        //        if (terrains[terrain_index].name == "terrain_IDW_" + x_small_min + "_" + z_small_min)
+        //        //        {
+        //        //            GameObject.Destroy(terrains[terrain_index]);
+        //        //            terrains.RemoveAt(terrain_index);
+        //        //        }    
+        //        //    }
+        //        //}
+        //    }
+        //}
     }
 }
