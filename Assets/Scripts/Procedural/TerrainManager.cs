@@ -26,17 +26,24 @@ public class TerrainManager : MonoBehaviour
         if (TerrainGenerator.need_update)
         {
             TerrainGenerator.need_update = false;
-            for (int i = -2; i <= 2; i++)
+            while (TerrainGenerator.generate_center_x.Count > 0)
             {
-                for (int j = -2; j <= 2; j++)
+                for (int i = -2; i <= 2; i++)
                 {
-                    int x_small_min = TerrainGenerator.center_x + i * piece;
-                    int z_small_min = TerrainGenerator.center_z + j * piece;
-                    if (x_small_min < 0 || x_small_min >= TerrainGenerator.x_length || z_small_min < 0 || z_small_min >= TerrainGenerator.z_length)
-                        continue;
-                    generate_x.Enqueue(x_small_min);
-                    generate_z.Enqueue(z_small_min);
+                    for (int j = -2; j <= 2; j++)
+                    {
+                        int center_x = TerrainGenerator.generate_center_x.Peek();
+                        int center_z = TerrainGenerator.generate_center_z.Peek();
+                        int x_small_min = center_x + i * piece;
+                        int z_small_min = center_z + j * piece;
+                        if (x_small_min < 0 || x_small_min >= TerrainGenerator.x_length || z_small_min < 0 || z_small_min >= TerrainGenerator.z_length)
+                            continue;
+                        generate_x.Enqueue(x_small_min);
+                        generate_z.Enqueue(z_small_min);
+                    }
                 }
+                TerrainGenerator.generate_center_x.Dequeue();
+                TerrainGenerator.generate_center_z.Dequeue();
             }
         }
 

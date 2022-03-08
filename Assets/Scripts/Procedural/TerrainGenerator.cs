@@ -6,6 +6,7 @@ using System.IO;
 static public class TerrainGenerator
 {
     static public string file_path = "YangJing1/features_150_32.f";
+    static bool is_initial = false;
     static public int x_length;
     static public int z_length;
     static float min_x;
@@ -18,17 +19,33 @@ static public class TerrainGenerator
     static public bool need_update = false;
     static public int center_x;
     static public int center_z;
+    static public Queue<Vector3> loading_vec3s = new Queue<Vector3>();
+    static public Queue<int> generate_center_x = new Queue<int>();
+    static public Queue<int> generate_center_z = new Queue<int>();
 
     static public void loadTerrain()
     {
         //load terrain info
         readFeatureFile(Application.streamingAssetsPath + "//" + file_path);
+        is_initial = true;
     }
 
     static public void generateTerrain(Vector3 position)
     {
         //generate terrain near position
-        getAreaTerrain(position.x, position.z);
+        if (!is_initial)
+        {
+            loading_vec3s.Enqueue(position);
+        }
+        else
+        {
+            while(loading_vec3s.Count > 0)
+            {
+                Vector3 loading_vec3 = loading_vec3s.Dequeue();
+                getAreaTerrain(loading_vec3.x, loading_vec3.z);
+            }
+            getAreaTerrain(position.x, position.z);
+        }
     }
 
     static public void removeTerrain(Vector3 position)
@@ -57,7 +74,7 @@ static public class TerrainGenerator
                 float z = float.Parse(inputs[2]);
                 features[f_i] = new Vector3(x, y, z);
             }
-            Debug.Log("Read Successfully");
+            Debug.Log("Read Feature File Successfully");
         }
         terrains = new List<GameObject>();
     }
@@ -121,7 +138,6 @@ static public class TerrainGenerator
         mr.material = terrain_mat;
         terrain.transform.position = center;
         terrains.Add(terrain);
-        Debug.Log("Generate Successfully");
     }
 
     static void getAreaTerrain(float x, float z)
@@ -131,6 +147,8 @@ static public class TerrainGenerator
         int piece = 4;
         center_x = x_index - x_index % piece;
         center_z = z_index - z_index % piece;
+        generate_center_x.Enqueue(center_x);
+        generate_center_z.Enqueue(center_z);
         need_update = true;
         Debug.Log(center_x + ", " + center_z);
         //int x_begin_index = x_index - x_index % piece;
