@@ -2,10 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class bgBuilder : MonoBehaviour
+public class bgBuilder
 {
-    public string build_component;
-    public string[] grammar_files_path;
 
     List<bgAsset> assets;
     List<bgWall> walls;
@@ -15,9 +13,17 @@ public class bgBuilder : MonoBehaviour
 
     List<bgComponent> components;
     bgParser parser;
-    private GameObject building;
+
+    public bgBuilder(){
+        
+    }
+    public bgBuilder(string[] grammar_files_path)
+    {
+        compile_code(grammar_files_path);
+    }
+
     // Start is called before the first frame update
-    void Start()
+    public void compile_code(string[] grammar_files_path)
     {
         parser = new bgParser();
         components = new List<bgComponent>();
@@ -32,7 +38,7 @@ public class bgBuilder : MonoBehaviour
 
         link_component();
 
-        building = build();
+        //building = build();
     }
     void link_component() {
         for (int i = 0; i < components.Count; i++)
@@ -41,10 +47,10 @@ public class bgBuilder : MonoBehaviour
         }
     }
 
-    GameObject build() {
+    public GameObject build(string name) {
         Debug.Log("-----------------build------------");
         for (int i = 0; i < components.Count; i++) {
-            if (components[i].name == build_component) {
+            if (components[i].name == name) {
                 return components[i].build();
             }
         }
@@ -54,7 +60,7 @@ public class bgBuilder : MonoBehaviour
     public bgComponent get_component(string name) {
         for (int i = 0; i < components.Count; i++)
         {
-            if (components[i].name == build_component)
+            if (components[i].name == name)
             {
                 return components[i];
             }
@@ -120,12 +126,5 @@ public class bgBuilder : MonoBehaviour
             }
         }
         return null;
-    }
-
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

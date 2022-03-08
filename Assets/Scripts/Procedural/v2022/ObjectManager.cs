@@ -25,6 +25,7 @@ public class ObjectManager : MonoBehaviour
     {
         Data.loadFile(filename);
         loadNextSegment();
+        HouseGenerator.init();
     }
 
     // Update is called once per frame

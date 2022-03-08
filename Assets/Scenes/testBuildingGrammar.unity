@@ -149,12 +149,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 209496618}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 566e8caf92baf414c82faabd7a94dfef, type: 3}
+  m_Script: {fileID: 11500000, guid: 853e209708f63984d9489175f73b7877, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  build_component: floors_base
+  component_name: floors_base
   grammar_files_path:
-  - Assets/Grammars/test.txt
+  - Assets\Grammars\test.txt
 --- !u!4 &209496620
 Transform:
   m_ObjectHideFlags: 0
