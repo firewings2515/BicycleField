@@ -108,5 +108,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9c228232ac548a49a2a7b0f5e2ffc05, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spheres_select_mat: {fileID: 2100000, guid: c2d2cb5ff7155134e82ed1beaa68b3a0, type: 2}
-  spheres_unselect_mat: {fileID: 2100000, guid: fbe480eedec928c4fbee96b49c5c432c, type: 2}

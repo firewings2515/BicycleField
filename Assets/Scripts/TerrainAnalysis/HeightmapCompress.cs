@@ -6,6 +6,8 @@ using System.IO;
 [ExecuteInEditMode]
 public class HeightmapCompress : MonoBehaviour
 {
+    // data given by SmallTerrainGenerator
+    public string file_path = "features.f";
     public Texture2D heightmap_edge;
     public Texture2D heightmap;
     public Vector3[] vertice;
@@ -19,6 +21,7 @@ public class HeightmapCompress : MonoBehaviour
     public float min_z;
     public float gray_height;
     public bool get_feature;
+    public bool get_line_feature;
     public GameObject blue_ball;
     public GameObject red_ball;
     public float threshold;
@@ -62,7 +65,7 @@ public class HeightmapCompress : MonoBehaviour
             //}
 
             // W8D in terrain edge detection
-            bool[] flag = new bool[vertice.Length];
+            bool[] flag = new bool[x_length * z_length];
             for (int x = 0; x < x_length; x++)
             {
                 for (int z = 0; z < z_length; z++)
@@ -84,7 +87,7 @@ public class HeightmapCompress : MonoBehaviour
             point_cloud = point_cloud_list.ToArray();
             showPoint(point_cloud, "Feature", feature_manager.transform, blue_ball, 8.0f);
 
-            using (StreamWriter sw = new StreamWriter(Application.streamingAssetsPath + "//features.f"))
+            using (StreamWriter sw = new StreamWriter(Application.streamingAssetsPath + "//" + file_path))
             {
                 sw.WriteLine(x_length + " " + z_length);
                 sw.WriteLine((min_x - PublicOutputInfo.origin_pos.x).ToString() + " " + (min_z - PublicOutputInfo.origin_pos.z).ToString());
@@ -95,6 +98,74 @@ public class HeightmapCompress : MonoBehaviour
                     sw.WriteLine(feature_out.x + " " + feature_out.y + " " + feature_out.z);
                 }
             }
+            Debug.Log("Get feature finish");
+        }
+
+        if (get_line_feature)
+        {
+            get_line_feature = false;
+            Debug.Log("Get feature line start");
+            GameObject feature_manager = new GameObject("feature_manager");
+            List<Vector3> point_cloud_list = new List<Vector3>();
+
+            // W8D in heightmap
+            //for (float edge_x = 0.0f; edge_x < map_size_width; edge_x += piece_length)
+            //{
+            //    for (float edge_z = 0.0f; edge_z < map_size_height; edge_z += piece_length)
+            //    {
+            //        Color gray = heightmap_edge.GetPixel(Mathf.FloorToInt(edge_x / map_size_width * heightmap_edge.width), Mathf.FloorToInt(edge_z / map_size_height * heightmap_edge.height));
+            //        if (gray.r > threshold)
+            //        {
+            //            List<List<Vector3>> w8d = W8D(map_size_width, map_size_height, new Vector3(edge_x, 0.0f, edge_z), point_cloud_list); // need to limit boundary
+            //            Vector3[] w8d_center = new Vector3[1];
+            //            Color height = heightmap.GetPixel(Mathf.FloorToInt(edge_x / map_size_width * heightmap.width), Mathf.FloorToInt(edge_z / map_size_height * heightmap.height));
+            //            w8d_center[0] = new Vector3(min_x + edge_x, height.r * gray_height, min_z + edge_z);
+            //            showPoint(w8d_center, "Feature_Center", feature_manager.transform, red_ball, 16.0f);
+            //            for (int w8d_index = 0; w8d_index < w8d.Count; w8d_index++)
+            //            {
+            //                point_cloud_list.AddRange(w8d[w8d_index]);
+            //            }
+            //        }
+            //    }
+            //}
+
+            // W8D in terrain edge detection
+            x_length = heightmap.width;
+            z_length = heightmap.height;
+            bool[] flag = new bool[x_length * z_length];
+            edges = new float[x_length * z_length];
+            vertice = new Vector3[x_length * z_length];
+            for (int x = 0; x < x_length; x++)
+            {
+                for (int z = 0; z < z_length; z++)
+                {
+                    Color height = heightmap.GetPixel(x, z);
+                    vertice[x * z_length + z] = new Vector3(x, height.r, z);
+                    height = heightmap_edge.GetPixel(x, z);
+                    edges[x * z_length + z] = height.r;
+                }
+            }
+
+            for (int x = 0; x < x_length; x++)
+            {
+                for (int z = 0; z < z_length; z++)
+                {
+                    if (edges[x * z_length + z] > threshold)
+                    {
+                        List<List<Vector3>> w8d = W8DGrid(x_length, z_length, x, z, point_cloud_list, flag);
+                        Vector3[] w8d_center = new Vector3[1];
+                        w8d_center[0] = vertice[x * z_length + z];
+                        showPoint(w8d_center, "Feature_Center", feature_manager.transform, red_ball, 16.0f);
+                        for (int w8d_index = 0; w8d_index < w8d.Count; w8d_index++)
+                        {
+                            point_cloud_list.AddRange(w8d[w8d_index]);
+                        }
+                    }
+                }
+            }
+
+            point_cloud = point_cloud_list.ToArray();
+            showPoint(point_cloud, "Feature", feature_manager.transform, blue_ball, 8.0f);
             Debug.Log("Get feature finish");
         }
     }
