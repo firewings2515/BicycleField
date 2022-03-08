@@ -86,6 +86,7 @@ static public class TerrainGenerator
 
     static void generateSmallIDWTerrain(Vector3[] features, int x_small_min, int z_small_min, int x_small_length, int z_small_length)
     {
+        Debug.Log("Calculating: " + x_small_min + "_" + z_small_min);
         Mesh mesh = new Mesh();
         float[,,] terrain_points = new float[x_small_length, z_small_length, 3];
         Vector3[] vertice = new Vector3[x_small_length * z_small_length];
@@ -138,6 +139,7 @@ static public class TerrainGenerator
         mr.material = terrain_mat;
         terrain.transform.position = center;
         terrains.Add(terrain);
+        Debug.Log("Success: " + x_small_min + "_" + z_small_min);
     }
 
     static void getAreaTerrain(float x, float z)
