@@ -177,7 +177,7 @@ public class RoadIntegration : MonoBehaviour
         using (StreamWriter sw = new StreamWriter(file_path))
         {
             // move first point to origin because of pathCreator
-            
+            PublicOutputInfo.boundary_min = osm_reader.boundary_min;
             double begin_lon = MercatorProjection.xToLon(osm_reader.points_lib[bicycle_points_list[0]].position.x + osm_reader.boundary_min.x);
             double begin_ele = PublicOutputInfo.origin_pos.y;
             double begin_lat = MercatorProjection.yToLat(osm_reader.points_lib[bicycle_points_list[0]].position.z + osm_reader.boundary_min.y);
