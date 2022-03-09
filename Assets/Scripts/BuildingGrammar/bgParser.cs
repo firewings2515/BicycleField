@@ -75,7 +75,7 @@ public class bgParser
                 {
                     reading_word = false;
                 }
-                else if (char.IsLetterOrDigit(line[j]) || line[j] == '_' || line[j] == '.')
+                else if (char.IsLetterOrDigit(line[j]) || line[j] == '_' || line[j] == '.' || line[j] == '-')
                 {
                     reading_word = true;
                     word.Append(line[j]);

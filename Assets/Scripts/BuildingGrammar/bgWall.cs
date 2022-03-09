@@ -49,7 +49,7 @@ public class bgWall : bgComponent
                 height = width * height_parameter_val;
             }
 
-            go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go = GameObject.CreatePrimitive(PrimitiveType.Quad);
             go.name = "Wall:" + name;
 
             MeshRenderer mr = go.GetComponent<MeshRenderer>();

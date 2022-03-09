@@ -14,6 +14,10 @@ public class bgBase : bgComponent
     }
     public override GameObject build()
     {
+        if (go != null) {
+            go = GameObject.Instantiate(go);
+            return go;
+        }
         Debug.Log("type: Base");
         go = new GameObject("Base:" + name);
         List<Vector3> vertexs = new List<Vector3>();
