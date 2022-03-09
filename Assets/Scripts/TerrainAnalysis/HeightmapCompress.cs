@@ -90,7 +90,7 @@ public class HeightmapCompress : MonoBehaviour
             using (StreamWriter sw = new StreamWriter(Application.streamingAssetsPath + "//" + file_path))
             {
                 sw.WriteLine(x_length + " " + z_length);
-                sw.WriteLine((min_x - PublicOutputInfo.origin_pos.x).ToString() + " " + (min_z - PublicOutputInfo.origin_pos.z).ToString());
+                sw.WriteLine((min_x - PublicOutputInfo.origin_pos.x).ToString() + " " + (-PublicOutputInfo.origin_pos.y).ToString() + " " + (min_z - PublicOutputInfo.origin_pos.z).ToString());
                 sw.WriteLine(point_cloud.Length);
                 for (int point_index = 0; point_index < point_cloud.Length; point_index++)
                 {

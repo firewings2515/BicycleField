@@ -70,7 +70,13 @@ public class TerrainManager : MonoBehaviour
             if (!is_generated[x_small_min * TerrainGenerator.z_length + z_small_min])
             {
                 is_generated[x_small_min * TerrainGenerator.z_length + z_small_min] = true;
-                TerrainGenerator.generateSmallIDWTerrain(x_small_min, z_small_min, piece);
+                int x_piece = piece;
+                int z_piece = piece;
+                if (x_small_min + piece > TerrainGenerator.x_length)
+                    x_piece = TerrainGenerator.x_length - x_small_min;
+                if (z_small_min + piece > TerrainGenerator.z_length)
+                    z_piece = TerrainGenerator.z_length - z_small_min;
+                TerrainGenerator.generateSmallIDWTerrain(x_small_min, z_small_min, x_piece, z_piece);
                 break;
             }
         }

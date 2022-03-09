@@ -10,6 +10,7 @@ static public class TerrainGenerator
     static public int x_length;
     static public int z_length;
     static public float min_x;
+    static public float min_y;
     static public float min_z;
     static Vector3[] features;
     static public Material terrain_mat;
@@ -22,7 +23,6 @@ static public class TerrainGenerator
     static public Queue<Vector3> loading_vec3s = new Queue<Vector3>();
     static public Queue<int> generate_center_x = new Queue<int>();
     static public Queue<int> generate_center_z = new Queue<int>();
-    static int bias = 10;
 
     static public void loadTerrain()
     {
@@ -59,7 +59,8 @@ static public class TerrainGenerator
             z_length = int.Parse(inputs[1]);
             inputs = sr.ReadLine().Split(' ');
             min_x = float.Parse(inputs[0]);
-            min_z = float.Parse(inputs[1]);
+            min_y = float.Parse(inputs[1]);
+            min_z = float.Parse(inputs[2]);
             int n = int.Parse(sr.ReadLine());
             features = new Vector3[n];
             for (int f_i = 0; f_i < n; f_i++)
@@ -75,9 +76,9 @@ static public class TerrainGenerator
         terrains = new List<GameObject>();
     }
 
-    static public void generateSmallIDWTerrain(int x_small_min, int z_small_min, int piece)
+    static public void generateSmallIDWTerrain(int x_small_min, int z_small_min, int x_piece, int z_piece)
     {
-        generateSmallIDWTerrain(features, x_small_min, z_small_min, piece + 1, piece + 1);
+        generateSmallIDWTerrain(features, x_small_min, z_small_min, x_piece + 1, z_piece + 1);
     }
 
     static void generateSmallIDWTerrain(Vector3[] features, int x_small_min, int z_small_min, int x_small_length, int z_small_length)
@@ -91,7 +92,7 @@ static public class TerrainGenerator
         int indices_index = 0;
         float center_x = min_x + (2 * x_small_min + x_small_length - 1) * PublicOutputInfo.piece_length / 2;
         float center_z = min_z + (2 * z_small_min + z_small_length - 1) * PublicOutputInfo.piece_length / 2;
-        float center_y = IDW.inverseDistanceWeighting(features, center_x, center_z) - bias;
+        float center_y = min_y + IDW.inverseDistanceWeighting(features, center_x, center_z);
         Vector3 center = new Vector3(center_x, center_y, center_z);
         for (int i = 0; i < x_small_length; i++)
         {
@@ -99,7 +100,7 @@ static public class TerrainGenerator
             {
                 terrain_points[i, j, 0] = min_x + (x_small_min + i) * PublicOutputInfo.piece_length;
                 terrain_points[i, j, 2] = min_z + (z_small_min + j) * PublicOutputInfo.piece_length;
-                terrain_points[i, j, 1] = IDW.inverseDistanceWeighting(features, terrain_points[i, j, 0], terrain_points[i, j, 2]) - bias;
+                terrain_points[i, j, 1] = min_y + IDW.inverseDistanceWeighting(features, terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias
                 vertice[i * z_small_length + j] = new Vector3(terrain_points[i, j, 0] - center.x, terrain_points[i, j, 1] - center.y, terrain_points[i, j, 2] - center.z);
                 uv[i * z_small_length + j] = new Vector2((float)(x_small_min + i) / x_length, (float)(z_small_min + j) / z_length);
             }
