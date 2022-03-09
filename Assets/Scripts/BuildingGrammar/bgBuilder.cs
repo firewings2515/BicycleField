@@ -15,18 +15,20 @@ public class bgBuilder
     bgParser parser;
 
     public bgBuilder(){
-        
+        parser = new bgParser();
+        components = new List<bgComponent>();
     }
     public bgBuilder(string[] grammar_files_path)
     {
+        parser = new bgParser();
+        components = new List<bgComponent>();
         compile_code(grammar_files_path);
     }
 
     // Start is called before the first frame update
     public void compile_code(string[] grammar_files_path)
     {
-        parser = new bgParser();
-        components = new List<bgComponent>();
+
 
         parser.parse(grammar_files_path);
 
@@ -52,6 +54,18 @@ public class bgBuilder
         for (int i = 0; i < components.Count; i++) {
             if (components[i].name == name) {
                 return components[i].build();
+            }
+        }
+        return null;
+    }
+    public Mesh build_mesh(string name)
+    {
+        Debug.Log("-----------------build------------");
+        for (int i = 0; i < components.Count; i++)
+        {
+            if (components[i].name == name)
+            {
+                return components[i].build_mesh();
             }
         }
         return null;
@@ -126,5 +140,11 @@ public class bgBuilder
             }
         }
         return null;
+    }
+
+    
+    public void clear() {
+        parser.clear();
+        components.Clear();
     }
 }

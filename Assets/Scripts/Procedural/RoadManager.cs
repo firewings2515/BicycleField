@@ -64,16 +64,24 @@ public class RoadManager : MonoBehaviour
     {
         current_loaded_segment++;
         house_id = 0;
-
+        //
+        List<int> segment_id_list = new List<int>();
+        List< int > house_id_list = new List<int>();
+        List<string> info_list = new List<string>();
+        //
         point_data = reader.ReadLine();
         while (point_data != null && point_data[0] == 'H')
         {
-            HouseGenerator.generateHouse(current_loaded_segment, house_id, point_data);
+            segment_id_list.Add(current_loaded_segment);
+            house_id_list.Add(house_id);
+            info_list.Add(point_data);
+            
             house_id++;
 
             //GetComponent<HouseManager>().addToBuffer(point_data);
             point_data = reader.ReadLine();
         }
+        StartCoroutine(HouseGenerator.generateHouses(segment_id_list, house_id_list, info_list));
         return point_data != null;
     }
 

@@ -10,6 +10,8 @@ public class bgAsset : bgComponent
     public (float, float) scale = (1.0f,1.0f);
     public float extrude = 0.0f;
 
+    public float width;
+    public float height;
     public RenderTexture image;
 
     public bgAsset(List<string> _input_parameter, List<string> _component_parameter, List<string> _commands, List<List<string>> _commands_parameter):base(_input_parameter, _component_parameter, _commands, _commands_parameter)
@@ -28,10 +30,14 @@ public class bgAsset : bgComponent
             Debug.Log(tex2d.height);
             image = new RenderTexture(tex2d.width, tex2d.height, 32, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
             Graphics.Blit(tex2d, image);
+
+            float divide = 200.0f;
+            width = image.width / divide;
+            height = image.height / divide;
         }
         else if (asset_type == "model")
         {
-
+            //TODO
         }
     }
     public override GameObject build() 
@@ -48,10 +54,32 @@ public class bgAsset : bgComponent
             go.name = "Asset:" + name;
             MeshRenderer mr = go.GetComponent<MeshRenderer>();
             mr.material.mainTexture = image;
+            go.transform.localScale = new Vector3(width,height, 1.0f);
         }
-        float divide = 200.0f;
-        go.transform.localScale = new Vector3(image.width/ divide, image.height / divide,1.0f);
+
         return go;
+    }
+    public override Mesh build_mesh()
+    {
+        //only for image
+        //if (share_mesh != null) return share_mesh;
+        share_mesh = new Mesh();
+        share_mesh.name = "asset_mesh";
+        float hwidth = width / 2.0f;
+        float hheight = height / 2.0f;
+
+        vertices = new List<Vector3> {
+            new Vector3(center.x-hwidth,center.y-hheight,center.z),
+            new Vector3(center.x+hwidth,center.y-hheight,center.z),
+            new Vector3(center.x+hwidth,center.y+hheight,center.z),
+            new Vector3(center.x-hwidth,center.y+hheight,center.z)
+        };
+        triangles = new List<int> {
+            vertice_index + 0,vertice_index + 3,vertice_index + 1,
+            vertice_index + 1,vertice_index + 3,vertice_index + 2
+        };
+
+        return null;
     }
 
     public override void parse()

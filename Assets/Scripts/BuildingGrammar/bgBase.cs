@@ -14,30 +14,36 @@ public class bgBase : bgComponent
     }
     public override GameObject build()
     {
-        if (go != null) {
-            go = GameObject.Instantiate(go);
-            return go;
-        }
         Debug.Log("type: Base");
+        //if (go != null) {
+        //    go = GameObject.Instantiate(go);
+        //    go.name = ""Base:" + name;
+        //    return go;
+        //}
         go = new GameObject("Base:" + name);
-        List<Vector3> vertexs = new List<Vector3>();
-        List<List<bgFacade>> facades = new List<List<bgFacade>>();
-        for (int i = 0; i < commands.Count; i++)
+        if (vertexs == null)
         {
-            if (commands[i] == "vertex")
+            vertexs = new List<Vector3>();
+            facades = new List<List<bgFacade>>();
+            for (int i = 0; i < commands.Count; i++)
             {
-                Vector3 vertex = new Vector3(
-                    float.Parse(commands_parameter[i][0]),
-                    float.Parse(commands_parameter[i][1]),
-                    float.Parse(commands_parameter[i][2]));
-                vertexs.Add(vertex);
-            }
-            else {
-                if (vertexs.Count > facades.Count) {
-                    facades.Add(new List<bgFacade>());
+                if (commands[i] == "vertex")
+                {
+                    Vector3 vertex = new Vector3(
+                        float.Parse(commands_parameter[i][0]),
+                        float.Parse(commands_parameter[i][1]),
+                        float.Parse(commands_parameter[i][2]));
+                    vertexs.Add(vertex);
                 }
-                bgFacade facade = builder.get_facade(commands[i]);
-                facades.Last().Add(facade);                
+                else
+                {
+                    if (vertexs.Count > facades.Count)
+                    {
+                        facades.Add(new List<bgFacade>());
+                    }
+                    bgFacade facade = builder.get_facade(commands[i]);
+                    facades.Last().Add(facade);
+                }
             }
         }
 
@@ -50,7 +56,12 @@ public class bgBase : bgComponent
             for (int j = 0; j < facades[i].Count; j++) {
                 facades[i][j].width = length;
                 Vector3 facade_pos = Vector3.Lerp(v1, v2, total_t);
-                GameObject obj = facades[i][j].build();
+                //GameObject obj = facades[i][j].build();
+                GameObject obj = new GameObject("facade");
+                //
+                obj.AddComponent<MeshFilter>().mesh = facades[i][j].build_mesh();
+                obj.AddComponent<MeshRenderer>().sharedMaterial = Resources.Load<Material>("Material/tillable");
+                //
                 obj.transform.parent = go.transform;
                 obj.transform.position = facade_pos;
                 obj.transform.rotation = Quaternion.LookRotation(v2-v1, Vector3.up);

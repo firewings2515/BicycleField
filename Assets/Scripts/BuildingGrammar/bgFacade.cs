@@ -34,8 +34,37 @@ public class bgFacade : bgComponent
 
         }
 
-
-
         return go;
+    }
+
+    public override Mesh build_mesh()
+    {
+        share_mesh = new Mesh();
+        share_mesh.name = "facade_mesh";
+        
+        vertices = new List<Vector3>();
+        vertices.Clear();
+        triangles = new List<int>();
+        triangles.Clear();
+        float height = 0.0f;
+        for (int i = 0; i < commands.Count; i++)
+        {
+            bgWall wall = builder.get_wall(commands[i]);
+            wall.width = this.width;
+            widths.Add(width);
+
+            wall.center = center + new Vector3(0,height,0);
+            wall.vertice_index = vertices.Count;
+
+            wall.build_mesh();
+            height += wall.height;
+
+            vertices.AddRange(wall.vertices);
+            triangles.AddRange(wall.triangles);
+        }
+
+        share_mesh.vertices = vertices.ToArray();
+        share_mesh.triangles = triangles.ToArray();
+        return share_mesh;
     }
 }

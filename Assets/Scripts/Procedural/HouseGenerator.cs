@@ -17,7 +17,15 @@ static public class HouseGenerator
         //gobj_db = new Dictionary<int, Dictionary<int, GameObject>>();
         //segment_id_q = new List<int>();
     }
-
+    static public IEnumerator generateHouses(List<int> segment_id,List<int> house_id,List<string> info) {
+        int count = segment_id.Count;
+        for (int i = 0; i < count; i++) {
+            generateHouse(segment_id[i],house_id[i],info[i]);
+            //break;
+            yield return null;
+        }
+        yield return null;
+    }
     static public void generateHouse(int segment_id, int house_id, string info)
     {
         //demo code

@@ -10,7 +10,7 @@ public class bgWall : bgComponent
     float height_parameter_val = 10.0f;//from component parameter
     public float height = 10.0f; //may modify
     public float width = 4.0f; //come from upper level
-    
+
     public bgWall(List<string> _input_parameter, List<string> _component_parameter, List<string> _commands, List<List<string>> _commands_parameter) : base(_input_parameter, _component_parameter, _commands, _commands_parameter)
     {
         parse();
@@ -34,12 +34,15 @@ public class bgWall : bgComponent
             go.transform.localScale = new Vector3(width, height, 0.5f);
             go.name = "Wall:" + name;
             int i = 0;
-            foreach(Transform child in go.transform) {
+            foreach (Transform child in go.transform)
+            {
                 child.localPosition = positions[i++];
             }
-            
+
         }
-        else {
+        else
+        {
+
             if (height_type == "const")
             {
                 height = height_parameter_val;
@@ -48,7 +51,6 @@ public class bgWall : bgComponent
             {
                 height = width * height_parameter_val;
             }
-
             go = GameObject.CreatePrimitive(PrimitiveType.Quad);
             go.name = "Wall:" + name;
 
@@ -80,7 +82,7 @@ public class bgWall : bgComponent
                     obj.transform.localPosition = pos;
                 }
             }
-            
+
         }
         /*
         float hheight = height / 2.0f;
@@ -122,7 +124,62 @@ public class bgWall : bgComponent
         mf.mesh = mesh;
         */
         Debug.Log(height);
-        
+
         return go;
+    }
+
+    public override Mesh build_mesh()
+    {
+        if (height_type == "const")
+        {
+            height = height_parameter_val;
+        }
+        else if (height_type == "ratio")
+        {
+            height = width * height_parameter_val;
+        }
+
+        float hwidth = width / 2.0f;
+        float hheight = height / 2.0f;
+
+        vertices = new List<Vector3>() {
+            new Vector3(center.x-hwidth,center.y,center.z),
+            new Vector3(center.x+hwidth,center.y,center.z),
+            new Vector3(center.x+hwidth,center.y+height,center.z),
+            new Vector3(center.x-hwidth,center.y+height,center.z)
+        };
+        triangles = new List<int> {
+            vertice_index + 0,vertice_index + 3,vertice_index + 1,
+            vertice_index + 1,vertice_index + 3,vertice_index + 2
+        };
+        //return share_mesh;
+        Vector3 pos = new Vector3(0,0,-1);
+        List<CombineInstance> combines = new List<CombineInstance>();
+        for (int i = 1; i < commands.Count; i++)
+        {
+            if (commands[i] == "pos")
+            {
+                pos.x = (float.Parse(commands_parameter[i][0]) - 0.5f) * width;
+                pos.y = (float.Parse(commands_parameter[i][1])) * height;
+                positions.Add(pos);
+            }
+            else
+            {
+                bgAsset asset = builder.get_asset(commands[i]);
+                asset.center = center + pos;
+                asset.vertice_index = vertice_index + vertices.Count;
+                asset.build_mesh();
+                vertices.AddRange(asset.vertices);
+                triangles.AddRange(asset.triangles);
+                //CombineInstance combine = new CombineInstance();
+                //combine.transform = new Matrix4x4();
+                //combine.mesh = mesh;
+                //combines.Add(combine);
+                Debug.Log("combine");
+            }
+        }
+        Debug.Log("combine finish");
+        //share_mesh.CombineMeshes(combines.ToArray());
+        return null;
     }
 }

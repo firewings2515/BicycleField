@@ -16,25 +16,24 @@ public class bgParser
     public List<bgBase> bases;
     public List<bgBuilding> buildings;
 
-    // Start is called before the first frame update
-    public void parse(string[] _grammar_files_path)
-    {
-        grammar_files_path = _grammar_files_path;
-
-        List<string> all_lines;
-        
-        List<bgGrammarLocation> locations;
-
+    public bgParser() {
         assets = new List<bgAsset>();
         walls = new List<bgWall>();
         facades = new List<bgFacade>();
         bases = new List<bgBase>();
         buildings = new List<bgBuilding>();
-
-
-
-        all_lines = new List<string>();
         file_start_line = new List<int>();
+    }
+
+    // Start is called before the first frame update
+    public void parse(string[] _grammar_files_path)
+    {
+        grammar_files_path = _grammar_files_path;
+
+        List<string> all_lines = new List<string>();
+
+        List<bgGrammarLocation> locations = new List<bgGrammarLocation>();
+
         for (int i = 0; i < grammar_files_path.Length; i++)
         {
             file_start_line.Add(all_lines.Count);
@@ -59,8 +58,6 @@ public class bgParser
 
         List<List<string>> commands = new List<List<string>>();
         List<List<List<string>>> command_parameters = new List<List<List<string>>>();
-
-        locations = new List<bgGrammarLocation>();
 
         for (int i = 0; i < all_lines.Count; i++) {
             string line = all_lines[i];
@@ -334,6 +331,15 @@ public class bgParser
             }
         }
         return -1;
+    }
+
+    public void clear() {
+        file_start_line.Clear();
+        assets.Clear();
+        walls.Clear();
+        facades.Clear();
+        bases.Clear();
+        buildings.Clear();
     }
 
     // Update is called once per frame
