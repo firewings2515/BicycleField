@@ -22,6 +22,7 @@ public class FeatureLineReconstruction : MonoBehaviour
     public float threshold;
     public float epsilon;
     Vector3[] point_cloud;
+    public Material terrain_mat;
 
     // Start is called before the first frame update
     void Start()
@@ -50,7 +51,7 @@ public class FeatureLineReconstruction : MonoBehaviour
                 for (int z = 0; z < z_length; z++)
                 {
                     Color height = heightmap.GetPixel(x, z);
-                    vertice[x * z_length + z] = new Vector3(x, height.r, z);
+                    vertice[x * z_length + z] = new Vector3(x, height.r * 255, z);
                     height = heightmap_edge.GetPixel(x, z);
                     edges[x * z_length + z] = height.r;
                 }
@@ -80,6 +81,10 @@ public class FeatureLineReconstruction : MonoBehaviour
             TerrainGenerator.min_x = 0;
             TerrainGenerator.min_y = 0;
             TerrainGenerator.min_z = 0;
+            TerrainGenerator.x_length = 256;
+            TerrainGenerator.z_length = 256;
+            TerrainGenerator.terrains = new List<GameObject>();
+            TerrainGenerator.terrain_mat = terrain_mat;
             showPoint(point_cloud, "Feature", feature_manager.transform, blue_ball, 1.0f);
             Debug.Log(point_cloud.Length);
             Debug.Log("Get feature finish");
@@ -87,7 +92,9 @@ public class FeatureLineReconstruction : MonoBehaviour
 
         if (generate)
         {
+            generate = false;
             TerrainGenerator.generateSmallIDWTerrain(0, 0, 255, 255);
+            exportSmallTexture(x_length, z_length, vertice, 255);
         }
     }
 
@@ -133,5 +140,31 @@ public class FeatureLineReconstruction : MonoBehaviour
             ball.name = tag + "_" + point_index.ToString();
             ball.transform.parent = parent;
         }
+    }
+
+    Texture2D exportSmallTexture(int x_length, int z_length, Vector3[] vertice, float max_height)
+    {
+        //first Make sure you're using RGB24 as your texture format
+        Texture2D texture2D = new Texture2D(x_length, z_length, TextureFormat.RGBA32, false);
+
+        for (int i = 0; i < x_length; i++)
+        {
+            for (int j = 0; j < z_length; j++)
+            {
+                float gray = vertice[i * z_length + j].y / max_height;
+                texture2D.SetPixel(i, j, new Color(gray, gray, gray));
+            }
+        }
+
+        //then Save To Disk as PNG
+        byte[] bytes = texture2D.EncodeToPNG();
+        var dirPath = Application.dataPath + "/Resources/";
+        if (!Directory.Exists(dirPath))
+        {
+            Directory.CreateDirectory(dirPath);
+        }
+        File.WriteAllBytes(dirPath + "FeatureLineTerrainImage" + ".png", bytes);
+
+        return texture2D;
     }
 }

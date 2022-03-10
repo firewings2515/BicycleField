@@ -21,7 +21,7 @@ static public class TerrainGenerator
     static public Material terrain_mat;
     static public bool generate;
     static public int vision_piece = 10;
-    static List<GameObject> terrains;
+    static public List<GameObject> terrains;
     static public bool need_update = false;
     static public int center_x;
     static public int center_z;
