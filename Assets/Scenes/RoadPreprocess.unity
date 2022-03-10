@@ -296,28 +296,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 1367975358}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4417a94fd3bcd54c856c6784760bd3b, type: 3}
+  m_Script: {fileID: 11500000, guid: 5d16d0300db29bf438c9dfe4bb82c09c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   file_path: features.f
-  heightmap_edge: {fileID: 0}
-  heightmap: {fileID: 0}
+  heightmap_edge: {fileID: 2800000, guid: 21e594292eb8c2a47821f3fa147cdd3b, type: 3}
+  heightmap: {fileID: 2800000, guid: 8aef5c32184ac4a49ace3c21ca4c1f30, type: 3}
   vertice: []
   edges: []
-  x_length: 0
-  z_length: 0
-  map_size_width: 22.5
-  map_size_height: 22.5
-  piece_length: 32
-  min_x: 0
-  min_z: 0
-  gray_height: 0
-  get_feature: 0
+  x_length: 256
+  z_length: 256
+  map_size_width: 256
+  map_size_height: 256
   get_line_feature: 0
+  generate: 0
   blue_ball: {fileID: 7606946595633192119, guid: 7a7e0a9491a268e4881caac315264c20, type: 3}
   red_ball: {fileID: 7606946595633192119, guid: 5c778351e0128cf4dae06c542dfa2c5d, type: 3}
-  threshold: 127
-  epsilon: 16
+  threshold: 0.25
+  epsilon: 0.2
 --- !u!4 &1367975360
 Transform:
   m_ObjectHideFlags: 0
