@@ -7,7 +7,7 @@ using System.IO;
 public class HeightmapCompress : MonoBehaviour
 {
     // data given by SmallTerrainGenerator
-    public string file_path = "features.f";
+    public string file_path = "YangJing1/features.f";
     public Texture2D heightmap_edge;
     public Texture2D heightmap;
     public Vector3[] vertice;
@@ -87,6 +87,9 @@ public class HeightmapCompress : MonoBehaviour
             point_cloud = point_cloud_list.ToArray();
             showPoint(point_cloud, "Feature", feature_manager.transform, blue_ball, 8.0f);
 
+            KDTree kdtree = new KDTree();
+            kdtree.buildKDTree(point_cloud);
+
             using (StreamWriter sw = new StreamWriter(Application.streamingAssetsPath + "//" + file_path))
             {
                 sw.WriteLine(PublicOutputInfo.boundary_min.x + " " + PublicOutputInfo.boundary_min.y);
@@ -96,9 +99,14 @@ public class HeightmapCompress : MonoBehaviour
                 sw.WriteLine(point_cloud.Length);
                 for (int point_index = 0; point_index < point_cloud.Length; point_index++)
                 {
-                    Vector3 feature_out = point_cloud[point_index] - PublicOutputInfo.origin_pos;
-                    sw.WriteLine(feature_out.x + " " + feature_out.y + " " + feature_out.z);
+                    Vector3 feature_out = kdtree.nodes[point_index] - PublicOutputInfo.origin_pos;
+                    sw.WriteLine(feature_out.x + " " + feature_out.y + " " + feature_out.z + " " + kdtree.parent[point_index] + " " + kdtree.left[point_index] + " " + kdtree.right[point_index]);
                 }
+                //for (int point_index = 0; point_index < point_cloud.Length; point_index++)
+                //{
+                //    Vector3 feature_out = point_cloud[point_index] - PublicOutputInfo.origin_pos;
+                //    sw.WriteLine(feature_out.x + " " + feature_out.y + " " + feature_out.z);
+                //}
             }
             Debug.Log("Get feature finish");
         }

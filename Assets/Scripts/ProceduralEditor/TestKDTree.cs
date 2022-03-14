@@ -31,6 +31,8 @@ public class TestKDTree : MonoBehaviour
             {
                 Debug.Log(kdtree.nodes[area_points[index]].ToString());
             }
+
+            Debug.Log(IDW.inverseDistanceWeighting(new Vector3[0], 0, 0));
         }
     }
 }

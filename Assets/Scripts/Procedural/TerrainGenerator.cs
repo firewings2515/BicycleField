@@ -5,7 +5,7 @@ using System.IO;
 
 static public class TerrainGenerator
 {
-    static public string file_path = "YangJing1/features_150_32.f";
+    static public string file_path = "YangJing1/features.f"; // _150_32
     static public bool is_initial = false;
     static public int x_length;
     static public int z_length;
@@ -28,6 +28,7 @@ static public class TerrainGenerator
     static public Queue<Vector3> loading_vec3s = new Queue<Vector3>();
     static public Queue<int> generate_center_x = new Queue<int>();
     static public Queue<int> generate_center_z = new Queue<int>();
+    static public KDTree kdtree;
 
     static public void loadTerrain()
     {
@@ -74,14 +75,24 @@ static public class TerrainGenerator
             min_y = float.Parse(inputs[1]);
             min_z = float.Parse(inputs[2]);
             int n = int.Parse(sr.ReadLine());
-            features = new Vector3[n];
+            kdtree = new KDTree();
+            kdtree.nodes = new Vector3[n];
+            kdtree.parent = new int[n];
+            kdtree.left = new int[n];
+            kdtree.right = new int[n];
             for (int f_i = 0; f_i < n; f_i++)
             {
                 inputs = sr.ReadLine().Split(' ');
                 float x = float.Parse(inputs[0]);
                 float y = float.Parse(inputs[1]);
                 float z = float.Parse(inputs[2]);
-                features[f_i] = new Vector3(x, y, z);
+                kdtree.nodes[f_i] = new Vector3(x, y, z);
+                int p = int.Parse(inputs[3]);
+                kdtree.parent[f_i] = p;
+                int l = int.Parse(inputs[4]);
+                kdtree.left[f_i] = l;
+                int r = int.Parse(inputs[5]);
+                kdtree.right[f_i] = r;
             }
             Debug.Log("Read Feature File Successfully");
         }
@@ -90,7 +101,14 @@ static public class TerrainGenerator
 
     static public void generateSmallIDWTerrain(int x_small_min, int z_small_min, int x_piece, int z_piece)
     {
-        generateSmallIDWTerrain(features, x_small_min, z_small_min, x_piece + 1, z_piece + 1);
+        float expanded_length = vision_piece * PublicOutputInfo.piece_length;
+        int[] area_features_index = kdtree.getAreaPoints(x_small_min - expanded_length, z_small_min - expanded_length, x_small_min + (x_piece + 1) * PublicOutputInfo.piece_length + expanded_length, z_small_min + (z_piece + 1) * PublicOutputInfo.piece_length + expanded_length);
+        Vector3[] area_features = new Vector3[area_features_index.Length];
+        for (int area_features_index_index = 0; area_features_index_index < area_features_index.Length; area_features_index_index++)
+        {
+            area_features[area_features_index_index] = kdtree.nodes[area_features_index[area_features_index_index]];
+        }
+        generateSmallIDWTerrain(area_features, x_small_min, z_small_min, x_piece + 1, z_piece + 1);
     }
 
     static void generateSmallIDWTerrain(Vector3[] features, int x_small_min, int z_small_min, int x_small_length, int z_small_length)

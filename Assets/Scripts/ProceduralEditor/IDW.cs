@@ -25,6 +25,8 @@ public static class IDW
             sum_up += getWeight(d[point_index]) * point_cloud[point_index].y;
             sum_down += getWeight(d[point_index]);
         }
+        if (sum_down < 1e-6)
+            sum_down = 1.0f;
         return sum_up / sum_down;
     }
 }
