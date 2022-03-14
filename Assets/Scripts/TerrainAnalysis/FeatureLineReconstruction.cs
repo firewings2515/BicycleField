@@ -16,7 +16,9 @@ public class FeatureLineReconstruction : MonoBehaviour
     public float map_size_width = 256;
     public float map_size_height = 256;
     public bool get_line_feature;
-    public bool generate;
+    public bool generate_heightmap;
+    public bool generate_IDW;
+    public bool export_IDW_image;
     public GameObject blue_ball;
     public GameObject red_ball;
     public float threshold;
@@ -88,12 +90,29 @@ public class FeatureLineReconstruction : MonoBehaviour
             showPoint(point_cloud, "Feature", feature_manager.transform, blue_ball, 1.0f);
             Debug.Log(point_cloud.Length);
             Debug.Log("Get feature finish");
+            TerrainGenerator.kdtree = new KDTree();
+            TerrainGenerator.kdtree.buildKDTree(point_cloud);
+            PublicOutputInfo.piece_length = 1;
         }
 
-        if (generate)
+        if (generate_heightmap)
         {
-            generate = false;
+            generate_heightmap = false;
+
+            TerrainGenerator.generateSmallHeightmapTerrain(heightmap, 0, 0, 255, 255);
+        }
+
+        if (generate_IDW)
+        {
+            generate_IDW = false;
+            
             TerrainGenerator.generateSmallIDWTerrain(0, 0, 255, 255);
+        }
+
+        if (export_IDW_image)
+        {
+            export_IDW_image = false;
+
             exportSmallTexture(x_length, z_length, vertice, 255);
         }
     }

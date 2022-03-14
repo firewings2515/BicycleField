@@ -261,4 +261,64 @@ static public class TerrainGenerator
         all_coords.Add(new EarthCoord(lon, lat));
         return HgtReader.getElevations(all_coords)[0];
     }
+
+    static public void generateSmallHeightmapTerrain(Texture2D heightmap, int x_small_min, int z_small_min, int x_small_length, int z_small_length)
+    {
+        //Debug.Log("Calculating: " + x_small_min + "_" + z_small_min);
+        Mesh mesh = new Mesh();
+        float[,,] terrain_points = new float[x_small_length, z_small_length, 3];
+        Vector3[] vertice = new Vector3[x_small_length * z_small_length];
+        Vector2[] uv = new Vector2[x_small_length * z_small_length];
+        int[] indices = new int[6 * (x_small_length - 1) * (z_small_length - 1)];
+        int indices_index = 0;
+        float center_x = min_x + (2 * x_small_min + x_small_length - 1) * PublicOutputInfo.piece_length / 2;
+        float center_z = min_z + (2 * z_small_min + z_small_length - 1) * PublicOutputInfo.piece_length / 2;
+        //float center_y = min_y + getDEMHeight(center_x, center_z);
+        float center_y = min_y; // -15
+        Vector3 center = new Vector3(center_x, center_y, center_z);
+        for (int i = 0; i < x_small_length; i++)
+        {
+            for (int j = 0; j < z_small_length; j++)
+            {
+                terrain_points[i, j, 0] = min_x + (x_small_min + i) * PublicOutputInfo.piece_length;
+                terrain_points[i, j, 2] = min_z + (z_small_min + j) * PublicOutputInfo.piece_length;
+                //terrain_points[i, j, 1] = min_y + getDEMHeight(terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias
+                terrain_points[i, j, 1] = min_y + heightmap.GetPixel(i, j).r * 255; // min_y is a bias  -15
+                vertice[i * z_small_length + j] = new Vector3(terrain_points[i, j, 0] - center.x, terrain_points[i, j, 1] - center.y, terrain_points[i, j, 2] - center.z);
+                uv[i * z_small_length + j] = new Vector2((float)(x_small_min + i) / x_length, (float)(z_small_min + j) / z_length);
+            }
+        }
+
+        for (int i = 0; i < x_small_length - 1; i++)
+        {
+            for (int j = 0; j < z_small_length - 1; j++)
+            {
+                // counter-clockwise
+                indices[indices_index++] = i * z_small_length + j;
+                indices[indices_index++] = (i + 1) * z_small_length + j + 1;
+                indices[indices_index++] = (i + 1) * z_small_length + j;
+                indices[indices_index++] = i * z_small_length + j;
+                indices[indices_index++] = i * z_small_length + j + 1;
+                indices[indices_index++] = (i + 1) * z_small_length + j + 1;
+            }
+        }
+
+        mesh.vertices = vertice;
+        mesh.uv = uv;
+        mesh.triangles = indices;
+        //Recalculations
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        mesh.Optimize();
+        //Name the mesh
+        mesh.name = "terrain_mesh";
+        GameObject terrain = new GameObject("terrain_Heightmap_" + x_small_min + "_" + z_small_min);
+        MeshFilter mf = terrain.AddComponent<MeshFilter>();
+        MeshRenderer mr = terrain.AddComponent<MeshRenderer>();
+        mf.mesh = mesh;
+        mr.material = terrain_mat;
+        terrain.transform.position = center;
+        terrains.Add(terrain);
+        //Debug.Log("Success: " + x_small_min + "_" + z_small_min);
+    }
 }

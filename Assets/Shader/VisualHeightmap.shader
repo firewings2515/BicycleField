@@ -47,7 +47,8 @@ Shader "Custom/VisualHeightmap"
                 o.pos = UnityObjectToClipPos(v.vertex);
                 o.uv = TRANSFORM_TEX(v.texcoord.xy, _MainTex); //Tiling and Offset
                 float3 worldPos = mul(unity_ObjectToWorld, v.vertex);
-                o.color = _Color * worldPos.y / 255.0;
+                float gray = _Color * worldPos.y / 255.0;
+                o.color = float4(gray, gray, gray, 1.0);
 
                 float4 centerPos = mul(unity_ObjectToWorld, float4(0, 0, 0, 1)); // Position
                 float4 cornerPos = mul(unity_ObjectToWorld, float4(1, 1, 1, 1)); // Scale
