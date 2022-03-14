@@ -25,6 +25,12 @@ public class TestKDTree : MonoBehaviour
             {
                 Debug.Log(kdtree.nodes[index].ToString() + ": parent: " + kdtree.parent[index].ToString() + " left: " + kdtree.left[index].ToString() + " right: " + kdtree.right[index].ToString());
             }
+
+            int[] area_points = kdtree.getAreaPoints(4, 1, 9, 5);
+            for (int index = 0; index < area_points.Length; index++)
+            {
+                Debug.Log(kdtree.nodes[area_points[index]].ToString());
+            }
         }
     }
 }

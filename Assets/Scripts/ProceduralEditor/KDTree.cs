@@ -64,10 +64,58 @@ public class KDTree
         }
     }
 
-    public void getNearpoints(out Vector3[] points)
+    public int[] getAreaPoints(float x_min, float z_min, float x_max, float z_max)
     {
-        List<int> nearpoints = new List<int>();
+        List<int> area_points = new List<int>();
+        getAreaPointsRec(ref area_points, x_min, z_min, x_max, z_max, 0, true);
+        return area_points.ToArray();
+    }
 
-        points = new Vector3[nearpoints.Count];
+    void getAreaPointsRec(ref List<int> area_points, float x_min, float z_min, float x_max, float z_max, int head, bool is_x)
+    {
+        if (is_x)
+        {
+            if (nodes[head].x < x_min)
+            {
+                if (right[head] != 0)
+                getAreaPointsRec(ref area_points, x_min, z_min, x_max, z_max, right[head], !is_x);
+            }
+            else if (nodes[head].x > x_max)
+            {
+                if (left[head] != 0)
+                    getAreaPointsRec(ref area_points, x_min, z_min, x_max, z_max, left[head], !is_x);
+            }
+            else // x_min < nodes[head].x < x_max
+            {
+                if (z_min <= nodes[head].z && nodes[head].z <= z_max)
+                    area_points.Add(head);
+                if (right[head] != 0)
+                    getAreaPointsRec(ref area_points, x_min, z_min, x_max, z_max, right[head], !is_x);
+                if (left[head] != 0)
+                    getAreaPointsRec(ref area_points, x_min, z_min, x_max, z_max, left[head], !is_x);
+            }
+        }
+        else
+        {
+            if (nodes[head].z < z_min)
+            {
+                if (right[head] != 0)
+                    getAreaPointsRec(ref area_points, x_min, z_min, x_max, z_max, right[head], !is_x);
+            }
+            else if (nodes[head].z > z_max)
+            {
+                if (left[head] != 0)
+                    getAreaPointsRec(ref area_points, x_min, z_min, x_max, z_max, left[head], !is_x);
+            }
+            else // z_min < nodes[head].z < z_max
+            {
+                if (x_min <= nodes[head].x && nodes[head].x <= x_max)
+                    area_points.Add(head);
+                if (right[head] != 0)
+                    getAreaPointsRec(ref area_points, x_min, z_min, x_max, z_max, right[head], !is_x);
+                if (left[head] != 0)
+                    getAreaPointsRec(ref area_points, x_min, z_min, x_max, z_max, left[head], !is_x);
+            }
+        }
     }
 }
