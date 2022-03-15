@@ -22,7 +22,7 @@ static public class HouseGenerator
         for (int i = 0; i < count; i++) {
             generateHouse(segment_id[i],house_id[i],info[i]);
             //break;
-            yield return null;
+            yield return new WaitForSeconds(0.3f);
         }
         yield return null;
     }

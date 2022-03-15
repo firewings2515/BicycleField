@@ -50,7 +50,7 @@ public class bgBuilder
     }
 
     public GameObject build(string name) {
-        Debug.Log("-----------------build------------");
+        //Debug.Log("-----------------build------------");
         for (int i = 0; i < components.Count; i++) {
             if (components[i].name == name) {
                 return components[i].build();
@@ -60,7 +60,7 @@ public class bgBuilder
     }
     public Mesh build_mesh(string name)
     {
-        Debug.Log("-----------------build------------");
+        //Debug.Log("-----------------build------------");
         for (int i = 0; i < components.Count; i++)
         {
             if (components[i].name == name)
