@@ -34,9 +34,16 @@ public class bgTest : MonoBehaviour
         float end = Time.realtimeSinceStartup;
         Debug.Log("process time:" + (end - start).ToString());
     }
+    int count = 0;
     // Update is called once per frame
     void Update()
     {
-        //reBuild();
+        if (count == 5)
+        {
+            //reBuild();
+            count = 0;
+        }
+        else
+            count++;
     }
 }

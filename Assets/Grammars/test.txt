@@ -7,6 +7,12 @@ door():Asset(image){
 }
 
 window():Asset(image){
+	Location("Assets/Image/window.jpg")
+	Scale(0.2,0.2)
+	Extrude(0.1)
+}
+
+window2():Asset(image){
 	Location("Assets/Image/window2.jpg")
 	Scale(0.2,0.2)
 	Extrude(0.1)
@@ -17,7 +23,7 @@ hello_wall():Wall(vertical,const,4.0){
 	pos(0.25,0.5)
 	window()
 	pos(0.75,0.5)
-	window()
+	window2()
 }
 
 first_floor_wall():Wall(vertical,const,4){
