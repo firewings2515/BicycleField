@@ -5,19 +5,17 @@ using UnityEngine;
 public class TerrainManager : MonoBehaviour
 {
     public Material material;
-    Queue<int> generate_x;
-    Queue<int> generate_z;
-    bool[] is_generated;
+    //public GameObject feature_ball_prefab;
+    Queue<int> generate_x = new Queue<int>();
+    Queue<int> generate_z = new Queue<int>();
     int piece = 4;
     // Start is called before the first frame update
     void Start()
     {
         TerrainGenerator.terrain_mat = material;
+        //TerrainGenerator.feature_ball_prefab = feature_ball_prefab;
         //terrain
         TerrainGenerator.loadTerrain();
-        is_generated = new bool[TerrainGenerator.x_length * TerrainGenerator.z_length];
-        generate_x = new Queue<int>();
-        generate_z = new Queue<int>();
     }
 
     // Update is called once per frame
@@ -44,12 +42,14 @@ public class TerrainManager : MonoBehaviour
             TerrainGenerator.need_update = false;
             while (TerrainGenerator.generate_center_x.Count > 0)
             {
-                for (int i = -2; i <= 2; i++)
+                int center_x = TerrainGenerator.generate_center_x.Peek();
+                int center_z = TerrainGenerator.generate_center_z.Peek();
+                for (int i = -TerrainGenerator.vision_piece; i <= TerrainGenerator.vision_piece; i++)
                 {
-                    for (int j = -2; j <= 2; j++)
+                    for (int j = -TerrainGenerator.vision_piece; j <= TerrainGenerator.vision_piece; j++)
                     {
-                        int center_x = TerrainGenerator.generate_center_x.Peek();
-                        int center_z = TerrainGenerator.generate_center_z.Peek();
+                        if (Mathf.Abs(i) + Mathf.Abs(j) > TerrainGenerator.vision_piece)
+                            continue;
                         int x_small_min = center_x + i * piece;
                         int z_small_min = center_z + j * piece;
                         if (x_small_min < 0 || x_small_min >= TerrainGenerator.x_length || z_small_min < 0 || z_small_min >= TerrainGenerator.z_length)
@@ -67,9 +67,9 @@ public class TerrainManager : MonoBehaviour
         {
             int x_small_min = generate_x.Dequeue();
             int z_small_min = generate_z.Dequeue();
-            if (!is_generated[x_small_min * TerrainGenerator.z_length + z_small_min])
+            if (!TerrainGenerator.is_generated[x_small_min * TerrainGenerator.z_length + z_small_min])
             {
-                is_generated[x_small_min * TerrainGenerator.z_length + z_small_min] = true;
+                TerrainGenerator.is_generated[x_small_min * TerrainGenerator.z_length + z_small_min] = true;
                 int x_piece = piece;
                 int z_piece = piece;
                 if (x_small_min + piece > TerrainGenerator.x_length)

@@ -6,9 +6,10 @@ public static class IDW
 {
     static public float getWeight(float d)
     {
-        if (d < 1e-6)
+        float f = Mathf.Pow(d, 2);
+        if (f < 1e-6)
             return 1.0f;
-        return 1 / Mathf.Pow(d, 4);
+        return 1 / f;
     }
 
     static public float inverseDistanceWeighting(Vector3[] point_cloud, float x, float z)

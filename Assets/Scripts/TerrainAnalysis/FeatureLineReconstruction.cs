@@ -18,7 +18,6 @@ public class FeatureLineReconstruction : MonoBehaviour
     public bool get_line_feature;
     public bool generate_heightmap;
     public bool generate_IDW;
-    public bool export_IDW_image;
     public GameObject blue_ball;
     public GameObject red_ball;
     public float threshold;
@@ -107,12 +106,6 @@ public class FeatureLineReconstruction : MonoBehaviour
             generate_IDW = false;
             
             TerrainGenerator.generateSmallIDWTerrain(0, 0, 255, 255);
-        }
-
-        if (export_IDW_image)
-        {
-            export_IDW_image = false;
-
             exportSmallTexture(x_length, z_length, vertice, 255);
         }
     }
