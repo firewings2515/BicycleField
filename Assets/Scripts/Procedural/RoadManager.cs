@@ -16,6 +16,7 @@ public class RoadManager : MonoBehaviour
 
     public string file_name;
     public PathCreator path_creator;
+    public bool path_loop = false;
 
     Vector3 last_segment = new Vector3(0,0,0);
 
@@ -70,6 +71,17 @@ public class RoadManager : MonoBehaviour
         List<string> info_list = new List<string>();
         //
         point_data = reader.ReadLine();
+
+        if (path_loop)
+        {
+            if (point_data == null)
+            {
+                reader.Close();
+                reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
+                point_data = reader.ReadLine();
+            }
+        }
+
         while (point_data != null && point_data[0] == 'H')
         {
             segment_id_list.Add(current_loaded_segment);
@@ -89,7 +101,6 @@ public class RoadManager : MonoBehaviour
     {
         //terrain
         TerrainGenerator.generateTerrain(road);
-        Debug.Log("##########################################################################" + road);
         //BezierPath new_bezier = new BezierPath(path_creator.bezierPath[0]);
         //new_bezier = path_creator.bezierPath;
         //path_creator.bezierPath = new_bezier;
