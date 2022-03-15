@@ -100,7 +100,7 @@ public class bgParser
                         word.Append(line[j]);
                         j++;
                     }
-                    Debug.Log(word.ToString());
+                    //Debug.Log(word.ToString());
                     command_parameters.Last().Last().Add(word.ToString());
                     word.Clear();
                     continue;
@@ -121,7 +121,7 @@ public class bgParser
                         if (word.Length > 0)
                         {
                             input_parameters.Last().Add(word.ToString());
-                            Debug.Log("get parameter :" + word.ToString());
+                            //Debug.Log("get parameter :" + word.ToString());
                         }
 
                     }
@@ -131,7 +131,7 @@ public class bgParser
                         if (word.Length > 0)
                         {
                             componet_parameters.Last().Add(word.ToString());
-                            Debug.Log("get parameter :" + word.ToString());
+                            //Debug.Log("get parameter :" + word.ToString());
                         }
 
                     }
@@ -141,7 +141,7 @@ public class bgParser
                         if (word.Length > 0)
                         {
                             command_parameters.Last().Last().Add(word.ToString());
-                            Debug.Log("get parameter :" + word.ToString());
+                            //Debug.Log("get parameter :" + word.ToString());
                         }
 
                     }
@@ -185,25 +185,25 @@ public class bgParser
                     {
                         get_component_name = true;
                         componet_names.Add(word.ToString());
-                        Debug.Log("get component name :" + componet_names.Last());
+                        //Debug.Log("get component name :" + componet_names.Last());
                         input_parameters.Add(new List<string>());
                     }
                     else if (get_component_type == false)
                     {
                         get_component_type = true;
                         componet_types.Add(word.ToString());
-                        Debug.Log("get component type :" + componet_types.Last());
+                        //Debug.Log("get component type :" + componet_types.Last());
                         componet_parameters.Add(new List<string>());
                     }
                     else if (reading_component_code && get_command == false)
                     {
                         get_command = true;
-                        Debug.Log("get command :" + word.ToString());
+                        //Debug.Log("get command :" + word.ToString());
                         commands.Last().Add(word.ToString());
 
                     }
                     else if (reading_parameters) {
-                        Debug.Log("get parameter :" + word.ToString());
+                        //Debug.Log("get parameter :" + word.ToString());
                         if (get_input_parameter == false)
                         {
                             input_parameters.Last().Add(word.ToString());
@@ -228,29 +228,29 @@ public class bgParser
             }
         }
 
-        Debug.Log("=========lexical finished=========");
+        //Debug.Log("=========lexical finished=========");
         //components = new List<bgComponent>();
 
         for (int component_index = 0; component_index < componet_names.Count; component_index++)
         {
-            Debug.Log("name: " + componet_names[component_index]);
+            //Debug.Log("name: " + componet_names[component_index]);
             for (int i = 0; i < input_parameters[component_index].Count; i++)
             {
-                Debug.Log("\tinput parameter:" + input_parameters[component_index][i]);
+                //Debug.Log("\tinput parameter:" + input_parameters[component_index][i]);
             }
-            Debug.Log("type: " + componet_types[component_index]);
+            //Debug.Log("type: " + componet_types[component_index]);
             for (int i = 0; i < componet_parameters[component_index].Count; i++)
             {
-                Debug.Log("\tcomponet parameter:" + componet_parameters[component_index][i]);
+                //Debug.Log("\tcomponet parameter:" + componet_parameters[component_index][i]);
             }
 
-            Debug.Log("commands:");
+            //Debug.Log("commands:");
             for (int i = 0; i < commands[component_index].Count; i++)
             {
-                Debug.Log("\tcommand:" + commands[component_index][i]);
+                //Debug.Log("\tcommand:" + commands[component_index][i]);
                 for (int j = 0; j < command_parameters[component_index][i].Count; j++)
                 {
-                    Debug.Log("\t\tcommand parameter:" + command_parameters[component_index][i][j]);
+                    //Debug.Log("\t\tcommand parameter:" + command_parameters[component_index][i][j]);
                 }
             }
             bgComponent comp = new bgComponent();
@@ -286,7 +286,7 @@ public class bgParser
             comp.name = componet_names[component_index];
             comp.type = componet_types[component_index];
         }
-        //Debug.Log("=========check finished=========");
+        ////Debug.Log("=========check finished=========");
         /*
         for (int component_index = 0; component_index < componet_names.Count; component_index++)
         {

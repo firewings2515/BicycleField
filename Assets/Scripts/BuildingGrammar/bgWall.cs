@@ -175,10 +175,10 @@ public class bgWall : bgComponent
                 //combine.transform = new Matrix4x4();
                 //combine.mesh = mesh;
                 //combines.Add(combine);
-                Debug.Log("combine");
+                
             }
         }
-        Debug.Log("combine finish");
+        
         //share_mesh.CombineMeshes(combines.ToArray());
         return null;
     }

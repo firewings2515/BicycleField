@@ -13,18 +13,26 @@ public class bgTest : MonoBehaviour
     void Start()
     {
         default_ = GetComponent<MeshRenderer>().sharedMaterial;
-        builder = new bgBuilder();
+        builder = new bgBuilder();        
         reBuild();
     }
     public void reBuild() {
+        float start = Time.realtimeSinceStartup;
         builder.clear();
+        Debug.Log(Time.realtimeSinceStartup - start);
         builder.compile_code(grammar_files_path);
-        building = builder.build(component_name);
+        Debug.Log(Time.realtimeSinceStartup - start);
+        //building = builder.build(component_name);
 
 
         //GameObject obj = new GameObject();
         //obj.AddComponent<MeshFilter>().sharedMesh = builder.build_mesh(component_name);
         //obj.AddComponent<MeshRenderer>().sharedMaterial = default_;
+
+        GameObject obj = builder.build(component_name);
+
+        float end = Time.realtimeSinceStartup;
+        Debug.Log("process time:" + (end - start).ToString());
     }
     // Update is called once per frame
     void Update()

@@ -26,8 +26,8 @@ public class bgAsset : bgComponent
         {
             Texture2D tex2d = new Texture2D(2, 2);
             tex2d.LoadImage(bytes);
-            Debug.Log(tex2d.width);
-            Debug.Log(tex2d.height);
+            //Debug.Log(tex2d.width);
+            //Debug.Log(tex2d.height);
             image = new RenderTexture(tex2d.width, tex2d.height, 32, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
             Graphics.Blit(tex2d, image);
 
@@ -42,7 +42,7 @@ public class bgAsset : bgComponent
     }
     public override GameObject build() 
     {
-        Debug.Log("type: Asset");
+        //Debug.Log("type: Asset");
         if (go != null)
         {
             go = GameObject.Instantiate(go);
@@ -78,7 +78,7 @@ public class bgAsset : bgComponent
             vertice_index + 0,vertice_index + 3,vertice_index + 1,
             vertice_index + 1,vertice_index + 3,vertice_index + 2
         };
-
+        
         return null;
     }
 
