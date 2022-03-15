@@ -15,11 +15,12 @@ public class bgBase : bgComponent
     public override GameObject build()
     {
         Debug.Log("type: Base");
-        //if (go != null) {
-        //    go = GameObject.Instantiate(go);
-        //    go.name = ""Base:" + name;
-        //    return go;
-        //}
+        if (go != null)
+        {
+            go = GameObject.Instantiate(go);
+            go.name = "Base: " + name;
+            return go;
+        }
         go = new GameObject("Base:" + name);
         if (vertexs == null)
         {
@@ -56,11 +57,12 @@ public class bgBase : bgComponent
             for (int j = 0; j < facades[i].Count; j++) {
                 facades[i][j].width = length;
                 Vector3 facade_pos = Vector3.Lerp(v1, v2, total_t);
-                //GameObject obj = facades[i][j].build();
-                GameObject obj = new GameObject("facade");
+                GameObject obj = facades[i][j].build();
+   
+                //GameObject obj = new GameObject("facade");
                 //
-                obj.AddComponent<MeshFilter>().mesh = facades[i][j].build_mesh();
-                obj.AddComponent<MeshRenderer>().sharedMaterial = Resources.Load<Material>("Material/tillable");
+                //obj.AddComponent<MeshFilter>().mesh = facades[i][j].build_mesh();
+                //obj.AddComponent<MeshRenderer>().sharedMaterial = Resources.Load<Material>("Material/tillable");
                 //
                 obj.transform.parent = go.transform;
                 obj.transform.position = facade_pos;

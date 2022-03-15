@@ -28,20 +28,22 @@ public class bgWall : bgComponent
     {
 
         Debug.Log("type: Wall");
-        if (go != null)
-        {
-            go = GameObject.Instantiate(go);
-            go.transform.localScale = new Vector3(width, height, 0.5f);
-            go.name = "Wall:" + name;
-            int i = 0;
-            foreach (Transform child in go.transform)
-            {
-                child.localPosition = positions[i++];
-            }
+        //if (go != null)
+        //{
+        //    go = GameObject.Instantiate(go);
 
-        }
-        else
-        {
+        //    //go.transform.localScale = new Vector3(width, height, 0.5f);
+        //    go.name = "Wall:" + name;
+        //    int i = 0;
+        //    //foreach (Transform child in go.transform)
+        //    //{
+        //    //    child.localPosition = positions[i++];
+        //    //}
+
+
+        //}
+        //else
+        //{
 
             if (height_type == "const")
             {
@@ -51,27 +53,30 @@ public class bgWall : bgComponent
             {
                 height = width * height_parameter_val;
             }
-            go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            
+            go = new GameObject();
             go.name = "Wall:" + name;
 
-            MeshRenderer mr = go.GetComponent<MeshRenderer>();
+            GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            wall.transform.parent = go.transform;
+
+            MeshRenderer mr = wall.GetComponent<MeshRenderer>();
 
             string background_name = commands[0];
-            Debug.Log(background_name);
             //bgAsset background = builder.get_asset(background_name);
             Material mat = Resources.Load<Material>("Material/tillable");
 
             Material newmat = new Material(mat);
             mr.sharedMaterial = newmat;
-            go.transform.localScale = new Vector3(width, height, 0.5f);
+            wall.transform.localScale = new Vector3(width, height, 0.5f);
             Vector3 pos = new Vector3();
-            pos.z = -0.55f;
+            pos.z = -0.1f;
             for (int i = 1; i < commands.Count; i++)
             {
                 if (commands[i] == "pos")
                 {
-                    pos.x = (float.Parse(commands_parameter[i][0]) - 0.5f);// * width;
-                    pos.y = (float.Parse(commands_parameter[i][1]) - 0.5f);// * height;
+                    pos.x = (float.Parse(commands_parameter[i][0]) - 0.5f) * width;
+                    pos.y = (float.Parse(commands_parameter[i][1]) - 0.5f) * height;
                     positions.Add(pos);
                 }
                 else
@@ -83,7 +88,7 @@ public class bgWall : bgComponent
                 }
             }
 
-        }
+        //}
         /*
         float hheight = height / 2.0f;
         float hwidth = width / 2.0f;
@@ -123,7 +128,6 @@ public class bgWall : bgComponent
         MeshFilter mf = go.AddComponent<MeshFilter>();        
         mf.mesh = mesh;
         */
-        Debug.Log(height);
 
         return go;
     }

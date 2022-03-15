@@ -37,6 +37,6 @@ public class bgTest : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        //reBuild();
     }
 }

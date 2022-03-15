@@ -47,6 +47,7 @@ public class bgAsset : bgComponent
         {
             go = GameObject.Instantiate(go);
             go.name = "Asset:" + name;
+            //go.transform.localScale = new Vector3(width, height, 1.0f);
         }
         else
         {
