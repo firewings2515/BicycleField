@@ -34,6 +34,9 @@ public class RoadManager : MonoBehaviour
 
         //remove second default segment
         getAndSetNextSegment();
+
+        //remove final default segment
+        removeEarliestRoad(false);
     }
 
     // Update is called once per frame
