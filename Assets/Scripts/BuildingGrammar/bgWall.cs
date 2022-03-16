@@ -87,7 +87,7 @@ public class bgWall : bgComponent
                     obj.transform.localPosition = pos;
                 }
             }
-
+        //go.transform.localPosition = new Vector3(0, 0,0);
         //}
         /*
         float hheight = height / 2.0f;

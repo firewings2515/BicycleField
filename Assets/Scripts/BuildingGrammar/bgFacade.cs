@@ -26,11 +26,18 @@ public class bgFacade : bgComponent
             wall.width = this.width;
             widths.Add(width);
             GameObject obj = wall.build();
-
+            height += wall.height / 2.0f;
             obj.transform.localPosition = new Vector3(0, height, 0);
             positions.Add(new Vector3(0, height, 0));
-            height += wall.height;
+            height += wall.height / 2.0f;
+
+            //GameObject floor_split = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            //floor_split.transform.localScale = new Vector3(width, 0.5f, 1);
+            //floor_split.transform.localPosition = new Vector3(0, height, -1);
+            //floor_split.GetComponent<MeshRenderer>().material = Resources.Load<Material>("Material/brown");
+
             obj.transform.parent = go.transform;
+            //floor_split.transform.parent = go.transform;
 
         }
 
