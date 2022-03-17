@@ -28,6 +28,7 @@ hello_wall():Wall(vertical,const,4.0){
 
 balcony():Asset(image){
 	Location("Assets/Image/balcony.png")
+	Scale(1,1)
 }
 
 balcony_wall():Wall(vertical,const,4.0){
@@ -64,11 +65,11 @@ hello_facade():Facade(){
 }
 
 nothing_facade():Facade(){
-	first_floor_wall()
+	balcony_wall()
 
 	nothing_wall()
 	balcony_wall()
-	nothing_wall()
+	balcony_wall()
 }
 
 roof_facade():Facade(horizontal){
