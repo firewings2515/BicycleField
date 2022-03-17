@@ -8,13 +8,13 @@ door():Asset(image){
 
 window():Asset(image){
 	Location("Assets/Image/window.jpg")
-	Scale(0.2,0.2)
+	Scale(1.5,1.5)
 	Extrude(0.1)
 }
 
 window2():Asset(image){
 	Location("Assets/Image/window2.jpg")
-	Scale(0.2,0.2)
+	Scale(1,1)
 	Extrude(0.1)
 }
 

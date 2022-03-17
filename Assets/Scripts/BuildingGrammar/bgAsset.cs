@@ -55,7 +55,7 @@ public class bgAsset : bgComponent
             go.name = "Asset:" + name;
             MeshRenderer mr = go.GetComponent<MeshRenderer>();
             mr.material.mainTexture = image;
-            go.transform.localScale = new Vector3(width,height, 1.0f);
+            go.transform.localScale = new Vector3(width*scale.Item1,height*scale.Item2, 1.0f);
         }
 
         return go;
