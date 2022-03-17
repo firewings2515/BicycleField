@@ -15,12 +15,12 @@ public class bgBase : bgComponent
     public override GameObject build()
     {
         Debug.Log("type: Base");
-        if (go != null)
-        {
-            go = GameObject.Instantiate(go);
-            go.name = "Base: " + name;
-            return go;
-        }
+        //if (go != null)
+        //{
+        //    go = GameObject.Instantiate(go);
+        //    go.name = "Base: " + name;
+        //    return go;
+        //}
         go = new GameObject("Base:" + name);
         if (vertexs == null)
         {
@@ -50,7 +50,7 @@ public class bgBase : bgComponent
 
         for (int i = 0; i < vertexs.Count; i++) {
             Vector3 v1 = vertexs[i];
-            Vector3 v2 = vertexs[(i+1)% vertexs.Count];
+            Vector3 v2 = vertexs[(i + 1) % vertexs.Count];
             float t = 1.0f / facades[i].Count;
             float total_t = t / 2.0f;
             float length = Vector3.Distance(v1, v2) * t;
@@ -58,7 +58,7 @@ public class bgBase : bgComponent
                 facades[i][j].width = length;
                 Vector3 facade_pos = Vector3.Lerp(v1, v2, total_t);
                 GameObject obj = facades[i][j].build();
-   
+
                 //GameObject obj = new GameObject("facade");
                 //
                 //obj.AddComponent<MeshFilter>().mesh = facades[i][j].build_mesh();
@@ -66,11 +66,31 @@ public class bgBase : bgComponent
                 //
                 obj.transform.parent = go.transform;
                 obj.transform.position = facade_pos;
-                obj.transform.rotation = Quaternion.LookRotation(v2-v1, Vector3.up);
-                obj.transform.Rotate(new Vector3(0,1,0),90);
+                obj.transform.rotation = Quaternion.LookRotation(v2 - v1, Vector3.up);
+                obj.transform.Rotate(new Vector3(0, 1, 0), 90);
+
+                if (j == 0) {
+                    float vert_height = facades[i][0].height;
+
+                    GameObject vert_split = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    vert_split.transform.parent = go.transform;
+                    vert_split.transform.localScale = new Vector3(0.5f, vert_height, 0.5f);
+                    vert_split.transform.localPosition = v1 + new Vector3(0, vert_height/2.0f, 0);
+                    vert_split.transform.rotation = Quaternion.LookRotation(v2 - v1, Vector3.up);
+                    vert_split.GetComponent<MeshRenderer>().material = Resources.Load<Material>("Material/gray");
+                    //vert_height = facades[(i + 1) % vertexs.Count][0].height;
+                    //GameObject vert_split2 = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                    //vert_split2.transform.parent = go.transform;
+                    //vert_split2.transform.localScale = new Vector3(0.1f, vert_height, 1.0f);
+                    //vert_split2.transform.localPosition = v2 + new Vector3(0, vert_height / 2.0f, 0);
+                    //vert_split2.transform.rotation = Quaternion.LookRotation(v2 - v1, Vector3.up);
+                }
+
                 total_t += t;
             }
-            
+            if (facades[i].Count > 0) {
+
+            }
 
         }
 

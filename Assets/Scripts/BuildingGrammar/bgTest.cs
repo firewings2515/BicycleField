@@ -60,6 +60,6 @@ public class bgTest : MonoBehaviour
         //else
         //    count++;
 
-        reBuild();
+        //reBuild();
     }
 }

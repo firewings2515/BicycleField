@@ -1,0 +1,91 @@
+door():Asset(image){
+	Location("Assets/Image/door.jpg")
+}
+
+window():Asset(image){
+	Location("Assets/Image/window.jpg")
+	Scale(1.5,1.5)
+	Extrude(0.1)
+}
+
+window2():Asset(image){
+	Location("Assets/Image/window2.jpg")
+	Scale(1,1)
+	Extrude(0.1)
+}
+
+hello_wall():Wall(vertical,const,4.0){
+	background()
+	pos(0.25,0.5)
+	window()
+	pos(0.75,0.5)
+	window2()
+}
+
+first_floor_wall():Wall(vertical,const,4){
+	background()
+	pos(0.25,0.5)
+	window()
+	pos(0.75,0.4)
+	door()
+}
+
+nothing_wall():Wall(vertical,const,4){
+	background()
+}
+
+roof_wall():Wall(vertical,ratio,0.2){
+	background()
+}
+	
+hello_facade():Facade(){
+	first_floor_wall()
+
+	hello_wall()
+	hello_wall()
+	hello_wall()	
+}
+
+nothing_facade():Facade(){
+	first_floor_wall()
+
+	nothing_wall()
+	nothing_wall()
+	nothing_wall()
+}
+
+roof_facade():Facade(horizontal){
+	roof_wall()
+	roof_wall()
+}
+
+floors_base():Base(){
+	vertex(0,0,0)
+	hello_facade()
+	hello_facade()
+	hello_facade()
+	vertex(0,0,10)
+	nothing_facade()
+	nothing_facade()
+	vertex(10,0,10)
+	hello_facade()
+	vertex(10,0,0)
+	hello_facade()
+	hello_facade()
+}
+
+roof_base():Base(){
+	vertex(0,0,0)
+	roof_facade()
+	vertex(0,0,1)
+	roof_facade()
+	vertex(1,0,1)
+	roof_facade()
+	vertex(1,0,0)
+	roof_facade()
+}	
+
+hello_house():Building(){
+	floors_base()
+	roof_base()	
+}
