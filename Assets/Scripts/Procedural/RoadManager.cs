@@ -17,31 +17,43 @@ public class RoadManager : MonoBehaviour
     public string file_name;
     public PathCreator path_creator;
     public bool path_loop = false;
+    private bool is_started = false;
 
     Vector3 last_segment = new Vector3(0,0,0);
 
     private void Start()
     {
-        reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
-
-        //remove first default segment
-        removeEarliestRoad(false);
-
-        while (path_creator.bezierPath.NumSegments < Info.MAX_LOADED_SEGMENT)
-        {
-            getAndSetNextSegment();
-        }
-
-        //remove second default segment
-        getAndSetNextSegment();
-
-        //remove final default segment
-        removeEarliestRoad(false);
+        
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (!is_started)
+        {
+            if(GetComponent<TerrainManager>().is_loaded)
+            {
+                reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
+
+                //remove first default segment
+                removeEarliestRoad(false);
+
+                while (path_creator.bezierPath.NumSegments < Info.MAX_LOADED_SEGMENT)
+                {
+                    getAndSetNextSegment();
+                }
+
+                //remove second default segment
+                getAndSetNextSegment();
+
+                //remove final default segment
+                removeEarliestRoad(false);
+
+                is_started = true;
+            }
+            return;
+        }
+            
         if (Info.MAX_LOADED_SEGMENT - current_segment <= Info.PRELOAD_SEGMENT)
         {
             getAndSetNextSegment();
@@ -55,6 +67,7 @@ public class RoadManager : MonoBehaviour
         if (getNextSegment(out string str_point))
         {
             Vector3 vec3_point = Functions.StrToVec3(str_point);
+            vec3_point = new Vector3(vec3_point.x, TerrainGenerator.getDEMHeight(vec3_point.x, vec3_point.z), vec3_point.z);
             last_segment = vec3_point;
 
             spawnAnchorCheckpoint(vec3_point);

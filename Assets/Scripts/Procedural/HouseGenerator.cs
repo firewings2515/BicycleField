@@ -30,11 +30,11 @@ static public class HouseGenerator
     {
         //demo code
         string[] house_infos = info.Split(' ');
-        Vector3 single_point = new Vector3(int.Parse(house_infos[2]), int.Parse(house_infos[3]), int.Parse(house_infos[4]));
+        Vector3 single_point = new Vector3(int.Parse(house_infos[2]), TerrainGenerator.getDEMHeight(int.Parse(house_infos[2]), int.Parse(house_infos[4])) - 2/*int.Parse(house_infos[3])*/, int.Parse(house_infos[4]));
         GameObject gobj = builder.build(component_name);
         gobj.transform.position = single_point;
         if (!gobj_db.ContainsKey(segment_id)) {
-            Debug.Log("########################################################################################Add:" + segment_id);
+            //Debug.Log("########################################################################################Add:" + segment_id);
             gobj_db.Add(segment_id, new Dictionary<int, GameObject>());
             segment_id_q.Add(segment_id);
         }
@@ -52,7 +52,7 @@ static public class HouseGenerator
 
     static public void destroySegment(int segment_id)
     {
-        Debug.Log("########################################################################################Destroy:" + segment_id);
+        //Debug.Log("########################################################################################Destroy:" + segment_id);
         if (!gobj_db.ContainsKey(segment_id)) return;
         //destroy all houses in segment_id
         foreach (var item in gobj_db[segment_id])

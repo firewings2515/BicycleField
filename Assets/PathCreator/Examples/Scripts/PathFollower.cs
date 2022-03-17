@@ -21,18 +21,25 @@ namespace PathCreation.Examples
 
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Space)) run = !run;
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                run = !run;
+
+                transform.position = new Vector3(pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction).x, TerrainGenerator.getDEMHeight(pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction).x, pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction).z) + 2, pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction).z);
+            }
             float add_speed = 0.05f;
             if (Input.GetKey(KeyCode.O)) if (speed < Info.CHECKPOINT_SIZE - add_speed) speed += add_speed;
             if (Input.GetKey(KeyCode.P)) if (speed > 0) speed -= add_speed;
             if (speed < 0) speed = 0;
-            Debug.Log(speed);
 
             if (pathCreator != null && run)
             {
                 distanceTravelled += speed * Time.deltaTime;
-                transform.position = Vector3.Lerp(transform.position, pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction), 0.1f);
-                transform.rotation = Quaternion.Lerp(transform.rotation, pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction), 0.1f);
+                transform.position = new Vector3(pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction).x, TerrainGenerator.getDEMHeight(pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction).x, pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction).z) + 1, pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction).z);
+
+                //transform.position = Vector3.Lerp(transform.position, pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction), 0.1f); ;
+                //transform.position = new Vector3(transform.position.x, Mathf.Lerp(transform.position.y, TerrainGenerator.getDEMHeight(transform.position.x, transform.position.z) + 1, 0.1f), transform.position.z);
+                transform.rotation = Quaternion.Lerp(transform.rotation, pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction), 0.02f);
             }
         }
 

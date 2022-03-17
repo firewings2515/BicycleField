@@ -8,7 +8,7 @@ namespace PathCreation.Examples
     {
         [Header("Road settings")]
         public float roadWidth = .4f;
-        [Range(0, .5f)]
+        //[Range(0, .5f)]
         public float thickness = .15f;
         public bool flattenSurface;
 
@@ -38,6 +38,7 @@ namespace PathCreation.Examples
 
         public void CreateRoadMesh()
         {
+            //return;
             //if (loaded) return;
             loaded = true;
 
@@ -61,15 +62,15 @@ namespace PathCreation.Examples
             int[] sidesTriangleMap = { 4, 6, 14, 12, 4, 14, 5, 15, 7, 13, 15, 5 };
 
             bool usePathNormals = !(path.space == PathSpace.xyz && flattenSurface);
-
+            
             for (int i = 0; i < path.NumPoints; i++)
             {
                 Vector3 localUp = (usePathNormals) ? Vector3.Cross(path.GetTangent(i), path.GetNormal(i)) : path.up;
                 Vector3 localRight = (usePathNormals) ? path.GetNormal(i) : Vector3.Cross(localUp, path.GetTangent(i));
 
                 // Find position to left and right of current path vertex
-                Vector3 vertSideA = path.GetPoint(i) - localRight * Mathf.Abs(roadWidth);
-                Vector3 vertSideB = path.GetPoint(i) + localRight * Mathf.Abs(roadWidth);
+                Vector3 vertSideA = new Vector3(path.GetPoint(i).x, TerrainGenerator.getDEMHeight(path.GetPoint(i).x, path.GetPoint(i).z), path.GetPoint(i).z) - localRight * Mathf.Abs(roadWidth);
+                Vector3 vertSideB = new Vector3(path.GetPoint(i).x, TerrainGenerator.getDEMHeight(path.GetPoint(i).x, path.GetPoint(i).z), path.GetPoint(i).z) + localRight * Mathf.Abs(roadWidth);
 
                 // Add top of road vertices
                 verts[vertIndex + 0] = vertSideA;

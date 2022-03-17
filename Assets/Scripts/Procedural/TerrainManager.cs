@@ -8,6 +8,8 @@ public class TerrainManager : MonoBehaviour
     //public GameObject feature_ball_prefab;
     Queue<int> generate_x = new Queue<int>();
     Queue<int> generate_z = new Queue<int>();
+    bool is_initial = false;
+    public bool is_loaded = false;
     int piece = 4;
     // Start is called before the first frame update
     void Start()
@@ -35,6 +37,7 @@ public class TerrainManager : MonoBehaviour
                 TerrainGenerator.need_update = true;
                 Debug.Log(center_x + ", " + center_z);
             }
+            is_initial = true;
         }
 
         if (TerrainGenerator.need_update)
@@ -80,5 +83,8 @@ public class TerrainManager : MonoBehaviour
                 break;
             }
         }
+
+        if (is_initial && !is_loaded)
+            is_loaded = true;
     }
 }
