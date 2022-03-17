@@ -34,6 +34,9 @@ public class RoadManager : MonoBehaviour
 
         //remove second default segment
         getAndSetNextSegment();
+
+        //remove last default segment
+        removeEarliestRoad(false);
     }
 
     // Update is called once per frame
@@ -51,7 +54,7 @@ public class RoadManager : MonoBehaviour
     {
         if (getNextSegment(out string str_point))
         {
-            Vector3 vec3_point = Functions.StrToVec3(str_point);
+            Vector3 vec3_point = Functions.StrToVec3(str_point) + new Vector3(-200, 0, -200);
             last_segment = vec3_point;
 
             spawnAnchorCheckpoint(vec3_point);

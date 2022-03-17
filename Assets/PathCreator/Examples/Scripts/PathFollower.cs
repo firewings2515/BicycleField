@@ -21,12 +21,17 @@ namespace PathCreation.Examples
 
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Space)) run = !run;
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                run = !run;
+                transform.position = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
+                transform.rotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
+            }
             if (pathCreator != null && run)
             {
                 distanceTravelled += speed * Time.deltaTime;
                 transform.position = Vector3.Lerp(transform.position, pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction), 0.1f);
-                transform.rotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
+                transform.rotation = Quaternion.Lerp(transform.rotation, pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction), 0.02f);
             }
         }
 
