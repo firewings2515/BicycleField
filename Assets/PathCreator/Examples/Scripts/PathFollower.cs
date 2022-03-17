@@ -27,6 +27,11 @@ namespace PathCreation.Examples
                 transform.position = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
                 transform.rotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
             }
+            float add_speed = 0.05f;
+            if (Input.GetKey(KeyCode.O)) if (speed < Info.CHECKPOINT_SIZE - add_speed) speed += add_speed;
+            if (Input.GetKey(KeyCode.P)) if (speed > 0) speed -= add_speed;
+            if (speed < 0) speed = 0;
+            Debug.Log(speed);
             if (pathCreator != null && run)
             {
                 distanceTravelled += speed * Time.deltaTime;
