@@ -34,7 +34,6 @@ static public class HouseGenerator
         GameObject gobj = builder.build(component_name);
         gobj.transform.position = single_point;
         if (!gobj_db.ContainsKey(segment_id)) {
-            Debug.Log("########################################################################################Add:" + segment_id);
             gobj_db.Add(segment_id, new Dictionary<int, GameObject>());
             segment_id_q.Add(segment_id);
         }
@@ -52,7 +51,6 @@ static public class HouseGenerator
 
     static public void destroySegment(int segment_id)
     {
-        Debug.Log("########################################################################################Destroy:" + segment_id);
         if (!gobj_db.ContainsKey(segment_id)) return;
         //destroy all houses in segment_id
         foreach (var item in gobj_db[segment_id])

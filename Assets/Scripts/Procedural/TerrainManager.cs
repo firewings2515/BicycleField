@@ -35,7 +35,6 @@ public class TerrainManager : MonoBehaviour
                 TerrainGenerator.generate_center_x.Enqueue(center_x);
                 TerrainGenerator.generate_center_z.Enqueue(center_z);
                 TerrainGenerator.need_update = true;
-                Debug.Log(center_x + ", " + center_z);
             }
         }
 
