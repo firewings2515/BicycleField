@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-
+using UnityEngine.UI;
 namespace PathCreation.Examples
 {
     // Moves along a path at constant speed.
@@ -11,6 +11,9 @@ namespace PathCreation.Examples
         public float speed = 5;
         float distanceTravelled;
         private bool run = false;
+
+        public GameObject speed_display;
+
         void Start() {
             if (pathCreator != null)
             {
@@ -30,8 +33,9 @@ namespace PathCreation.Examples
             float add_speed = 0.05f;
             if (Input.GetKey(KeyCode.O)) if (speed < Info.CHECKPOINT_SIZE - add_speed) speed += add_speed;
             if (Input.GetKey(KeyCode.P)) if (speed > 0) speed -= add_speed;
+            if (Input.GetKeyDown(KeyCode.L)) speed_display.SetActive(!speed_display.activeSelf);
             if (speed < 0) speed = 0;
-            Debug.Log(speed);
+            speed_display.GetComponent<Text>().text = "Speed: " + speed.ToString("0")  + " (O to speed up, P to speed down, L to hide)";
             if (pathCreator != null && run)
             {
                 distanceTravelled += speed * Time.deltaTime;
