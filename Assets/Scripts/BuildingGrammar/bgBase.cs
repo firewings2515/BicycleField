@@ -14,14 +14,15 @@ public class bgBase : bgComponent
     }
     public override GameObject build()
     {
-        Debug.Log("type: Base");
-        if (go != null)
-        {
-            go = GameObject.Instantiate(go);
-            go.name = "Base: " + name;
-            return go;
-        }
+        random_background = Random.Range(0, 15);
+        //if (go != null)
+        //{
+        //    go = GameObject.Instantiate(go);
+        //    go.name = "Base: " + name;
+        //    return go;
+        //}
         go = new GameObject("Base:" + name);
+        //return go;
         if (vertexs == null)
         {
             vertexs = new List<Vector3>();
@@ -56,6 +57,7 @@ public class bgBase : bgComponent
             float length = Vector3.Distance(v1, v2) * t;
             for (int j = 0; j < facades[i].Count; j++) {
                 facades[i][j].width = length;
+                facades[i][j].random_background = this.random_background;
                 Vector3 facade_pos = Vector3.Lerp(v1, v2, total_t);
                 GameObject obj = facades[i][j].build();
    

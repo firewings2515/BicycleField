@@ -154,9 +154,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 853e209708f63984d9489175f73b7877, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  component_name: floors_base
+  component_name: polygon_house1
   grammar_files_path:
   - Assets\Grammars\test.txt
+  - Assets\Grammars\house1.txt
+  - Assets\Grammars\backgrounds.txt
 --- !u!4 &209496620
 Transform:
   m_ObjectHideFlags: 0

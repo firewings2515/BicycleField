@@ -9,6 +9,8 @@ public class bgTest : MonoBehaviour
     private bgBuilder builder;
     private GameObject building;
     Material default_;
+    MeshRenderer mr;
+    GameObject obj;
     // Start is called before the first frame update
     void Start()
     {
@@ -29,7 +31,7 @@ public class bgTest : MonoBehaviour
         //obj.AddComponent<MeshFilter>().sharedMesh = builder.build_mesh(component_name);
         //obj.AddComponent<MeshRenderer>().sharedMaterial = default_;
 
-        GameObject obj = builder.build(component_name);
+        obj = builder.build(component_name);
 
         float end = Time.realtimeSinceStartup;
         Debug.Log("process time:" + (end - start).ToString());

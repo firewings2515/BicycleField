@@ -12,7 +12,9 @@ public class bgAsset : bgComponent
 
     public float width;
     public float height;
-    public RenderTexture image;
+    public Texture2D image;
+    public Material mat;
+    //使用RenderTexture會導致shader無法使用
 
     public bgAsset(List<string> _input_parameter, List<string> _component_parameter, List<string> _commands, List<List<string>> _commands_parameter):base(_input_parameter, _component_parameter, _commands, _commands_parameter)
     {
@@ -24,16 +26,20 @@ public class bgAsset : bgComponent
         byte[] bytes = File.ReadAllBytes(location);
         if (asset_type == "image")
         {
-            Texture2D tex2d = new Texture2D(2, 2);
-            tex2d.LoadImage(bytes);
+            image = new Texture2D(2, 2);
+            image.LoadImage(bytes);
             //Debug.Log(tex2d.width);
             //Debug.Log(tex2d.height);
-            image = new RenderTexture(tex2d.width, tex2d.height, 32, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
-            Graphics.Blit(tex2d, image);
 
-            float divide = 200.0f;
+            //使用RenderTexture會導致shader無法使用
+            //image = new RenderTexture(tex2d.width, tex2d.height, 32, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
+            //Graphics.Blit(tex2d, image);
+
+            float divide = 150.0f;
             width = image.width / divide;
             height = image.height / divide;
+            mat = new Material(Shader.Find("Diffuse - Worldspace"));
+            mat.SetTexture("_MainTex",image);
         }
         else if (asset_type == "model")
         {
@@ -42,7 +48,6 @@ public class bgAsset : bgComponent
     }
     public override GameObject build() 
     {
-        //Debug.Log("type: Asset");
         if (go != null)
         {
             go = GameObject.Instantiate(go);

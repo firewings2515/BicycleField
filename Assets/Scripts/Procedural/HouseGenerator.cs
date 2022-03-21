@@ -4,9 +4,13 @@ using UnityEngine;
 
 static public class HouseGenerator
 {
-    static string component_name = "floors_base";
+    static string[] component_names = new string[] { 
+        "house1","floors_base"
+    };
     static string[] grammar_files_path = new string[] {
-        @"Assets\Grammars\test.txt"
+        @"Assets\Grammars\test.txt",
+        @"Assets\Grammars\house1.txt",
+        @"Assets\Grammars\backgrounds.txt"
     };
     static public bgBuilder builder = new bgBuilder(grammar_files_path);
     static Dictionary<int, Dictionary<int, GameObject>> gobj_db = new Dictionary<int, Dictionary<int, GameObject>>();
@@ -31,8 +35,16 @@ static public class HouseGenerator
         //demo code
         string[] house_infos = info.Split(' ');
         Vector3 single_point = new Vector3(int.Parse(house_infos[2]), int.Parse(house_infos[3]), int.Parse(house_infos[4])) + new Vector3(-200, 0, -200);
-        GameObject gobj = builder.build(component_name);
+        GameObject gobj;
+        if (single_point.y < -0.5f)
+        {
+            gobj = builder.build("polygon_house1");
+        }
+        else {
+            gobj = builder.build(component_names[Random.Range(0, component_names.Length)]);
+        }
         gobj.transform.position = single_point;
+        gobj.transform.rotation = Quaternion.Euler(0,Random.Range(0,360),0);
         if (!gobj_db.ContainsKey(segment_id)) {
             gobj_db.Add(segment_id, new Dictionary<int, GameObject>());
             segment_id_q.Add(segment_id);
