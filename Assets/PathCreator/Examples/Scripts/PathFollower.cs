@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 namespace PathCreation.Examples
 {
@@ -11,6 +12,9 @@ namespace PathCreation.Examples
         public float speed = 5;
         float distanceTravelled;
         private bool run = false;
+
+        public GameObject slope_display;
+
         void Start() {
             if (pathCreator != null)
             {
@@ -41,6 +45,10 @@ namespace PathCreation.Examples
                 //transform.position = new Vector3(transform.position.x, Mathf.Lerp(transform.position.y, TerrainGenerator.getDEMHeight(transform.position.x, transform.position.z) + 1, 0.1f), transform.position.z);
                 transform.rotation = Quaternion.Lerp(transform.rotation, pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction), 0.02f);
             }
+            Vector3 here = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
+            Vector3 there = pathCreator.path.GetPointAtDistance(distanceTravelled + 0.01f, endOfPathInstruction);
+            float slope = (there.y - here.y) / (Mathf.Sqrt(Mathf.Pow(there.x - here.x, 2) + Mathf.Pow(there.z - here.z, 2)));
+            slope_display.GetComponent<Text>().text = "Slope: " + slope.ToString();
         }
 
         // If the path changes during the game, update the distance travelled so that the follower's position on the new path
