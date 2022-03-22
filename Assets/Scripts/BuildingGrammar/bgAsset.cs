@@ -57,6 +57,7 @@ public class bgAsset : bgComponent
         else
         {
             go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            GameObject.Destroy(go.GetComponent<MeshCollider>());
             go.name = "Asset:" + name;
             MeshRenderer mr = go.GetComponent<MeshRenderer>();
             mr.material.mainTexture = image;

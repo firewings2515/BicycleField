@@ -56,6 +56,7 @@ public class bgWall : bgComponent
         go.name = "Wall:" + name;
 
         GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        GameObject.Destroy(wall.GetComponent<MeshCollider>());
         wall.transform.parent = go.transform;
         wall.transform.localScale = new Vector3(width, height, 0.5f);
         MeshRenderer mr = wall.GetComponent<MeshRenderer>();
