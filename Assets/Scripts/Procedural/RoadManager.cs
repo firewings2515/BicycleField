@@ -110,7 +110,7 @@ public class RoadManager : MonoBehaviour
 
         path_creator.bezierPath.AddSegmentToEnd(road);
         //force display
-        //Selection.activeGameObject = this.gameObject;
+        Selection.activeGameObject = this.gameObject;
     }
 
     private void removeEarliestRoad(bool destroy = true)
