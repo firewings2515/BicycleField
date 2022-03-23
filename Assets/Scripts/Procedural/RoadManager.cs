@@ -17,6 +17,7 @@ public class RoadManager : MonoBehaviour
     public string file_name;
     public PathCreator path_creator;
     public bool path_loop = false;
+    private bool update_mesh = false;
 
     Vector3 last_segment = new Vector3(0,0,0);
 
@@ -37,6 +38,8 @@ public class RoadManager : MonoBehaviour
 
         //remove last default segment
         removeEarliestRoad(false);
+
+        path_creator.bezierPath.NotifyPathModified();
     }
 
     // Update is called once per frame
@@ -47,6 +50,12 @@ public class RoadManager : MonoBehaviour
             getAndSetNextSegment();
 
             path_creator.bezierPath = path_creator.bezierPath; //force update
+            update_mesh = true;
+        }
+        else if (update_mesh)
+        {
+            update_mesh = false;
+            GetComponent<PathCreation.Examples.MyRoadMeshCreator>().CreateRoadMesh();
         }
     }
 
