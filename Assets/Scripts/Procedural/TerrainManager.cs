@@ -33,7 +33,8 @@ public class TerrainManager : MonoBehaviour
                 TerrainGenerator.generate_center_x.Enqueue(center_x);
                 TerrainGenerator.generate_center_z.Enqueue(center_z);
                 TerrainGenerator.need_update = true;
-                Debug.Log(center_x + ", " + center_z);
+                InvokeRepeating("generateSmallTerrain", 0.0f, 0.01666f);
+                //Debug.Log(center_x + ", " + center_z);
             }
         }
 
@@ -62,8 +63,11 @@ public class TerrainManager : MonoBehaviour
                 TerrainGenerator.generate_center_z.Dequeue();
             }
         }
+    }
 
-        while (generate_x.Count > 0) 
+    void generateSmallTerrain()
+    {
+        while (generate_x.Count > 0)
         {
             int x_small_min = generate_x.Dequeue();
             int z_small_min = generate_z.Dequeue();
@@ -76,7 +80,7 @@ public class TerrainManager : MonoBehaviour
                     x_piece = TerrainGenerator.x_length - x_small_min;
                 if (z_small_min + piece > TerrainGenerator.z_length)
                     z_piece = TerrainGenerator.z_length - z_small_min;
-                TerrainGenerator.generateSmallIDWTerrain(x_small_min, z_small_min, x_piece, z_piece);
+                StartCoroutine(TerrainGenerator.generateSmallIDWTerrain(x_small_min, z_small_min, x_piece, z_piece));
                 break;
             }
         }

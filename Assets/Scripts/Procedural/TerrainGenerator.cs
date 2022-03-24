@@ -123,10 +123,11 @@ static public class TerrainGenerator
         return area_features;
     }
 
-    static public void generateSmallIDWTerrain(int x_small_min, int z_small_min, int x_piece, int z_piece)
+    static public IEnumerator generateSmallIDWTerrain(int x_small_min, int z_small_min, int x_piece, int z_piece)
     {
         Vector3[] area_features = getAreaFeatures(x_small_min, z_small_min, x_piece, z_piece);
         generateSmallIDWTerrain(area_features, x_small_min, z_small_min, x_piece + 1, z_piece + 1);
+        yield return null;
     }
 
     static void generateSmallIDWTerrain(Vector3[] features, int x_small_min, int z_small_min, int x_small_length, int z_small_length)
@@ -190,6 +191,8 @@ static public class TerrainGenerator
         generated_x_list.Add(x_small_min);
         generated_z_list.Add(z_small_min);
         //Debug.Log("Success: " + x_small_min + "_" + z_small_min);
+
+        terrain.AddComponent<TerrainView>();
     }
 
     static void getAreaTerrain(float x, float z)
