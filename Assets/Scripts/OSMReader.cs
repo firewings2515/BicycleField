@@ -293,7 +293,7 @@ public class OSMReader
             writeOSM(osm3d_file_path);
         }
 
-        Debug.Log("Successful!");
+        Debug.Log("Read OSM " + file_path + "Successfully!");
         read_finish = true;
     }
 

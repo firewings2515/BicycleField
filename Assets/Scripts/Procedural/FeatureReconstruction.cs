@@ -84,6 +84,6 @@ public class FeatureReconstruction : MonoBehaviour
         MeshRenderer mr = terrain.AddComponent<MeshRenderer>();
         mf.mesh = mesh;
         mr.material = terrain_mat;
-        Debug.Log("Generate Successfully");
+        Debug.Log("Generate IDW Successfully");
     }
 }

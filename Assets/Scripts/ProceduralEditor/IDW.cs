@@ -12,7 +12,7 @@ public static class IDW
         return 1 / f;
     }
 
-    static public float inverseDistanceWeighting(Vector3[] point_cloud, float x, float z)
+    static public float inverseDistanceWeighting(Vector3[] point_cloud, float x, float z, float old_base = 0.0f)
     {
         float sum_up = 0.0f;
         float sum_down = 0.0f;
@@ -23,7 +23,7 @@ public static class IDW
         }
         for (int point_index = 0; point_index < point_cloud.Length; point_index++)
         {
-            sum_up += getWeight(d[point_index]) * point_cloud[point_index].y;
+            sum_up += getWeight(d[point_index]) * (point_cloud[point_index].y - old_base);
             sum_down += getWeight(d[point_index]);
         }
         if (sum_down < 1e-6)

@@ -228,7 +228,7 @@ public class RoadIntegration : MonoBehaviour
             //}
             //sw.WriteLine(" </way>");
         }
-        Debug.Log("Write Successfully!");
+        Debug.Log("Write " + file_path + " Successfully!");
     }
 
     void largeVision(int new_road_index)
