@@ -8,7 +8,7 @@ public class BPFMapping : MonoBehaviour
 {
     public string bpf_file_path = "arclength_100.bpf"; // _150_32
     public string output_bpf_file_path = "arclength_100_fix.bpf"; // _150_32
-    public string feature_file_path = "YangJing1/features_100_16.f"; // _150_32
+    public string feature_file_path = "YangJing1/features_100_16_big.f"; // _150_32
     public string output_feature_file_path = "YangJing1/features_100_16_fix.f"; // _150_32
     public bool correct;
     // Start is called before the first frame update
@@ -32,12 +32,10 @@ public class BPFMapping : MonoBehaviour
                 old_base = TerrainGenerator.min_y; // (-0.5)
                 float y = old_base;
                 float z = float.Parse(inputs[2]);
-                y = TerrainGenerator.getIDWHeight(x, z, old_base); // remove min_y in getIDW
+                y = TerrainGenerator.getIDWHeight(x, z); // remove min_y in getIDW
                 TerrainGenerator.min_y = -y;
-                Debug.Log($"y base: {y}");
             }
 
-            Debug.Log("old base: " + old_base.ToString());
             TerrainGenerator.fixHeight(Application.streamingAssetsPath + "//" + output_feature_file_path, old_base);
 
             using (StreamWriter sw = new StreamWriter(Application.streamingAssetsPath + "//" + output_bpf_file_path))
@@ -58,7 +56,7 @@ public class BPFMapping : MonoBehaviour
                                 x = float.Parse(inputs[2]);
                                 y = float.Parse(inputs[3]);
                                 z = float.Parse(inputs[4]);
-                                y = TerrainGenerator.getIDWHeight(x, z);
+                                y = TerrainGenerator.getIDWHeight(x, z) + TerrainGenerator.min_y;
                                 sw.Write($" {x} {y} {z}");
                             }
                             sw.WriteLine("");
@@ -68,7 +66,7 @@ public class BPFMapping : MonoBehaviour
                             x = float.Parse(inputs[0]);
                             y = float.Parse(inputs[1]);
                             z = float.Parse(inputs[2]);
-                            y = TerrainGenerator.getIDWHeight(x, z);
+                            y = TerrainGenerator.getIDWHeight(x, z) + TerrainGenerator.min_y;
                             sw.WriteLine($"{x} {y} {z}");
                         }
                     }

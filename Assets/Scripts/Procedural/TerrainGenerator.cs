@@ -41,7 +41,6 @@ static public class TerrainGenerator
         is_generated = new bool[x_length * z_length];
         generated_x_list = new List<int>();
         generated_z_list = new List<int>();
-        Debug.Log($"min_y: {min_y}");
         is_initial = true;
     }
 
@@ -124,7 +123,7 @@ static public class TerrainGenerator
             sw.WriteLine($"{kdtree.nodes.Length}");
             for (int f_i = 0; f_i < kdtree.nodes.Length; f_i++)
             {
-                kdtree.nodes[f_i].y = kdtree.nodes[f_i].y - old_base + min_y;
+                //kdtree.nodes[f_i].y = kdtree.nodes[f_i].y - old_base + min_y;
                 sw.WriteLine($"{kdtree.nodes[f_i].x} {kdtree.nodes[f_i].y} {kdtree.nodes[f_i].z} {kdtree.parent[f_i]} {kdtree.left[f_i]} {kdtree.right[f_i]}");
             }
             Debug.Log("Update Feature File " + file_path + " Successfully");
@@ -175,7 +174,7 @@ static public class TerrainGenerator
         float center_x = min_x + (2 * x_small_min + x_small_length - 1) * PublicOutputInfo.piece_length / 2;
         float center_z = min_z + (2 * z_small_min + z_small_length - 1) * PublicOutputInfo.piece_length / 2;
         //float center_y = min_y + getDEMHeight(center_x, center_z);
-        float center_y = IDW.inverseDistanceWeighting(getVertexFeatures(center_x, center_z), center_x, center_z); // -15
+        float center_y = min_y + IDW.inverseDistanceWeighting(getVertexFeatures(center_x, center_z), center_x, center_z); // -15
         Vector3 center = new Vector3(center_x, center_y, center_z);
         for (int i = 0; i < x_small_length; i++)
         {
@@ -184,7 +183,7 @@ static public class TerrainGenerator
                 terrain_points[i, j, 0] = min_x + (x_small_min + i) * PublicOutputInfo.piece_length;
                 terrain_points[i, j, 2] = min_z + (z_small_min + j) * PublicOutputInfo.piece_length;
                 //terrain_points[i, j, 1] = min_y + getDEMHeight(terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias
-                terrain_points[i, j, 1] = IDW.inverseDistanceWeighting(getVertexFeatures(terrain_points[i, j, 0], terrain_points[i, j, 2]), terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias  -15
+                terrain_points[i, j, 1] = min_y + IDW.inverseDistanceWeighting(getVertexFeatures(terrain_points[i, j, 0], terrain_points[i, j, 2]), terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias  -15
                 vertice[i * z_small_length + j] = new Vector3(terrain_points[i, j, 0] - center.x, terrain_points[i, j, 1] - center.y, terrain_points[i, j, 2] - center.z);
                 //uv[i * z_small_length + j] = new Vector2((float)(x_small_min + i) / x_length, (float)(z_small_min + j) / z_length);
                 uv[i * z_small_length + j] = new Vector2((float)i / (x_small_length - 1), (float)j / (z_small_length - 1));
