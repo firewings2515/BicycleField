@@ -144,19 +144,20 @@ static public class TerrainGenerator
 
     static public Vector3[] getVertexFeatures(float x, float y)
     {
-        float expanded_length = vision_piece * PublicOutputInfo.piece_length * 4;
+        float expanded_length = vision_piece * PublicOutputInfo.piece_length;
         int[] area_features_index = kdtree.getAreaPoints(x - expanded_length, y - expanded_length, x + expanded_length, y + expanded_length);
         Vector3[] area_features = new Vector3[area_features_index.Length];
         for (int area_features_index_index = 0; area_features_index_index < area_features_index.Length; area_features_index_index++)
         {
             area_features[area_features_index_index] = kdtree.nodes[area_features_index[area_features_index_index]];
         }
+        Debug.Log("feature amount: " + area_features.Length);
         return area_features;
     }
 
     static public IEnumerator generateSmallIDWTerrain(int x_small_min, int z_small_min, int x_piece, int z_piece)
     {
-        Vector3[] area_features = getAreaFeatures(x_small_min, z_small_min, x_piece, z_piece);
+        //Vector3[] area_features = getAreaFeatures(x_small_min, z_small_min, x_piece, z_piece);
         generateSmallIDWTerrain(features, x_small_min, z_small_min, x_piece + 1, z_piece + 1);
         yield return null;
     }
