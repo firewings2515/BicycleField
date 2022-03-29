@@ -33,6 +33,7 @@ public class bgFacade : bgComponent
             height += wall.height / 2.0f;
 
             GameObject floor_split = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            GameObject.Destroy(floor_split.GetComponent<MeshCollider>());
             floor_split.transform.localScale = new Vector3(width, 0.1f, 1.0f);
             floor_split.transform.localPosition = new Vector3(0, height, -0.01f);
             //floor_split.GetComponent<MeshRenderer>().material = new Material(Shader.Find("Standard"));

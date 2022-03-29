@@ -75,6 +75,7 @@ public class bgBase : bgComponent
                     float vert_height = facades[i][0].height;
 
                     GameObject vert_split = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    GameObject.Destroy(vert_split.GetComponent<BoxCollider>());
                     vert_split.transform.parent = go.transform;
                     vert_split.transform.localScale = new Vector3(0.5f, vert_height, 0.5f);
                     vert_split.transform.localPosition = v1 + new Vector3(0, vert_height/2.0f, 0);
