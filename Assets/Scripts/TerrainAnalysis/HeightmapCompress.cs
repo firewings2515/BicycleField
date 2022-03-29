@@ -78,6 +78,14 @@ public class HeightmapCompress : MonoBehaviour
                         showPoint(w8d_center, "Feature_Center", feature_manager.transform, red_ball, 16.0f);
                         for (int w8d_index = 0; w8d_index < w8d.Count; w8d_index++)
                         {
+                            for (int w8d_point_index = 0; w8d_point_index < w8d[w8d_index].Count; w8d_point_index++)
+                            {
+                                if (point_cloud_list.Contains(w8d[w8d_index][w8d_point_index]))
+                                {
+                                    w8d[w8d_index].RemoveAt(w8d_point_index);
+                                    w8d_point_index--;
+                                }
+                            }
                             point_cloud_list.AddRange(w8d[w8d_index]);
                         }
                     }

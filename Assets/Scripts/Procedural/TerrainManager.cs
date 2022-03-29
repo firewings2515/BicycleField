@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class TerrainManager : MonoBehaviour
 {
-    public Material material;
+    public Material terrain_idw_mat;
+    public Material terrain_mat;
     //public GameObject feature_ball_prefab;
     Queue<int> generate_x = new Queue<int>();
     Queue<int> generate_z = new Queue<int>();
@@ -12,7 +13,8 @@ public class TerrainManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        TerrainGenerator.terrain_mat = material;
+        TerrainGenerator.terrain_mat = terrain_mat;
+        TerrainGenerator.terrain_idw_mat = terrain_idw_mat;
         //TerrainGenerator.feature_ball_prefab = feature_ball_prefab;
         //terrain
         TerrainGenerator.loadTerrain();

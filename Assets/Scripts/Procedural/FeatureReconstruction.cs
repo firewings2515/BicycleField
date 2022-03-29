@@ -27,7 +27,7 @@ public class FeatureReconstruction : MonoBehaviour
         {
             generate = false;
             TerrainGenerator.file_path = file_path;
-            TerrainGenerator.terrain_mat = terrain_mat;
+            TerrainGenerator.terrain_idw_mat = terrain_mat;
             TerrainGenerator.readFeatureFile(Application.streamingAssetsPath + "//" + file_path);
             TerrainGenerator.generateTerrain(new Vector3());
             //generateIDWTerrain(features);
