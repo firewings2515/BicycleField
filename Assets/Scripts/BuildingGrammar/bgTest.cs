@@ -18,9 +18,6 @@ public class bgTest : MonoBehaviour
     {
         default_ = GetComponent<MeshRenderer>().sharedMaterial;
         builder = new bgBuilder();
-        houses = new Queue<GameObject>();       
-        camera = Camera.main;
-        cam = camera.transform;
         reCompile();
         reBuild();
     }
@@ -38,7 +35,7 @@ public class bgTest : MonoBehaviour
         obj = builder.build(component_name);
 
         float end = Time.realtimeSinceStartup;
-        Debug.Log("process time:" + (end - start).ToString());
+        //Debug.Log("process time:" + (end - start).ToString());
     }
     public void reCompile()
     {
