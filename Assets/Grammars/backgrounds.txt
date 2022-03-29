@@ -1,0 +1,63 @@
+background0():Asset(image){
+	Location("Assets/Image/brick.jpg")
+}
+
+background1():Asset(image){
+	Location("Assets/Image/brick2.jpg")
+}
+
+background2():Asset(image){
+	Location("Assets/Image/wall/wall-ashlar-170.png")
+}
+
+background3():Asset(image){
+	Location("Assets/Image/wall/wall-ashlar-171.png")
+}
+
+background4():Asset(image){
+	Location("Assets/Image/wall/wall-ashlar-172.png")
+}
+
+background5():Asset(image){
+	Location("Assets/Image/wall/wall-circular-275.png")
+}
+
+background6():Asset(image){
+	Location("Assets/Image/wall/wall-common-89.png")
+}
+
+background7():Asset(image){
+	Location("Assets/Image/wall/wall-fishscale-142.png")
+}
+
+background8():Asset(image){
+	Location("Assets/Image/wall/wall-flemish-253.png")
+}
+
+background9():Asset(image){
+	Location("Assets/Image/wall/wall-french-305.png")
+}
+
+background10():Asset(image){
+	Location("Assets/Image/wall/wall-herringbone-436.png")
+}
+
+background11():Asset(image){
+	Location("Assets/Image/wall/wall-hopscotch-106.png")
+}
+
+background12():Asset(image){
+	Location("Assets/Image/wall/wall-hopscotch-109.png")
+}
+
+background13():Asset(image){
+	Location("Assets/Image/wall/wall-stretcher-45.png")
+}
+
+background14():Asset(image){
+	Location("Assets/Image/wall/wall-stretcher-81.png")
+}
+
+background15():Asset(image){
+	Location("Assets/Image/wall/wall-stretcher-448.png")
+}

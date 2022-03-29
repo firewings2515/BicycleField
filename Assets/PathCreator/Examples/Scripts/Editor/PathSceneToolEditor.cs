@@ -7,6 +7,7 @@ namespace PathCreation.Examples
     [CustomEditor(typeof(PathSceneTool), true)]
     public class PathSceneToolEditor : Editor
     {
+        static public int first = 0;
         protected PathSceneTool pathTool;
         bool isSubscribed;
 
@@ -50,12 +51,19 @@ namespace PathCreation.Examples
             }
         }
 
-
+        private int counter = 2;
         protected virtual void OnPathModified()
         {
-            if (pathTool.autoUpdate)
+            Debug.Log(counter);
+            counter++;
+            if (counter == 3)
             {
-                TriggerUpdate();
+                counter -= 3;
+
+                if (pathTool.autoUpdate)
+                {
+                    TriggerUpdate();
+                }
             }
         }
 
@@ -66,7 +74,11 @@ namespace PathCreation.Examples
 
             if (TryFindPathCreator())
             {
-                Subscribe();
+                if (false && first < 2)
+                {
+                    Subscribe();
+                    first++;
+                }
                 TriggerUpdate();
             }
         }

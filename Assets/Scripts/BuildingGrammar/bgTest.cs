@@ -11,9 +11,8 @@ public class bgTest : MonoBehaviour
     private bgBuilder builder;
     private GameObject building;
     Material default_;
-    Queue<GameObject> houses;
-    Camera camera;
-    Transform cam;
+    MeshRenderer mr;
+    GameObject obj;
     // Start is called before the first frame update
     void Start()
     {
@@ -35,17 +34,9 @@ public class bgTest : MonoBehaviour
         //GameObject obj = new GameObject();
         //obj.AddComponent<MeshFilter>().sharedMesh = builder.build_mesh(component_name);
         //obj.AddComponent<MeshRenderer>().sharedMaterial = default_;
-        float range = 100.0f;
-        GameObject obj = builder.build(component_name);
-        if (random_pos)
-        {
-            obj.transform.position = new Vector3(cam.position.x + Random.Range(-range, range), 0, cam.position.z + Random.Range(-range, range));
-            obj.transform.rotation = Quaternion.Euler(0, Random.Range(0.0f, 360.0f), 0);
-        }
-        houses.Enqueue(obj);
-        while (houses.Count > max_house_count) {
-            Destroy(houses.Dequeue());
-        }
+
+        obj = builder.build(component_name);
+
         float end = Time.realtimeSinceStartup;
         Debug.Log("process time:" + (end - start).ToString());
     }

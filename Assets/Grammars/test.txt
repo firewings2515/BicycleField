@@ -1,5 +1,5 @@
 background():Asset(image){
-	Location("Assets/Image/window.jpg")
+	Location("Assets/Image/wall/wall-herringbone-436.png")
 }
 
 door():Asset(image){
@@ -44,7 +44,7 @@ first_floor_wall():Wall(vertical,const,4){
 	background()
 	pos(0.25,0.5)
 	window()
-	pos(0.75,0.4)
+	pos(0.75,0.5)
 	door()
 }
 
@@ -58,10 +58,21 @@ roof_wall():Wall(vertical,ratio,0.2){
 	
 hello_facade():Facade(){
 	first_floor_wall()
+	hello_wall()
+	hello_wall()
+	hello_wall()
+}
 
+hello_facade2():Facade(){
+	first_floor_wall()
+	nothing_wall()
 	hello_wall()
+	nothing_wall()
 	hello_wall()
-	hello_wall()	
+	nothing_wall()
+	hello_wall()
+	nothing_wall()
+	hello_wall()
 }
 
 nothing_facade():Facade(){
