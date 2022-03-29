@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: IDWHeightUnlit
-  m_Shader: {fileID: 4800000, guid: 03b552f03863172498c3375396955603, type: 3}
+  m_Name: IDW
+  m_Shader: {fileID: 4800000, guid: 5b69786105acfc049823e4bf6d89309d, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0

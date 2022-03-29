@@ -110,11 +110,6 @@ public class HeightmapCompress : MonoBehaviour
                     Vector3 feature_out = new Vector3(kdtree.nodes[point_index].x - PublicOutputInfo.origin_pos.x, kdtree.nodes[point_index].y, kdtree.nodes[point_index].z - PublicOutputInfo.origin_pos.z);
                     sw.WriteLine(feature_out.x + " " + feature_out.y + " " + feature_out.z + " " + kdtree.parent[point_index] + " " + kdtree.left[point_index] + " " + kdtree.right[point_index]);
                 }
-                //for (int point_index = 0; point_index < point_cloud.Length; point_index++)
-                //{
-                //    Vector3 feature_out = point_cloud[point_index] - PublicOutputInfo.origin_pos;
-                //    sw.WriteLine(feature_out.x + " " + feature_out.y + " " + feature_out.z);
-                //}
             }
             Debug.Log("Get feature finish");
         }

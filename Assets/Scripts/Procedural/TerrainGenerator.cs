@@ -124,17 +124,16 @@ static public class TerrainGenerator
             sw.WriteLine($"{kdtree.nodes.Length}");
             for (int f_i = 0; f_i < kdtree.nodes.Length; f_i++)
             {
-                //kdtree.nodes[f_i].y = kdtree.nodes[f_i].y - old_base + min_y;
                 sw.WriteLine($"{kdtree.nodes[f_i].x} {kdtree.nodes[f_i].y} {kdtree.nodes[f_i].z} {kdtree.parent[f_i]} {kdtree.left[f_i]} {kdtree.right[f_i]}");
             }
             Debug.Log("Update Feature File " + file_path + " Successfully");
         }
     }
 
-    static public Vector4[] getAreaFeatures(int x_small_min, int z_small_min, int x_piece, int z_piece)
+    static public Vector4[] getAreaFeatures(float x_small_min, float z_small_min, int x_piece, int z_piece)
     {
         float expanded_length = vision_piece * PublicOutputInfo.piece_length;
-        int[] area_features_index = kdtree.getAreaPoints(x_small_min - expanded_length, z_small_min - expanded_length, x_small_min + (x_piece + 1) * PublicOutputInfo.piece_length + expanded_length, z_small_min + (z_piece + 1) * PublicOutputInfo.piece_length + expanded_length);
+        int[] area_features_index = kdtree.getAreaPoints(x_small_min - expanded_length, z_small_min - expanded_length, x_small_min + x_piece * PublicOutputInfo.piece_length + expanded_length, z_small_min + z_piece * PublicOutputInfo.piece_length + expanded_length);
         Vector4[] area_features = new Vector4[area_features_index.Length];
         for (int area_features_index_index = 0; area_features_index_index < area_features_index.Length; area_features_index_index++)
         {
@@ -143,59 +142,50 @@ static public class TerrainGenerator
         return area_features;
     }
 
-    static public Vector3[] getVertexFeatures(float x, float y)
+    static public Vector3[] getVertexFeatures(float x, float z)
     {
         float expanded_length = vision_piece * PublicOutputInfo.piece_length;
-        int[] area_features_index = kdtree.getAreaPoints(x - expanded_length, y - expanded_length, x + expanded_length, y + expanded_length);
+        int[] area_features_index = kdtree.getAreaPoints(x - expanded_length, z - expanded_length, x + expanded_length, z + expanded_length);
         Vector3[] area_features = new Vector3[area_features_index.Length];
         for (int area_features_index_index = 0; area_features_index_index < area_features_index.Length; area_features_index_index++)
         {
             area_features[area_features_index_index] = kdtree.nodes[area_features_index[area_features_index_index]];
         }
-        //Debug.Log("feature amount: " + area_features.Length);
         return area_features;
     }
 
     static public Vector3[] getVertexFeaturesFromArea(float x, float z, Vector4[] area_features)
     {
         float expanded_length = vision_piece * PublicOutputInfo.piece_length;
-        List<Vector3> vertex_features = new List<Vector3>(area_features.Length);
+        List<Vector3> vertex_features = new List<Vector3>();
         for (int area_features_index_index = 0; area_features_index_index < area_features.Length; area_features_index_index++)
         {
-            if (Mathf.Abs(area_features[area_features_index_index].x - x) < 320 && Mathf.Abs(area_features[area_features_index_index].z - z) < 320)
-            vertex_features.Add(area_features[area_features_index_index]);
+            if (Mathf.Abs(area_features[area_features_index_index].x - x) <= expanded_length && Mathf.Abs(area_features[area_features_index_index].z - z) <= expanded_length)
+                vertex_features.Add(area_features[area_features_index_index]);
         }
-        //Debug.Log("feature amount: " + area_features.Length);
         return vertex_features.ToArray();
     }
 
     static public IEnumerator generateSmallIDWTerrain(int x_small_min, int z_small_min, int x_piece, int z_piece)
     {
-        //Vector3[] area_features = getAreaFeatures(x_small_min, z_small_min, x_piece, z_piece);
-        //if (x_small_min == 308 && z_small_min == 164)
-        //if (x_small_min == 324 && z_small_min == 188)
         generateSmallIDWTerrain(features, x_small_min, z_small_min, x_piece + 1, z_piece + 1);
         yield return null;
     }
 
     static void generateSmallIDWTerrain(Vector3[] features, int x_small_min, int z_small_min, int x_small_length, int z_small_length)
     {
-        //Debug.Log("Calculating: " + x_small_min + "_" + z_small_min);
         Mesh mesh = new Mesh();
         float[,,] terrain_points = new float[x_small_length, z_small_length, 3];
         Vector3[] vertice = new Vector3[x_small_length * z_small_length];
         Vector2[] uv = new Vector2[x_small_length * z_small_length];
         int[] indices = new int[6 * (x_small_length - 1) * (z_small_length - 1)];
         int indices_index = 0;
-        //Debug.Log("min_y: " + min_y.ToString());
         float center_x = min_x + (2 * x_small_min + x_small_length - 1) * PublicOutputInfo.piece_length / 2;
         float center_z = min_z + (2 * z_small_min + z_small_length - 1) * PublicOutputInfo.piece_length / 2;
-        //float center_y = min_y + getDEMHeight(center_x, center_z);
         float center_y = 0.0f; // -15
+        //float center_y = min_y + getDEMHeight(center_x, center_z);
         //float center_y = min_y + IDW.inverseDistanceWeighting(getVertexFeatures(center_x, center_z), center_x, center_z); // -15
-        Vector4[] area_features = getAreaFeatures(x_small_min, z_small_min, 4, 4);
-        Debug.Log("area_features" + area_features.Length + ": " + x_small_min + "_" + z_small_min);
-
+        Vector4[] area_features = getAreaFeatures(min_x + x_small_min * PublicOutputInfo.piece_length, min_z + z_small_min * PublicOutputInfo.piece_length, x_small_length - 1, z_small_length - 1);
         Vector3 center = new Vector3(center_x, center_y, center_z);
         for (int i = 0; i < x_small_length; i++)
         {
@@ -203,10 +193,12 @@ static public class TerrainGenerator
             {
                 terrain_points[i, j, 0] = min_x + (x_small_min + i) * PublicOutputInfo.piece_length;
                 terrain_points[i, j, 2] = min_z + (z_small_min + j) * PublicOutputInfo.piece_length;
-                //terrain_points[i, j, 1] = min_y + getDEMHeight(terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias
                 terrain_points[i, j, 1] = 0.0f; // min_y is a bias  -15
-                //terrain_points[i, j, 1] = min_y + IDW.inverseDistanceWeighting(getVertexFeatures(terrain_points[i, j, 0], terrain_points[i, j, 2]), terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias  -15
-                //terrain_points[i, j, 1] = min_y + IDW.inverseDistanceWeighting(getVertexFeaturesFromArea(terrain_points[i, j, 0], terrain_points[i, j, 2], area_features), terrain_points[i, j, 0], terrain_points[i, j, 2]);
+                //terrain_points[i, j, 1] = min_y + getDEMHeight(terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias
+                //Vector3[] vf = getVertexFeatures(terrain_points[i, j, 0], terrain_points[i, j, 2]);
+                //terrain_points[i, j, 1] = min_y + IDW.inverseDistanceWeighting(vf, terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias  -15
+                //Vector3[] vfa = getVertexFeaturesFromArea(terrain_points[i, j, 0], terrain_points[i, j, 2], area_features);
+                //terrain_points[i, j, 1] = min_y + IDW.inverseDistanceWeighting(vfa, terrain_points[i, j, 0], terrain_points[i, j, 2]);
                 vertice[i * z_small_length + j] = new Vector3(terrain_points[i, j, 0] - center.x, terrain_points[i, j, 1] - center.y, terrain_points[i, j, 2] - center.z);
                 //uv[i * z_small_length + j] = new Vector2((float)(x_small_min + i) / x_length, (float)(z_small_min + j) / z_length);
                 uv[i * z_small_length + j] = new Vector2((float)i / (x_small_length - 1), (float)j / (z_small_length - 1));
@@ -240,29 +232,16 @@ static public class TerrainGenerator
         MeshFilter mf = terrain.AddComponent<MeshFilter>();
         MeshRenderer mr = terrain.AddComponent<MeshRenderer>();
         mf.mesh = mesh;
-        //Debug.Log("===========================");
-        //string afs = "";
-        //for (int i = 0; i < area_features.Length; i++)
-        //{
-        //    afs += area_features[i].ToString() + " ";
-        //}
-        //Debug.Log("features: " + afs);
         //MaterialPropertyBlock mpb = new MaterialPropertyBlock();
         //mpb.SetVectorArray("features2", area_features);
         //mpb.SetInt("features_count", area_features.Length);
         //mr.SetPropertyBlock(mpb);
-        mr.sharedMaterial = new Material(terrain_idw_mat);
-        mr.sharedMaterial.SetVectorArray("features", area_features);
-        mr.sharedMaterial.SetInt("features_count", area_features.Length);
-        mr.sharedMaterial.SetFloat("height_base", min_y);
 
-        //Vector4[] feature_shader = new Vector4[26];
-        //for (int i = 0; i < 26; i++)
-        //{
-        //    feature_shader[i] = new Vector4(0, i, 0, 0);
-        //}
-        //mr.material.SetVectorArray("features", feature_shader);
-        //mr.material.SetInt("features_count", 26);
+        //mr.material = new Material(terrain_mat);
+        mr.material = new Material(terrain_idw_mat);
+        mr.material.SetVectorArray("features", area_features);
+        mr.material.SetInt("features_count", area_features.Length);
+        mr.material.SetFloat("height_base", min_y);
         terrain.transform.position = center;
         terrains.Add(terrain);
         generated_x_list.Add(x_small_min);
