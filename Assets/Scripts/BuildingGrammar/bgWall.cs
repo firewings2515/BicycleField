@@ -10,7 +10,6 @@ public class bgWall : bgComponent
     float height_parameter_val = 10.0f;//from component parameter
     public float height = 10.0f; //may modify
     public float width = 4.0f; //come from upper level
-
     public bgWall(List<string> _input_parameter, List<string> _component_parameter, List<string> _commands, List<List<string>> _commands_parameter) : base(_input_parameter, _component_parameter, _commands, _commands_parameter)
     {
         parse();
@@ -27,7 +26,6 @@ public class bgWall : bgComponent
     public override GameObject build()
     {
 
-        Debug.Log("type: Wall");
         //if (go != null)
         //{
         //    go = GameObject.Instantiate(go);
@@ -45,49 +43,53 @@ public class bgWall : bgComponent
         //else
         //{
 
-            if (height_type == "const")
+        if (height_type == "const")
+        {
+            height = height_parameter_val;
+        }
+        else if (height_type == "ratio")
+        {
+            height = width * height_parameter_val;
+        }
+
+        go = new GameObject();
+        go.name = "Wall:" + name;
+
+        GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        GameObject.Destroy(wall.GetComponent<MeshCollider>());
+        wall.transform.parent = go.transform;
+        wall.transform.localScale = new Vector3(width, height, 0.5f);
+        MeshRenderer mr = wall.GetComponent<MeshRenderer>();
+
+        //string background_name = commands[0];
+        string background_name = "background" + random_background.ToString();
+        bgAsset background = builder.get_asset(background_name);
+        
+        //mr.sharedMaterial = background.mat;
+        mr.material = background.mat;
+
+        //Material newmat = new Material(mat);
+        //mr.sharedMaterial = newmat;
+
+        Vector3 pos = new Vector3();
+        pos.z = -0.1f;
+        for (int i = 1; i < commands.Count; i++)
+        {
+            if (commands[i] == "pos")
             {
-                height = height_parameter_val;
+                pos.x = (float.Parse(commands_parameter[i][0]) - 0.5f) * width;
+                pos.y = (float.Parse(commands_parameter[i][1]) - 0.5f) * height;
+                positions.Add(pos);
             }
-            else if (height_type == "ratio")
+            else
             {
-                height = width * height_parameter_val;
+                bgAsset asset = builder.get_asset(commands[i]);
+                GameObject obj = asset.build();
+                obj.transform.parent = go.transform;
+                obj.transform.localPosition = pos;
             }
-            
-            go = new GameObject();
-            go.name = "Wall:" + name;
+        }
 
-            GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            wall.transform.parent = go.transform;
-
-            MeshRenderer mr = wall.GetComponent<MeshRenderer>();
-
-            string background_name = commands[0];
-            //bgAsset background = builder.get_asset(background_name);
-            Material mat = Resources.Load<Material>("Material/tillable");
-
-            Material newmat = new Material(mat);
-            mr.sharedMaterial = newmat;
-            wall.transform.localScale = new Vector3(width, height, 0.5f);
-            Vector3 pos = new Vector3();
-            pos.z = -0.1f;
-            for (int i = 1; i < commands.Count; i++)
-            {
-                if (commands[i] == "pos")
-                {
-                    pos.x = (float.Parse(commands_parameter[i][0]) - 0.5f) * width;
-                    pos.y = (float.Parse(commands_parameter[i][1]) - 0.5f) * height;
-                    positions.Add(pos);
-                }
-                else
-                {
-                    bgAsset asset = builder.get_asset(commands[i]);
-                    GameObject obj = asset.build();
-                    obj.transform.parent = go.transform;
-                    obj.transform.localPosition = pos;
-                }
-            }
-        //go.transform.localPosition = new Vector3(0, 0,0);
         //}
         /*
         float hheight = height / 2.0f;
@@ -99,12 +101,12 @@ public class bgWall : bgComponent
             new Vector3(hwidth,height,0),
             new Vector3(-hwidth,height,0),
         };
-        //°f®É°w
+        //ï¿½fï¿½É°w
         //int[] triangles = {
         //    0,1,3,
         //    1,2,3
         //};
-        //¶¶®É°w
+        //ï¿½ï¿½ï¿½É°w
         int[] triangles = {
             0,3,1,
             1,3,2

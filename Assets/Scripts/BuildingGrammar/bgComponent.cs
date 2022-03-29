@@ -29,6 +29,7 @@ public class bgComponent
 
     public Mesh share_mesh;
 
+    public int random_background = 0;
     public bgComponent()
     {
         

@@ -7,14 +7,15 @@ public class bgBase : bgComponent
 {
     List<Vector3> vertexs;
     List<List<bgFacade>> facades;
-
+    public float height = float.MinValue;
     public bgBase(List<string> _input_parameter, List<string> _component_parameter, List<string> _commands, List<List<string>> _commands_parameter) : base(_input_parameter, _component_parameter, _commands, _commands_parameter)
     {
 
     }
     public override GameObject build()
     {
-        Debug.Log("type: Base");
+        height = float.MinValue;
+        //random_background = Random.Range(0, 15);
         //if (go != null)
         //{
         //    go = GameObject.Instantiate(go);
@@ -22,6 +23,7 @@ public class bgBase : bgComponent
         //    return go;
         //}
         go = new GameObject("Base:" + name);
+        //return go;
         if (vertexs == null)
         {
             vertexs = new List<Vector3>();
@@ -56,6 +58,7 @@ public class bgBase : bgComponent
             float length = Vector3.Distance(v1, v2) * t;
             for (int j = 0; j < facades[i].Count; j++) {
                 facades[i][j].width = length;
+                facades[i][j].random_background = this.random_background;
                 Vector3 facade_pos = Vector3.Lerp(v1, v2, total_t);
                 GameObject obj = facades[i][j].build();
 
@@ -73,6 +76,7 @@ public class bgBase : bgComponent
                     float vert_height = facades[i][0].height;
 
                     GameObject vert_split = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    GameObject.Destroy(vert_split.GetComponent<BoxCollider>());
                     vert_split.transform.parent = go.transform;
                     vert_split.transform.localScale = new Vector3(0.5f, vert_height, 0.5f);
                     vert_split.transform.localPosition = v1 + new Vector3(0, vert_height/2.0f, 0);
@@ -84,12 +88,10 @@ public class bgBase : bgComponent
                     //vert_split2.transform.localScale = new Vector3(0.1f, vert_height, 1.0f);
                     //vert_split2.transform.localPosition = v2 + new Vector3(0, vert_height / 2.0f, 0);
                     //vert_split2.transform.rotation = Quaternion.LookRotation(v2 - v1, Vector3.up);
+                    if (vert_height > height) height = vert_height;
                 }
 
                 total_t += t;
-            }
-            if (facades[i].Count > 0) {
-
             }
 
         }

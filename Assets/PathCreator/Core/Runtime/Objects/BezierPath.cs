@@ -250,7 +250,7 @@ namespace PathCreation {
                 AutoSetAllAffectedControlPoints (points.Count - 1);
             }
 
-            NotifyPathModified ();
+            //NotifyPathModified ();
         }
 
         /// Add new anchor point to start of the path
@@ -335,7 +335,7 @@ namespace PathCreation {
                     AutoSetAllControlPoints ();
                 }
 
-                NotifyPathModified ();
+                //NotifyPathModified ();
             }
         }
 

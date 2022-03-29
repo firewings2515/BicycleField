@@ -8,7 +8,6 @@ public class bgFacade : bgComponent
     public float width = 4.0f; //come from upper level
     List<float> widths;
     List<Vector3> positions;
-
     public bgFacade(List<string> _input_parameter, List<string> _component_parameter, List<string> _commands, List<List<string>> _commands_parameter) : base(_input_parameter, _component_parameter, _commands, _commands_parameter)
     {
         positions = new List<Vector3>();
@@ -19,12 +18,13 @@ public class bgFacade : bgComponent
     public override GameObject build()
     {
         go = new GameObject("Facade:" + name);
-        Debug.Log("type: Facade");
         height = 0.0f;
         for (int i = 0; i < commands.Count; i++)
         {
             bgWall wall = builder.get_wall(commands[i]);
             wall.width = this.width;
+            
+            wall.random_background = this.random_background;
             widths.Add(width);
             GameObject obj = wall.build();
             height += wall.height / 2.0f;
@@ -33,6 +33,7 @@ public class bgFacade : bgComponent
             height += wall.height / 2.0f;
 
             GameObject floor_split = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            GameObject.Destroy(floor_split.GetComponent<MeshCollider>());
             floor_split.transform.localScale = new Vector3(width, 0.1f, 1.0f);
             floor_split.transform.localPosition = new Vector3(0, height, -0.01f);
             //floor_split.GetComponent<MeshRenderer>().material = new Material(Shader.Find("Standard"));
