@@ -5,7 +5,7 @@ using UnityEngine;
 static public class HouseGenerator
 {
     static string[] component_names = new string[] { 
-        "house1","floors_base"
+        "house1","floors_base","hello_house"
     };
     static string[] grammar_files_path = new string[] {
         @"Assets\Grammars\test.txt",

@@ -7,14 +7,15 @@ public class bgBase : bgComponent
 {
     List<Vector3> vertexs;
     List<List<bgFacade>> facades;
-
+    public float height = float.MinValue;
     public bgBase(List<string> _input_parameter, List<string> _component_parameter, List<string> _commands, List<List<string>> _commands_parameter) : base(_input_parameter, _component_parameter, _commands, _commands_parameter)
     {
 
     }
     public override GameObject build()
     {
-        random_background = Random.Range(0, 15);
+        height = float.MinValue;
+        //random_background = Random.Range(0, 15);
         //if (go != null)
         //{
         //    go = GameObject.Instantiate(go);
@@ -87,12 +88,10 @@ public class bgBase : bgComponent
                     //vert_split2.transform.localScale = new Vector3(0.1f, vert_height, 1.0f);
                     //vert_split2.transform.localPosition = v2 + new Vector3(0, vert_height / 2.0f, 0);
                     //vert_split2.transform.rotation = Quaternion.LookRotation(v2 - v1, Vector3.up);
+                    if (vert_height > height) height = vert_height;
                 }
 
                 total_t += t;
-            }
-            if (facades[i].Count > 0) {
-
             }
 
         }

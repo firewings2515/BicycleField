@@ -59,7 +59,7 @@ public class bgTest : MonoBehaviour
     {
         if (count == 5)
         {
-            reBuild();
+            //reBuild();
             count = 0;
         }
         else

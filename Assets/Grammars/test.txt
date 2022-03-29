@@ -1,20 +1,27 @@
 background():Asset(image){
-	Location("Assets/Image/wall/wall-herringbone-436.png")
+	Location("Assets/Image/window.jpg")
 }
 
 door():Asset(image){
 	Location("Assets/Image/door.jpg")
+	Scale(1,0.9)
 }
 
 window():Asset(image){
 	Location("Assets/Image/window.jpg")
-	Scale(1.5,1.5)
+	Scale(1,1.5)
 	Extrude(0.1)
 }
 
 window2():Asset(image){
 	Location("Assets/Image/window2.jpg")
 	Scale(1,1)
+	Extrude(0.1)
+}
+
+window3():Asset(image){
+	Location("Assets/Image/window.jpg")
+	Scale(1.5,1)
 	Extrude(0.1)
 }
 
@@ -26,9 +33,16 @@ hello_wall():Wall(vertical,const,4.0){
 	window2()
 }
 
+hello_wall2():Wall(vertical,const,6.0){
+	background()
+	pos(0.25,0.5)
+	window3()
+	pos(0.75,0.5)
+	window()
+}
+
 balcony():Asset(image){
 	Location("Assets/Image/balcony.png")
-	Scale(1,1)
 }
 
 balcony_wall():Wall(vertical,const,4.0){
@@ -44,7 +58,7 @@ first_floor_wall():Wall(vertical,const,4){
 	background()
 	pos(0.25,0.5)
 	window()
-	pos(0.75,0.5)
+	pos(0.75,0.45)
 	door()
 }
 
@@ -58,29 +72,20 @@ roof_wall():Wall(vertical,ratio,0.2){
 	
 hello_facade():Facade(){
 	first_floor_wall()
-	hello_wall()
-	hello_wall()
-	hello_wall()
-}
 
-hello_facade2():Facade(){
-	first_floor_wall()
-	nothing_wall()
 	hello_wall()
-	nothing_wall()
+	hello_wall2()
 	hello_wall()
-	nothing_wall()
 	hello_wall()
-	nothing_wall()
-	hello_wall()
+	hello_wall2()
 }
 
 nothing_facade():Facade(){
-	balcony_wall()
+	first_floor_wall()
 
 	nothing_wall()
 	balcony_wall()
-	balcony_wall()
+	nothing_wall()
 }
 
 roof_facade():Facade(horizontal){
@@ -104,13 +109,13 @@ floors_base():Base(){
 }
 
 roof_base():Base(){
-	vertex(0,0,0)
+	vertex(-5,0,-5)
 	roof_facade()
-	vertex(0,0,1)
+	vertex(-5,0,15)
 	roof_facade()
-	vertex(1,0,1)
+	vertex(15,0,15)
 	roof_facade()
-	vertex(1,0,0)
+	vertex(15,0,-5)
 	roof_facade()
 }	
 
