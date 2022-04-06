@@ -73,6 +73,10 @@ Shader "Terrain/IDW"
             //v.vertex.y = IDW2(v.vertex.x, v.vertex.z);
             float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
             float4 idw_vertex = float4(worldPos.x, IDW(worldPos.x, worldPos.z) + height_base, worldPos.z, worldPos.w);
+            float dxz = 1;
+            float3 dx = float3(worldPos.x + dxz, IDW(worldPos.x + dxz, worldPos.z) + height_base, worldPos.z) - float3(idw_vertex.x, idw_vertex.y, idw_vertex.z);
+            float3 dz = float3(worldPos.x, IDW(worldPos.x, worldPos.z + dxz) + height_base, worldPos.z + dxz) - float3(idw_vertex.x, idw_vertex.y, idw_vertex.z);
+            v.normal = normalize(cross(dx, dz));
             v.vertex = mul(unity_WorldToObject, idw_vertex);
             /*float3 p = (unity_ObjectToWorld * gl_Vertex).xyz;
             p.y = IDW2(p.x, p.z);
