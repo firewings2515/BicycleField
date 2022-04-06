@@ -320,6 +320,11 @@ static public class TerrainGenerator
         return IDW.inverseDistanceWeighting(vertex_features, x, z, old_base);
     }
 
+    static public float getIDWHeightWithBais(float x, float z)
+    {
+        return getIDWHeight(x, z) + min_y;
+    }
+
     static public void generateSmallHeightmapTerrain(Texture2D heightmap, int x_small_min, int z_small_min, int x_small_length, int z_small_length)
     {
         //Debug.Log("Calculating: " + x_small_min + "_" + z_small_min);

@@ -21,16 +21,19 @@ namespace PathCreation.Examples
                 // Subscribed to the pathUpdated event so that we're notified if the path changes during the game
                 pathCreator.pathUpdated += OnPathChanged;
                 transform.position = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
+                transform.position = new Vector3(transform.position.x, TerrainGenerator.getIDWHeightWithBais(transform.position.x, transform.position.z), transform.position.z);
                 transform.rotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
             }
         }
 
         void Update()
         {
+            Vector3 tempGPA = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
+            tempGPA.y = TerrainGenerator.getIDWHeightWithBais(tempGPA.x, tempGPA.z);
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 run = !run;
-                transform.position = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
+                transform.position = tempGPA;
                 transform.rotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
             }
             float add_speed = 0.05f;
@@ -46,11 +49,12 @@ namespace PathCreation.Examples
             if (pathCreator != null && run)
             {
                 distanceTravelled += speed * Time.deltaTime;
-                transform.position = Vector3.Lerp(transform.position, pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction), 0.1f);
+                transform.position = Vector3.Lerp(transform.position, tempGPA, 0.1f);
                 transform.rotation = Quaternion.Lerp(transform.rotation, pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction), 0.02f);
             }
-            Vector3 here = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
+            Vector3 here = tempGPA;
             Vector3 there = pathCreator.path.GetPointAtDistance(distanceTravelled + 0.01f, endOfPathInstruction);
+            there.y = TerrainGenerator.getIDWHeightWithBais(there.x, there.z);
             float slope = (there.y - here.y) / (Mathf.Sqrt(Mathf.Pow(there.x - here.x, 2) + Mathf.Pow(there.z - here.z, 2)));
             slope_display.GetComponent<Text>().text = "Slope: " + slope.ToString();
         }
