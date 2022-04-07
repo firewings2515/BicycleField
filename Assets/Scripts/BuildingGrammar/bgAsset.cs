@@ -7,7 +7,7 @@ public class bgAsset : bgComponent
 {
     public string asset_type;
     public string location;
-    public (float, float) scale = (1.0f,1.0f);
+    public (float, float,float) scale = (1.0f,1.0f,1.0f);
     public float extrude = 0.0f;
 
     public float width;
@@ -44,6 +44,7 @@ public class bgAsset : bgComponent
         else if (asset_type == "model")
         {
             //TODO
+            go = new Dummiesman.OBJLoader().Load(location);
         }
     }
     public override GameObject build() 
@@ -53,15 +54,31 @@ public class bgAsset : bgComponent
             go = GameObject.Instantiate(go);
             go.name = "Asset:" + name;
             //go.transform.localScale = new Vector3(width, height, 1.0f);
+            
+            if (asset_type == "model")
+            {
+                go.transform.localScale = new Vector3(scale.Item1, scale.Item2, scale.Item3);
+                go.transform.localRotation = Quaternion.Euler(0, 180, 0);
+            }
         }
         else
         {
-            go = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            GameObject.Destroy(go.GetComponent<MeshCollider>());
+
+
+            if (asset_type == "image")
+            {
+                go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                GameObject.Destroy(go.GetComponent<MeshCollider>());
+                MeshRenderer mr = go.GetComponent<MeshRenderer>();
+                mr.material.mainTexture = image;
+                go.transform.localScale = new Vector3(width * scale.Item1, height * scale.Item2, 1.0f);
+            }
+            else if (asset_type == "model")
+            {
+                go = new Dummiesman.OBJLoader().Load(location);
+                go.transform.localScale = new Vector3(scale.Item1, scale.Item2, scale.Item3);
+            }
             go.name = "Asset:" + name;
-            MeshRenderer mr = go.GetComponent<MeshRenderer>();
-            mr.material.mainTexture = image;
-            go.transform.localScale = new Vector3(width*scale.Item1,height*scale.Item2, 1.0f);
         }
 
         return go;
@@ -101,6 +118,9 @@ public class bgAsset : bgComponent
             {
                 scale.Item1 *= float.Parse(commands_parameter[i][0]);
                 scale.Item2 *= float.Parse(commands_parameter[i][1]);
+                if (commands_parameter[i].Count > 2) {
+                    scale.Item3 *= float.Parse(commands_parameter[i][2]);
+                }
             }
             else if (commands[i] == "Extrude")
             {

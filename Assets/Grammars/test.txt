@@ -25,12 +25,24 @@ window3():Asset(image){
 	Extrude(0.1)
 }
 
+balcony3D():Asset(model){
+	Location("Assets/Model/BALCONY.obj")
+	Scale(0.0007772131,0.0007772131,0.0007772131)
+	Extrude(0.1)
+}
+
+window_frame3D():Asset(model){
+	Location("Assets/Model/window_frame1.obj")
+	Scale(0.03707742,0.03707742,0.03707742)
+	Extrude(0.1)
+}
+
 hello_wall():Wall(vertical,const,4.0){
 	background()
 	pos(0.25,0.5)
-	window()
+	window_frame3D()
 	pos(0.75,0.5)
-	window2()
+	balcony3D()
 }
 
 hello_wall2():Wall(vertical,const,6.0){
@@ -74,10 +86,8 @@ hello_facade():Facade(){
 	first_floor_wall()
 
 	hello_wall()
-	hello_wall2()
 	hello_wall()
 	hello_wall()
-	hello_wall2()
 }
 
 nothing_facade():Facade(){
@@ -120,6 +130,5 @@ roof_base():Base(){
 }	
 
 hello_house():Building(){
-	floors_base()
-	roof_base()	
+	floors_base()	
 }
