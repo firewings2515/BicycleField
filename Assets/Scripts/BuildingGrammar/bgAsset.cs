@@ -45,6 +45,7 @@ public class bgAsset : bgComponent
         {
             //TODO
             go = new Dummiesman.OBJLoader().Load(location);
+            go.SetActive(false);
         }
     }
     public override GameObject build() 
@@ -57,6 +58,7 @@ public class bgAsset : bgComponent
             
             if (asset_type == "model")
             {
+                go.SetActive(true);
                 go.transform.localScale = new Vector3(scale.Item1, scale.Item2, scale.Item3);
                 go.transform.localRotation = Quaternion.Euler(0, 180, 0);
             }
