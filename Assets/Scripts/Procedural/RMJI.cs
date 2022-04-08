@@ -7,7 +7,6 @@ using Unity.Burst;
 using Unity.Mathematics;
 using Unity.Collections;
 
-[BurstCompile]
 public struct RMJob : IJobParallelFor
 {
     public NativeArray<NativeArray<float3>> verts;

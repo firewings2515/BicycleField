@@ -133,6 +133,7 @@ public class RoadManager : MonoBehaviour
     private void spawnAnchorCheckpoint(Vector3 position)
     {
         GameObject prefab = new GameObject();
+        //position.y = TerrainGenerator.getIDWHeightWithBais(position.x, position.z);
         prefab.transform.position = position;
         prefab.AddComponent<SphereCollider>();
         prefab.GetComponent<SphereCollider>().isTrigger = true;

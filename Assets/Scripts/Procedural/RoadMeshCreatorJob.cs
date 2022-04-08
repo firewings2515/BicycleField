@@ -8,7 +8,6 @@ using PathCreation;
 using Unity.Mathematics;
 using Unity.Collections;
 
-[BurstCompile]
 public struct RoadJob : IJob
 {
     //basic

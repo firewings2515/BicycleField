@@ -8,7 +8,7 @@ namespace PathCreation.Examples
     {
         [Header("Road settings")]
         public float roadWidth = .4f;
-        [Range(0, .5f)]
+        //[Range(0, .5f)]
         public float thickness = .15f;
         public bool flattenSurface;
 
@@ -25,6 +25,7 @@ namespace PathCreation.Examples
         Mesh mesh;
 
         private bool loaded = false;
+        private float road_y_offset = 1.0f;
 
         public override void PathUpdated()
         {
@@ -68,8 +69,8 @@ namespace PathCreation.Examples
                 Vector3 localRight = (usePathNormals) ? path.GetNormal(i) : Vector3.Cross(localUp, path.GetTangent(i));
 
                 // Find position to left and right of current path vertex
-                Vector3 vertSideA = new Vector3(path.GetPoint(i).x, TerrainGenerator.getIDWHeightWithBais(path.GetPoint(i).x, path.GetPoint(i).z), path.GetPoint(i).z) - localRight * Mathf.Abs(roadWidth);
-                Vector3 vertSideB = new Vector3(path.GetPoint(i).x, TerrainGenerator.getIDWHeightWithBais(path.GetPoint(i).x, path.GetPoint(i).z), path.GetPoint(i).z) + localRight * Mathf.Abs(roadWidth);
+                Vector3 vertSideA = new Vector3(path.GetPoint(i).x, TerrainGenerator.getIDWHeightWithBais(path.GetPoint(i).x, path.GetPoint(i).z) + road_y_offset, path.GetPoint(i).z) - localRight * Mathf.Abs(roadWidth);
+                Vector3 vertSideB = new Vector3(path.GetPoint(i).x, TerrainGenerator.getIDWHeightWithBais(path.GetPoint(i).x, path.GetPoint(i).z) + road_y_offset, path.GetPoint(i).z) + localRight * Mathf.Abs(roadWidth);
 
                 // Add top of road vertices
                 verts[vertIndex + 0] = vertSideA;

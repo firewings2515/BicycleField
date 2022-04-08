@@ -15,13 +15,15 @@ namespace PathCreation.Examples
         public GameObject speed_display;
         public GameObject slope_display;
 
+        private float cam_y_offset = 1.0f;
+
         void Start() {
             if (pathCreator != null)
             {
                 // Subscribed to the pathUpdated event so that we're notified if the path changes during the game
                 pathCreator.pathUpdated += OnPathChanged;
                 transform.position = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
-                transform.position = new Vector3(transform.position.x, TerrainGenerator.getIDWHeightWithBais(transform.position.x, transform.position.z), transform.position.z);
+                transform.position = new Vector3(transform.position.x, TerrainGenerator.getIDWHeightWithBais(transform.position.x, transform.position.z) + cam_y_offset, transform.position.z);
                 transform.rotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
             }
         }
@@ -49,7 +51,7 @@ namespace PathCreation.Examples
             if (pathCreator != null && run)
             {
                 distanceTravelled += speed * Time.deltaTime;
-                transform.position = Vector3.Lerp(transform.position, tempGPA, 0.1f);
+                transform.position = Vector3.Lerp(transform.position, tempGPA + Vector3.up * cam_y_offset, 0.1f);
                 transform.rotation = Quaternion.Lerp(transform.rotation, pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction), 0.02f);
             }
             Vector3 here = tempGPA;
