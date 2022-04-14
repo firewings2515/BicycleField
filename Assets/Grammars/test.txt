@@ -31,6 +31,12 @@ balcony3D():Asset(model){
 	Extrude(0.1)
 }
 
+balconyFBX():Asset(model){
+	Location("Assets/Model/BALCONY.fbx")
+	Scale(0.0007772131,0.0007772131,0.0007772131)
+	Extrude(0.1)
+}
+
 window_frame3D():Asset(model){
 	Location("Assets/Model/window_frame1.obj")
 	Scale(0.03707742,0.03707742,0.03707742)
@@ -42,7 +48,7 @@ hello_wall():Wall(vertical,const,4.0){
 	pos(0.25,0.5)
 	window_frame3D()
 	pos(0.75,0.5)
-	balcony3D()
+	balconyFBX()
 }
 
 hello_wall2():Wall(vertical,const,6.0){

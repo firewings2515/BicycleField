@@ -19,7 +19,7 @@ public class bgTest : MonoBehaviour
         default_ = GetComponent<MeshRenderer>().sharedMaterial;
         builder = new bgBuilder();
         reCompile();
-        reBuild();
+        //reBuild();
     }
     public void reBuild() {
         float start = Time.realtimeSinceStartup;

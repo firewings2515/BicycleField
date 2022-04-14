@@ -2,11 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
-
+using TriLibCore;
+using TriLibCore.General;
 public class bgAsset : bgComponent
 {
     public string asset_type;
     public string location;
+    string file_extension = "";
     public (float, float,float) scale = (1.0f,1.0f,1.0f);
     public float extrude = 0.0f;
 
@@ -14,8 +16,9 @@ public class bgAsset : bgComponent
     public float height;
     public Texture2D image;
     public Material mat;
+    AssetLoaderContext xx;
     //使用RenderTexture會導致shader無法使用
-
+    FBXImporter fbx_importer;
     public bgAsset(List<string> _input_parameter, List<string> _component_parameter, List<string> _commands, List<List<string>> _commands_parameter):base(_input_parameter, _component_parameter, _commands, _commands_parameter)
     {
         parse();
@@ -23,9 +26,10 @@ public class bgAsset : bgComponent
     }
     public void load()
     {
-        byte[] bytes = File.ReadAllBytes(location);
+        
         if (asset_type == "image")
         {
+            byte[] bytes = File.ReadAllBytes(location);
             image = new Texture2D(2, 2);
             image.LoadImage(bytes);
             //Debug.Log(tex2d.width);
@@ -44,8 +48,26 @@ public class bgAsset : bgComponent
         else if (asset_type == "model")
         {
             //TODO
-            go = new Dummiesman.OBJLoader().Load(location);
-            go.SetActive(false);
+            
+            for (int i = location.Length - 1; i >= 0; i--) {
+                if (location[i] == '.') break;
+                file_extension = location[i] + file_extension;
+            }
+            Debug.Log("ex:" + file_extension);
+            if (file_extension == "obj")
+            {
+                go = new Dummiesman.OBJLoader().Load(location);
+                go.SetActive(false);
+            }
+            else if (file_extension == "fbx")
+            {
+                //go = AssetLoader.LoadModelFromFile(location).RootGameObject;
+                var assetLoaderOptions = AssetLoader.CreateDefaultLoaderOptions();
+                xx = AssetLoader.LoadModelFromFile(location, OnLoad, OnMaterialsLoad, OnProgress, OnError, null, assetLoaderOptions);
+                //fbx_importer = new FBXImporter();
+                //go = fbx_importer.ParseFBX(location);
+            }
+
         }
     }
     public override GameObject build() 
@@ -77,7 +99,17 @@ public class bgAsset : bgComponent
             }
             else if (asset_type == "model")
             {
-                go = new Dummiesman.OBJLoader().Load(location);
+                if (file_extension == "obj")
+                {
+                    go = new Dummiesman.OBJLoader().Load(location);
+
+                }
+                else if (file_extension == "fbx")
+                {
+                    //fbx_importer = new FBXImporter();
+                    //go = fbx_importer.ParseFBX(location);
+                    go = Object.Instantiate(xx.RootGameObject);
+                }
                 go.transform.localScale = new Vector3(scale.Item1, scale.Item2, scale.Item3);
             }
             go.name = "Asset:" + name;
@@ -134,5 +166,49 @@ public class bgAsset : bgComponent
                    //should not go to here
             }
         }
+    }
+
+
+
+
+
+
+    /// <summary>
+    /// Called when any error occurs.
+    /// </summary>
+    /// <param name="obj">The contextualized error, containing the original exception and the context passed to the method where the error was thrown.</param>
+    private void OnError(IContextualizedError obj)
+    {
+        Debug.LogError($"An error occurred while loading your Model: {obj.GetInnerException()}");
+    }
+
+    /// <summary>
+    /// Called when the Model loading progress changes.
+    /// </summary>
+    /// <param name="assetLoaderContext">The context used to load the Model.</param>
+    /// <param name="progress">The loading progress.</param>
+    private void OnProgress(AssetLoaderContext assetLoaderContext, float progress)
+    {
+        Debug.Log($"Loading Model. Progress: {progress:P}");
+    }
+
+    /// <summary>
+    /// Called when the Model (including Textures and Materials) has been fully loaded.
+    /// </summary>
+    /// <remarks>The loaded GameObject is available on the assetLoaderContext.RootGameObject field.</remarks>
+    /// <param name="assetLoaderContext">The context used to load the Model.</param>
+    private void OnMaterialsLoad(AssetLoaderContext assetLoaderContext)
+    {
+        Debug.Log("Materials loaded. Model fully loaded.");
+    }
+
+    /// <summary>
+    /// Called when the Model Meshes and hierarchy are loaded.
+    /// </summary>
+    /// <remarks>The loaded GameObject is available on the assetLoaderContext.RootGameObject field.</remarks>
+    /// <param name="assetLoaderContext">The context used to load the Model.</param>
+    private void OnLoad(AssetLoaderContext assetLoaderContext)
+    {
+        Debug.Log("Model loaded. Loading materials.");
     }
 }
