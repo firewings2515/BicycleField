@@ -1,61 +1,68 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.IO;
-using PathCreation;
+using UnityEngine;
 using UnityEditor;
+using PathCreation;
 
 public class RoadManager : MonoBehaviour
 {
-    private int current_segment = 2;
+    private int current_segment = 0;
     private int current_loaded_segment = 0;
     private int current_running_segment = 0;
     private int house_id = 0;
 
     private StreamReader reader;
-
     public string file_name;
+
     public PathCreator path_creator;
     public bool path_loop = false;
+
+    private bool is_started = false;
     private bool update_mesh = false;
-
-    Vector3 last_segment = new Vector3(0,0,0);
-
-    private void Start()
-    {
-        reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
-
-        //remove first default segment
-        removeEarliestRoad(false);
-
-        while (path_creator.bezierPath.NumSegments < Info.MAX_LOADED_SEGMENT)
-        {
-            getAndSetNextSegment();
-        }
-
-        //remove second default segment
-        getAndSetNextSegment();
-
-        //remove last default segment
-        removeEarliestRoad(false);
-
-        path_creator.bezierPath.NotifyPathModified();
-    }
 
     // Update is called once per frame
     void Update()
     {
-        if (Info.MAX_LOADED_SEGMENT - current_segment <= Info.PRELOAD_SEGMENT)
+        if (TerrainGenerator.is_initial)
         {
-            getAndSetNextSegment();
+            if (!is_started) //only execute once on start
+            {
+                reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
 
-            path_creator.bezierPath = path_creator.bezierPath; //force update
-            update_mesh = true;
-        }
-        else if (update_mesh)
-        {
-            update_mesh = false;
-            GetComponent<PathCreation.Examples.MyRoadMeshCreator>().CreateRoadMesh();
+                //remove first default segment
+                removeEarliestRoad(false);
+
+                while (path_creator.bezierPath.NumSegments < Info.MAX_LOADED_SEGMENT)
+                {
+                    getAndSetNextSegment();
+                }
+
+                //remove second default segment
+                getAndSetNextSegment();
+
+                //remove last default segment
+                removeEarliestRoad(false);
+
+                path_creator.bezierPath.NotifyPathModified();
+                is_started = true;
+            }
+            else
+            {
+                if (Info.MAX_LOADED_SEGMENT - current_segment <= Info.PRELOAD_SEGMENT)
+                {
+                    getAndSetNextSegment();
+
+                    path_creator.bezierPath = path_creator.bezierPath; //force update
+                    update_mesh = true;
+                }
+                else if (update_mesh)
+                {
+                    update_mesh = false;
+
+                    GetComponent<PathCreation.Examples.MyRoadMeshCreator>().CreateRoadMesh();
+                }
+            }
         }
     }
 
@@ -65,7 +72,6 @@ public class RoadManager : MonoBehaviour
         {
             Vector3 vec3_point = Functions.StrToVec3(str_point) + new Vector3(-200, 0, -200);
             vec3_point.y = 0.0f;
-            last_segment = vec3_point;
 
             spawnAnchorCheckpoint(vec3_point);
 
@@ -103,10 +109,9 @@ public class RoadManager : MonoBehaviour
             
             house_id++;
 
-            //GetComponent<HouseManager>().addToBuffer(point_data);
             point_data = reader.ReadLine();
         }
-        StartCoroutine(HouseGenerator.generateHouses(segment_id_list, house_id_list, info_list));
+        //StartCoroutine(HouseGenerator.generateHouses(segment_id_list, house_id_list, info_list));
         return point_data != null;
     }
 
@@ -114,9 +119,6 @@ public class RoadManager : MonoBehaviour
     {
         //terrain
         TerrainGenerator.generateTerrain(road);
-        //BezierPath new_bezier = new BezierPath(path_creator.bezierPath[0]);
-        //new_bezier = path_creator.bezierPath;
-        //path_creator.bezierPath = new_bezier;
 
         path_creator.bezierPath.AddSegmentToEnd(road);
         //force display
@@ -125,7 +127,7 @@ public class RoadManager : MonoBehaviour
 
     private void removeEarliestRoad(bool destroy = true)
     {
-        if (destroy) HouseGenerator.destroySegment(current_running_segment - (Info.MAX_LOADED_SEGMENT / 2) + 2);
+        //if (destroy) HouseGenerator.destroySegment(current_running_segment - (Info.MAX_LOADED_SEGMENT / 2) + 2);
         path_creator.bezierPath.DeleteSegment(0);
         current_segment--;
     }
@@ -133,7 +135,6 @@ public class RoadManager : MonoBehaviour
     private void spawnAnchorCheckpoint(Vector3 position)
     {
         GameObject prefab = new GameObject();
-        //position.y = TerrainGenerator.getIDWHeightWithBais(position.x, position.z);
         prefab.transform.position = position;
         prefab.AddComponent<SphereCollider>();
         prefab.GetComponent<SphereCollider>().isTrigger = true;

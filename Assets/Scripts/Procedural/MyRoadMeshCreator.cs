@@ -29,7 +29,7 @@ namespace PathCreation.Examples
 
         public override void PathUpdated()
         {
-            if (pathCreator != null)
+            if (pathCreator != null && TerrainGenerator.is_initial)
             {
                 AssignMeshComponents();
                 AssignMaterials();

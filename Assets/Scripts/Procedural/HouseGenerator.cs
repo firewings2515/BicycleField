@@ -34,7 +34,7 @@ static public class HouseGenerator
     {
         //demo code
         string[] house_infos = info.Split(' ');
-        Vector3 single_point = new Vector3(int.Parse(house_infos[2]), int.Parse(house_infos[3]), int.Parse(house_infos[4])) + new Vector3(-200, 0, -200);
+        Vector3 single_point = new Vector3(float.Parse(house_infos[2]), float.Parse(house_infos[3]), float.Parse(house_infos[4])) + new Vector3(-200, 0, -200);
         GameObject gobj;
         if (single_point.y < -0.5f)
         {
