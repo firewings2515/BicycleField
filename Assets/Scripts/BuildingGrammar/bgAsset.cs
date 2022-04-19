@@ -63,9 +63,10 @@ public class bgAsset : bgComponent
             {
                 //go = AssetLoader.LoadModelFromFile(location).RootGameObject;
                 var assetLoaderOptions = AssetLoader.CreateDefaultLoaderOptions();
-                xx = AssetLoader.LoadModelFromFile(location, OnLoad, OnMaterialsLoad, OnProgress, OnError, null, assetLoaderOptions);
+                xx = AssetLoader.LoadModelFromFileNoThread(location,OnError, null, assetLoaderOptions);
                 //fbx_importer = new FBXImporter();
                 //go = fbx_importer.ParseFBX(location);
+                go = xx.RootGameObject;
             }
 
         }
@@ -108,7 +109,9 @@ public class bgAsset : bgComponent
                 {
                     //fbx_importer = new FBXImporter();
                     //go = fbx_importer.ParseFBX(location);
-                    go = Object.Instantiate(xx.RootGameObject);
+                    var assetLoaderOptions = AssetLoader.CreateDefaultLoaderOptions();
+                    xx = AssetLoader.LoadModelFromFileNoThread(location, OnError, null, assetLoaderOptions);
+                    go = xx.RootGameObject;
                 }
                 go.transform.localScale = new Vector3(scale.Item1, scale.Item2, scale.Item3);
                 go.transform.localRotation = rotate;
