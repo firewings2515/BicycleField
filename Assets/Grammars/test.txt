@@ -33,14 +33,23 @@ balcony3D():Asset(model){
 
 balconyFBX():Asset(model){
 	Location("Assets/Model/BALCONY.fbx")
-	Scale(0.0007772131,0.0007772131,0.0007772131)
+	Scale(1,1,1)
 	Extrude(0.1)
+	
+}
+
+doorFBX():Asset(model){
+	Location("Assets/Model/balcony_door.fbx")
+	Rotate(0,90,0)
+
+	Scale(1.36,1.36,1.36)
 }
 
 window_frame3D():Asset(model){
 	Location("Assets/Model/window_frame1.obj")
 	Scale(0.03707742,0.03707742,0.03707742)
 	Extrude(0.1)
+	Rotate(0,180,0)
 }
 
 hello_wall():Wall(vertical,const,4.0){
@@ -80,6 +89,14 @@ first_floor_wall():Wall(vertical,const,4){
 	door()
 }
 
+3D_door_wall():Wall(vertical,const,4){
+	background()
+	pos(0.25,0.5)
+	window()
+	pos(0.75,0.2)
+	doorFBX()
+}
+
 nothing_wall():Wall(vertical,const,4){
 	background()
 }
@@ -97,7 +114,7 @@ hello_facade():Facade(){
 }
 
 nothing_facade():Facade(){
-	first_floor_wall()
+	3D_door_wall()
 
 	nothing_wall()
 	balcony_wall()

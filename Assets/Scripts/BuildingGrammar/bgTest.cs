@@ -33,7 +33,7 @@ public class bgTest : MonoBehaviour
         //obj.AddComponent<MeshRenderer>().sharedMaterial = default_;
 
         obj = builder.build(component_name);
-
+        obj.transform.Translate(-30,0,0);
         float end = Time.realtimeSinceStartup;
         //Debug.Log("process time:" + (end - start).ToString());
     }

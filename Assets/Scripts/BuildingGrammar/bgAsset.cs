@@ -82,7 +82,7 @@ public class bgAsset : bgComponent
             {
                 go.SetActive(true);
                 go.transform.localScale = new Vector3(scale.Item1, scale.Item2, scale.Item3);
-                go.transform.localRotation = Quaternion.Euler(0, 180, 0);
+                go.transform.localRotation = rotate;
             }
         }
         else
@@ -111,6 +111,7 @@ public class bgAsset : bgComponent
                     go = Object.Instantiate(xx.RootGameObject);
                 }
                 go.transform.localScale = new Vector3(scale.Item1, scale.Item2, scale.Item3);
+                go.transform.localRotation = rotate;
             }
             go.name = "Asset:" + name;
         }
@@ -159,6 +160,13 @@ public class bgAsset : bgComponent
             else if (commands[i] == "Extrude")
             {
                 extrude += float.Parse(commands_parameter[i][0]);
+            }
+            else if (commands[i] == "Rotate")
+            {
+                float rx = float.Parse(commands_parameter[i][0]);
+                float ry = float.Parse(commands_parameter[i][1]);
+                float rz = float.Parse(commands_parameter[i][2]);
+                rotate = Quaternion.Euler(rx,ry,rz);
             }
             else 
             { 
