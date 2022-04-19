@@ -111,7 +111,7 @@ public class RoadManager : MonoBehaviour
 
             point_data = reader.ReadLine();
         }
-        //StartCoroutine(HouseGenerator.generateHouses(segment_id_list, house_id_list, info_list));
+        StartCoroutine(HouseGenerator.generateHouses(segment_id_list, house_id_list, info_list));
         return point_data != null;
     }
 
@@ -127,7 +127,7 @@ public class RoadManager : MonoBehaviour
 
     private void removeEarliestRoad(bool destroy = true)
     {
-        //if (destroy) HouseGenerator.destroySegment(current_running_segment - (Info.MAX_LOADED_SEGMENT / 2) + 2);
+        if (destroy) HouseGenerator.destroySegment(current_running_segment - (Info.MAX_LOADED_SEGMENT / 2) + 2);
         path_creator.bezierPath.DeleteSegment(0);
         current_segment--;
     }
