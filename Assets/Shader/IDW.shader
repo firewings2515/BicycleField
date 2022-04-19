@@ -12,6 +12,7 @@ Shader "Terrain/IDW"
     SubShader
     {
         Tags { "RenderType" = "Opaque" }
+        Cull Off
         LOD 200
 
         CGPROGRAM

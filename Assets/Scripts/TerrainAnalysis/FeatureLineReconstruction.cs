@@ -105,7 +105,7 @@ public class FeatureLineReconstruction : MonoBehaviour
         {
             generate_IDW = false;
             
-            TerrainGenerator.generateSmallIDWTerrain(0, 0, 255, 255);
+            TerrainGenerator.generateTerrainPatch(0, 0, 255, 255);
             exportSmallTexture(x_length, z_length, vertice, 255);
         }
     }

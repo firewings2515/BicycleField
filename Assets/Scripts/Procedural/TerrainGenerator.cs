@@ -33,6 +33,7 @@ static public class TerrainGenerator
     static public List<int> generated_x_list;
     static public List<int> generated_z_list;
     static public KDTree kdtree;
+    static public int terrain_mode = 0; // 0 is DEM 1 is IDW
     //static public GameObject feature_ball_prefab;
 
     static public void loadTerrain()
@@ -54,8 +55,8 @@ static public class TerrainGenerator
         }
         else
         {
-            getAreaTerrain(position.x, position.z);
-
+            getAreaTerrainInfo(position.x, position.z);
+            
             //remove terrain not near position
             removeAreaTerrain(position.x, position.z);
         }
@@ -166,56 +167,55 @@ static public class TerrainGenerator
         return vertex_features.ToArray();
     }
 
-    static public IEnumerator generateSmallIDWTerrain(int x_small_min, int z_small_min, int x_piece, int z_piece)
-    {
-        generateSmallIDWTerrain(features, x_small_min, z_small_min, x_piece + 1, z_piece + 1);
-        yield return null;
-    }
-
-    static void generateSmallIDWTerrain(Vector3[] features, int x_small_min, int z_small_min, int x_small_length, int z_small_length)
+    static public IEnumerator generateTerrainPatch(int x_small_min, int z_small_min, int x_piece_num, int z_piece_num)
     {
         Mesh mesh = new Mesh();
-        float[,,] terrain_points = new float[x_small_length, z_small_length, 3];
-        Vector3[] vertice = new Vector3[x_small_length * z_small_length];
-        Vector2[] uv = new Vector2[x_small_length * z_small_length];
-        int[] indices = new int[6 * (x_small_length - 1) * (z_small_length - 1)];
+        float[,,] terrain_points = new float[x_piece_num + 1, (z_piece_num + 1), 3];
+        Vector3[] vertice = new Vector3[(x_piece_num + 1) * (z_piece_num + 1)];
+        Vector2[] uv = new Vector2[(x_piece_num + 1) * (z_piece_num + 1)];
+        int[] indices = new int[6 * x_piece_num * z_piece_num];
         int indices_index = 0;
-        float center_x = min_x + (2 * x_small_min + x_small_length - 1) * PublicOutputInfo.piece_length / 2;
-        float center_z = min_z + (2 * z_small_min + z_small_length - 1) * PublicOutputInfo.piece_length / 2;
-        float center_y = 0.0f; // -15
-        //float center_y = min_y + getDEMHeight(center_x, center_z);
+        float center_x = min_x + (2 * x_small_min + x_piece_num) * PublicOutputInfo.piece_length / 2;
+        float center_z = min_z + (2 * z_small_min + z_piece_num) * PublicOutputInfo.piece_length / 2;
+        float center_y = 0.0f;
+        if (terrain_mode == 0)
+            center_y = min_y + getDEMHeight(center_x, center_z);
+        else
+            center_y = 0.0f;
         //float center_y = min_y + IDW.inverseDistanceWeighting(getVertexFeatures(center_x, center_z), center_x, center_z); // -15
-        Vector4[] area_features = getAreaFeatures(min_x + x_small_min * PublicOutputInfo.piece_length, min_z + z_small_min * PublicOutputInfo.piece_length, x_small_length - 1, z_small_length - 1);
+        Vector4[] area_features = getAreaFeatures(min_x + x_small_min * PublicOutputInfo.piece_length, min_z + z_small_min * PublicOutputInfo.piece_length, x_piece_num, z_piece_num);
         Vector3 center = new Vector3(center_x, center_y, center_z);
-        for (int i = 0; i < x_small_length; i++)
+        for (int i = 0; i <= x_piece_num; i++)
         {
-            for (int j = 0; j < z_small_length; j++)
+            for (int j = 0; j <= z_piece_num; j++)
             {
                 terrain_points[i, j, 0] = min_x + (x_small_min + i) * PublicOutputInfo.piece_length;
                 terrain_points[i, j, 2] = min_z + (z_small_min + j) * PublicOutputInfo.piece_length;
-                terrain_points[i, j, 1] = 0.0f; // min_y is a bias  -15
+                if (terrain_mode == 0)
+                    terrain_points[i, j, 1] = min_y + getDEMHeight(terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias
+                else
+                    terrain_points[i, j, 1] = 0.0f;
                 //terrain_points[i, j, 1] = min_y + getDEMHeight(terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias
                 //Vector3[] vf = getVertexFeatures(terrain_points[i, j, 0], terrain_points[i, j, 2]);
                 //terrain_points[i, j, 1] = min_y + IDW.inverseDistanceWeighting(vf, terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias  -15
                 //Vector3[] vfa = getVertexFeaturesFromArea(terrain_points[i, j, 0], terrain_points[i, j, 2], area_features);
                 //terrain_points[i, j, 1] = min_y + IDW.inverseDistanceWeighting(vfa, terrain_points[i, j, 0], terrain_points[i, j, 2]);
-                vertice[i * z_small_length + j] = new Vector3(terrain_points[i, j, 0] - center.x, terrain_points[i, j, 1] - center.y, terrain_points[i, j, 2] - center.z);
-                //uv[i * z_small_length + j] = new Vector2((float)(x_small_min + i) / x_length, (float)(z_small_min + j) / z_length);
-                uv[i * z_small_length + j] = new Vector2((float)i / (x_small_length - 1), (float)j / (z_small_length - 1));
+                vertice[i * (z_piece_num + 1) + j] = new Vector3(terrain_points[i, j, 0] - center.x, terrain_points[i, j, 1] - center.y, terrain_points[i, j, 2] - center.z);
+                uv[i * (z_piece_num + 1) + j] = new Vector2((float)i / x_piece_num, (float)j / z_piece_num);
             }
         }
 
-        for (int i = 0; i < x_small_length - 1; i++)
+        for (int i = 0; i < x_piece_num; i++)
         {
-            for (int j = 0; j < z_small_length - 1; j++)
+            for (int j = 0; j < z_piece_num; j++)
             {
                 // counter-clockwise
-                indices[indices_index++] = i * z_small_length + j;
-                indices[indices_index++] = (i + 1) * z_small_length + j + 1;
-                indices[indices_index++] = (i + 1) * z_small_length + j;
-                indices[indices_index++] = i * z_small_length + j;
-                indices[indices_index++] = i * z_small_length + j + 1;
-                indices[indices_index++] = (i + 1) * z_small_length + j + 1;
+                indices[indices_index++] = i * (z_piece_num + 1) + j;
+                indices[indices_index++] = (i + 1) * (z_piece_num + 1) + j + 1;
+                indices[indices_index++] = (i + 1) * (z_piece_num + 1) + j;
+                indices[indices_index++] = i * (z_piece_num + 1) + j;
+                indices[indices_index++] = i * (z_piece_num + 1) + j + 1;
+                indices[indices_index++] = (i + 1) * (z_piece_num + 1) + j + 1;
             }
         }
 
@@ -249,9 +249,10 @@ static public class TerrainGenerator
         //Debug.Log("Success: " + x_small_min + "_" + z_small_min);
 
         terrain.AddComponent<TerrainView>();
+        yield return null;
     }
 
-    static void getAreaTerrain(float x, float z)
+    static void getAreaTerrainInfo(float x, float z)
     {
         int x_index = Mathf.FloorToInt((x - min_x) / PublicOutputInfo.piece_length);
         int z_index = Mathf.FloorToInt((z - min_z) / PublicOutputInfo.piece_length);
@@ -261,25 +262,6 @@ static public class TerrainGenerator
         generate_center_x.Enqueue(center_piece_x);
         generate_center_z.Enqueue(center_piece_z);
         need_update = true;
-        //Debug.Log(center_x + ", " + center_z);
-        //int x_begin_index = x_index - x_index % piece;
-        //int z_begin_index = z_index - z_index % piece;
-
-        //for (int i = -2; i <= 2; i++)
-        //{
-        //    for (int j = -2; j <= 2; j++)
-        //    {
-        //        int x_small_min = x_begin_index + i * piece;
-        //        int z_small_min = z_begin_index + j * piece;
-        //        if (x_small_min < 0 || x_small_min >= x_length || z_small_min < 0 || z_small_min >= z_length)
-        //            continue;
-        //        if (!is_generated[x_small_min * z_length + z_small_min])
-        //        {
-        //            is_generated[x_small_min * z_length + z_small_min] = true;
-        //            generateSmallIDWTerrain(features, x_begin_index + i * piece, z_begin_index + j * piece, piece + 1, piece + 1);
-        //        }
-        //    }
-        //}
     }
 
     static void removeAreaTerrain(float x, float z)
@@ -299,6 +281,14 @@ static public class TerrainGenerator
         }
     }
 
+    static public float getHeightWithBais(float x, float z)
+    {
+        if (terrain_mode == 0)
+            return getDEMHeight(x, z);
+        else
+            return getIDWHeightWithBais(x, z);
+    }
+
     static public float getDEMHeight(float x, float z)
     {
         x += boundary_min_x + origin_x;
@@ -312,7 +302,7 @@ static public class TerrainGenerator
 
     static public float getIDWHeight(float x, float z, float old_base = 0.0f)
     {
-        getAreaTerrain(x, z);
+        getAreaTerrainInfo(x, z);
         //Vector3[] area_features = getAreaFeatures(center_piece_x, center_piece_z, 4, 4);
         Vector3[] vertex_features = getVertexFeatures(x, z);
         //if (vertex_features.Length > 3800)
