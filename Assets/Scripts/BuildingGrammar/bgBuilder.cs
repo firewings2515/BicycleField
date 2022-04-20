@@ -147,4 +147,15 @@ public class bgBuilder
         parser.clear();
         components.Clear();
     }
+
+
+    public void load_base_coords(string name, List<Vector3> vertexs) {
+        for (int i = 0; i < parser.bases.Count; i++)
+        {
+            if (parser.bases[i].name == name)
+            {
+                parser.bases[i].vertexs = vertexs;
+            }
+        }
+    }
 }

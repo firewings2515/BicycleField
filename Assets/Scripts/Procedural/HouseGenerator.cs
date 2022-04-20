@@ -32,6 +32,7 @@ static public class HouseGenerator
     }
     static public void generateHouse(int segment_id, int house_id, string info)
     {
+        Debug.Log("--------------generate--------------");
         //demo code
         string[] house_infos = info.Split(' ');
         Vector3 single_point = new Vector3(float.Parse(house_infos[2]), float.Parse(house_infos[3]), float.Parse(house_infos[4])) + new Vector3(-200, 0, -200);

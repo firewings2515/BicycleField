@@ -5,9 +5,11 @@ using System.Linq;
 
 public class bgBase : bgComponent
 {
-    List<Vector3> vertexs;
+    public List<Vector3> vertexs;
     List<List<bgFacade>> facades;
     public float height = float.MinValue;
+    int vertex_read = 0;
+    bool runtime_vertex = false;
     public bgBase(List<string> _input_parameter, List<string> _component_parameter, List<string> _commands, List<List<string>> _commands_parameter) : base(_input_parameter, _component_parameter, _commands, _commands_parameter)
     {
 
@@ -24,23 +26,36 @@ public class bgBase : bgComponent
         //}
         go = new GameObject("Base:" + name);
         //return go;
-        if (vertexs == null)
+        if (facades == null)
         {
             vertexs = new List<Vector3>();
             facades = new List<List<bgFacade>>();
+
+            if (component_parameter.Count > 0)
+            {
+                if (component_parameter[0] == "runtime_vertex")
+                {
+                    runtime_vertex = true;
+                }
+            }
+
             for (int i = 0; i < commands.Count; i++)
             {
                 if (commands[i] == "vertex")
                 {
-                    Vector3 vertex = new Vector3(
-                        float.Parse(commands_parameter[i][0]),
-                        float.Parse(commands_parameter[i][1]),
-                        float.Parse(commands_parameter[i][2]));
-                    vertexs.Add(vertex);
+                    if (runtime_vertex == false)
+                    {
+                        Vector3 vertex = new Vector3(
+                            float.Parse(commands_parameter[i][0]),
+                            float.Parse(commands_parameter[i][1]),
+                            float.Parse(commands_parameter[i][2]));
+                        vertexs.Add(vertex);
+                    }
+                    vertex_read++;
                 }
                 else
                 {
-                    if (vertexs.Count > facades.Count)
+                    if (vertex_read > facades.Count)
                     {
                         facades.Add(new List<bgFacade>());
                     }
@@ -57,6 +72,11 @@ public class bgBase : bgComponent
             float total_t = t / 2.0f;
             float length = Vector3.Distance(v1, v2) * t;
             for (int j = 0; j < facades[i].Count; j++) {
+                Debug.Log(i);
+                Debug.Log(vertexs.Count);
+                Debug.Log(j);
+                Debug.Log(facades[i].Count);
+
                 facades[i][j].width = length;
                 facades[i][j].random_background = this.random_background;
                 Vector3 facade_pos = Vector3.Lerp(v1, v2, total_t);
