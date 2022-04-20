@@ -91,7 +91,6 @@ public class FeatureLineReconstruction : MonoBehaviour
             Debug.Log("Get feature finish");
             TerrainGenerator.kdtree = new KDTree();
             TerrainGenerator.kdtree.buildKDTree(point_cloud);
-            PublicOutputInfo.piece_length = 1;
         }
 
         if (generate_heightmap)

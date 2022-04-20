@@ -11,12 +11,12 @@ public class RoadIntegration : MonoBehaviour
     List<string> bicycle_points_list;
     List<GameObject> bicycle_roads_list;
     OSMReader osm_reader;
-    float piece_min_x;
-    float piece_min_z;
-    public float view_max_x;
-    public float view_max_z;
-    public float view_min_x;
-    public float view_min_z;
+    float origin_piece_x;
+    float origin_piece_z;
+    public float terrain_max_x;
+    public float terrain_max_z;
+    public float terrain_min_x;
+    public float terrain_min_z;
     float vision_length = 2048.0f;
     bool is_initial;
 
@@ -34,10 +34,10 @@ public class RoadIntegration : MonoBehaviour
         bicycle_points_list = new List<string>();
         bicycle_roads_list = new List<GameObject>();
 
-        view_max_x = float.MinValue;
-        view_max_z = float.MinValue;
-        view_min_x = float.MaxValue;
-        view_min_z = float.MaxValue;
+        terrain_max_x = float.MinValue;
+        terrain_max_z = float.MinValue;
+        terrain_min_x = float.MaxValue;
+        terrain_min_z = float.MaxValue;
     }
 
     // Update is called once per frame
@@ -49,12 +49,12 @@ public class RoadIntegration : MonoBehaviour
             osm_reader = GetComponent<OSMEditor>().osm_reader;
 
             PublicOutputInfo.origin_pos = osm_reader.points_lib[GetComponent<OSMEditor>().initial_point].position;
-            piece_min_x = PublicOutputInfo.origin_pos.x - PublicOutputInfo.piece_length / 2;
-            piece_min_z = PublicOutputInfo.origin_pos.z - PublicOutputInfo.piece_length / 2;
-            view_min_x = piece_min_x;
-            view_min_z = piece_min_z;
-            view_max_x = piece_min_x + PublicOutputInfo.piece_length;
-            view_max_z = piece_min_z + PublicOutputInfo.piece_length;
+            origin_piece_x = PublicOutputInfo.origin_pos.x - PublicOutputInfo.piece_length / 2;
+            origin_piece_z = PublicOutputInfo.origin_pos.z - PublicOutputInfo.piece_length / 2;
+            terrain_min_x = origin_piece_x;
+            terrain_min_z = origin_piece_z;
+            terrain_max_x = origin_piece_x + PublicOutputInfo.piece_length;
+            terrain_max_z = origin_piece_z + PublicOutputInfo.piece_length;
         }
         if (write_file)
         {
@@ -210,26 +210,28 @@ public class RoadIntegration : MonoBehaviour
         for (int new_road_ref_index = 0; new_road_ref_index < osm_reader.pathes[new_road_index].ref_node.Count; new_road_ref_index++)
         {
             Vector3 point = osm_reader.points_lib[osm_reader.pathes[new_road_index].ref_node[new_road_ref_index]].position;
-            if (point.x >= piece_min_x)
-                view_max_x = Mathf.Max(view_max_x, piece_min_x + (Mathf.CeilToInt((point.x - piece_min_x) / PublicOutputInfo.piece_length) + 1 + TerrainGenerator.vision_patch_num) * PublicOutputInfo.piece_length);
-            if (point.z >= piece_min_z)
-                view_max_z = Mathf.Max(view_max_z, piece_min_z + (Mathf.CeilToInt((point.z - piece_min_z) / PublicOutputInfo.piece_length) + 1 + TerrainGenerator.vision_patch_num) * PublicOutputInfo.piece_length);
-            if (point.x < piece_min_x)
-                view_min_x = Mathf.Min(view_min_x, piece_min_x - (Mathf.CeilToInt((piece_min_x - point.x) / PublicOutputInfo.piece_length) + TerrainGenerator.vision_patch_num) * PublicOutputInfo.piece_length);
-            if (point.z < piece_min_z)
-                view_min_z = Mathf.Min(view_min_z, piece_min_z - (Mathf.CeilToInt((piece_min_z - point.z) / PublicOutputInfo.piece_length) + TerrainGenerator.vision_patch_num) * PublicOutputInfo.piece_length);
+            float expanded_x = (Mathf.CeilToInt(Mathf.Abs(point.x - origin_piece_x) / PublicOutputInfo.piece_length) + 1 + TerrainGenerator.vision_patch_num / 2) * PublicOutputInfo.piece_length * TerrainGenerator.piece_num;
+            float expanded_z = (Mathf.CeilToInt(Mathf.Abs(point.z - origin_piece_z) / PublicOutputInfo.piece_length) + 1 + TerrainGenerator.vision_patch_num / 2) * PublicOutputInfo.piece_length * TerrainGenerator.piece_num;
+            if (point.x + expanded_x >= origin_piece_x)
+                terrain_max_x = Mathf.Max(terrain_max_x, origin_piece_x + expanded_x);
+            if (point.z + expanded_z >= origin_piece_z)
+                terrain_max_z = Mathf.Max(terrain_max_z, origin_piece_z + expanded_z);
+            if (point.x - expanded_x < origin_piece_x)
+                terrain_min_x = Mathf.Min(terrain_min_x, origin_piece_x - expanded_x);
+            if (point.z - expanded_z < origin_piece_z)
+                terrain_min_z = Mathf.Min(terrain_min_z, origin_piece_z - expanded_z);
             //view_max_x = Mathf.Max(view_max_x, point.x + vision_length);
             //view_max_z = Mathf.Max(view_max_z, point.z + vision_length);
             //view_min_x = Mathf.Min(view_min_x, point.x - vision_length);
             //view_min_z = Mathf.Min(view_min_z, point.z - vision_length);
         }
-        Debug.Log(view_max_x + " " + view_max_z + " " + view_min_x + " " + view_min_z);
+        Debug.Log(terrain_max_x + " " + terrain_max_z + " " + terrain_min_x + " " + terrain_min_z);
         float view_max_lon = 0.0f;
         float view_max_lat = 0.0f;
         float view_min_lon = 0.0f;
         float view_min_lat = 0.0f;
-        osm_reader.toLonAndLat(view_max_x, view_max_z, out view_max_lon, out view_max_lat);
-        osm_reader.toLonAndLat(view_min_x, view_min_z, out view_min_lon, out view_min_lat);
+        osm_reader.toLonAndLat(terrain_max_x, terrain_max_z, out view_max_lon, out view_max_lat);
+        osm_reader.toLonAndLat(terrain_min_x, terrain_min_z, out view_min_lon, out view_min_lat);
         Debug.Log(view_max_lon + " " + view_max_lat + " " + view_min_lon + " " + view_min_lat);
     }
 }

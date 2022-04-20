@@ -12,13 +12,13 @@ public class HeightmapCompress : MonoBehaviour
     public Texture2D heightmap;
     public Vector3[] vertice;
     public float[] edges;
-    public int x_length;
-    public int z_length;
+    public int chunk_x_piece_num;
+    public int chunk_z_piece_num;
     public float map_size_width = 22.5f;
     public float map_size_height = 22.5f;
     public float piece_length = 32.0f; //2048
-    public float min_x;
-    public float min_z;
+    public float chunk_x_min;
+    public float chunk_z_min;
     public float gray_height;
     public bool get_feature;
     public bool get_line_feature;
@@ -27,6 +27,10 @@ public class HeightmapCompress : MonoBehaviour
     public float threshold;
     public float epsilon;
     Vector3[] point_cloud;
+    public List<Vector3> point_cloud_list = new List<Vector3>();
+    public bool is_finished = false;
+    public bool is_fetched_features = false;
+    bool wait_features = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -39,9 +43,8 @@ public class HeightmapCompress : MonoBehaviour
         if (get_feature)
         {
             get_feature = false;
+            wait_features = true;
             Debug.Log("Get feature start");
-            GameObject feature_manager = new GameObject("feature_manager");
-            List<Vector3> point_cloud_list = new List<Vector3>();
 
             // W8D in heightmap
             //for (float edge_x = 0.0f; edge_x < map_size_width; edge_x += piece_length)
@@ -65,54 +68,55 @@ public class HeightmapCompress : MonoBehaviour
             //}
 
             // W8D in terrain edge detection
-            bool[] flag = new bool[x_length * z_length];
-            for (int x = 0; x < x_length; x++)
+            StartCoroutine(getPointCloud());
+        }
+
+        if (wait_features && !is_fetched_features && is_finished)
+        {
+            is_fetched_features = true;
+            wait_features = false;
+            writeFeatureFile(file_path, point_cloud_list.ToArray());
+        }
+    }
+
+    public IEnumerator getPointCloud(bool show_points = false)
+    {
+        is_finished = false;
+        is_fetched_features = false;
+        GameObject feature_manager = new GameObject("feature_manager");
+        bool[] flag = new bool[(chunk_x_piece_num + 1) * (chunk_z_piece_num + 1)];
+        for (int x = 0; x <= chunk_x_piece_num; x++)
+        {
+            for (int z = 0; z <= chunk_z_piece_num; z++)
             {
-                for (int z = 0; z < z_length; z++)
+                if (edges[x * (chunk_z_piece_num + 1) + z] > threshold)
                 {
-                    if (edges[x * z_length + z] > threshold)
-                    {
-                        List<List<Vector3>> w8d = W8DGrid(x_length, z_length, x, z, point_cloud_list, flag);
-                        Vector3[] w8d_center = new Vector3[1];
-                        w8d_center[0] = vertice[x * z_length + z];
+                    List<List<Vector3>> w8d = W8DGrid(chunk_x_piece_num + 1, chunk_z_piece_num + 1, x, z, point_cloud_list, flag);
+                    Vector3[] w8d_center = new Vector3[1];
+                    w8d_center[0] = vertice[x * (chunk_z_piece_num + 1) + z];
+                    if (show_points)
                         showPoint(w8d_center, "Feature_Center", feature_manager.transform, red_ball, 16.0f);
-                        for (int w8d_index = 0; w8d_index < w8d.Count; w8d_index++)
+                    for (int w8d_index = 0; w8d_index < w8d.Count; w8d_index++)
+                    {
+                        for (int w8d_point_index = 0; w8d_point_index < w8d[w8d_index].Count; w8d_point_index++)
                         {
-                            for (int w8d_point_index = 0; w8d_point_index < w8d[w8d_index].Count; w8d_point_index++)
+                            if (point_cloud_list.Contains(w8d[w8d_index][w8d_point_index]))
                             {
-                                if (point_cloud_list.Contains(w8d[w8d_index][w8d_point_index]))
-                                {
-                                    w8d[w8d_index].RemoveAt(w8d_point_index);
-                                    w8d_point_index--;
-                                }
+                                w8d[w8d_index].RemoveAt(w8d_point_index);
+                                w8d_point_index--;
                             }
-                            point_cloud_list.AddRange(w8d[w8d_index]);
                         }
+                        point_cloud_list.AddRange(w8d[w8d_index]);
                     }
                 }
             }
-
-            point_cloud = point_cloud_list.ToArray();
-            showPoint(point_cloud, "Feature", feature_manager.transform, blue_ball, 8.0f);
-
-            KDTree kdtree = new KDTree();
-            kdtree.buildKDTree(point_cloud);
-
-            using (StreamWriter sw = new StreamWriter(Application.streamingAssetsPath + "//" + file_path))
-            {
-                sw.WriteLine(PublicOutputInfo.boundary_min.x + " " + PublicOutputInfo.boundary_min.y);
-                sw.WriteLine(PublicOutputInfo.origin_pos.x + " " + PublicOutputInfo.origin_pos.y + " " + PublicOutputInfo.origin_pos.z);
-                sw.WriteLine(x_length + " " + z_length);
-                sw.WriteLine((min_x - PublicOutputInfo.origin_pos.x).ToString() + " " + (-PublicOutputInfo.origin_pos.y).ToString() + " " + (min_z - PublicOutputInfo.origin_pos.z).ToString());
-                sw.WriteLine(point_cloud.Length);
-                for (int point_index = 0; point_index < point_cloud.Length; point_index++)
-                {
-                    Vector3 feature_out = new Vector3(kdtree.nodes[point_index].x - PublicOutputInfo.origin_pos.x, kdtree.nodes[point_index].y, kdtree.nodes[point_index].z - PublicOutputInfo.origin_pos.z);
-                    sw.WriteLine(feature_out.x + " " + feature_out.y + " " + feature_out.z + " " + kdtree.parent[point_index] + " " + kdtree.left[point_index] + " " + kdtree.right[point_index]);
-                }
-            }
-            Debug.Log("Get feature finish");
         }
+
+        if (show_points)
+            showPoint(point_cloud_list.ToArray(), "Feature", feature_manager.transform, blue_ball, 8.0f);
+
+        is_finished = true;
+        yield return null;
     }
 
     List<List<Vector3>> W8DGrid(int x_length, int z_length, int center_x, int center_z, List<Vector3> point_cloud_list, bool[] flag)
@@ -160,7 +164,7 @@ public class HeightmapCompress : MonoBehaviour
                 Color gray = heightmap.GetPixel(Mathf.FloorToInt(terrain_feature_ready.x / map_size_width * heightmap.width), Mathf.FloorToInt(terrain_feature_ready.z / map_size_height * heightmap.height));
                 //terrain_feature_lonlats.Add(terrain_feature_lonlat);
                 terrain_feature_ready.y = gray.r * gray_height;
-                terrain_feature_ready += new Vector3(min_x, 0.0f, min_z);
+                terrain_feature_ready += new Vector3(chunk_x_min, 0.0f, chunk_z_min);
                 terrain_feature_readys.Add(terrain_feature_ready);
                 // no near detection
                 terrain_feature_points[dir].Add(terrain_feature_ready);
@@ -192,5 +196,27 @@ public class HeightmapCompress : MonoBehaviour
             ball.name = tag + "_" + point_index.ToString();
             ball.transform.parent = parent;
         }
+    }
+
+    void writeFeatureFile(string file_path, Vector3[] point_cloud)
+    {
+        KDTree kdtree = new KDTree();
+        kdtree.buildKDTree(point_cloud);
+
+        Debug.Log("Writing " + file_path);
+        using (StreamWriter sw = new StreamWriter(file_path))
+        {
+            sw.WriteLine(PublicOutputInfo.boundary_min.x + " " + PublicOutputInfo.boundary_min.y);
+            sw.WriteLine(PublicOutputInfo.origin_pos.x + " " + PublicOutputInfo.origin_pos.y + " " + PublicOutputInfo.origin_pos.z);
+            sw.WriteLine(chunk_x_piece_num + " " + chunk_z_piece_num);
+            sw.WriteLine((chunk_x_min - PublicOutputInfo.origin_pos.x).ToString() + " " + (-PublicOutputInfo.origin_pos.y).ToString() + " " + (chunk_z_min - PublicOutputInfo.origin_pos.z).ToString());
+            sw.WriteLine(point_cloud.Length);
+            for (int point_index = 0; point_index < point_cloud.Length; point_index++)
+            {
+                Vector3 feature_out = new Vector3(kdtree.nodes[point_index].x - PublicOutputInfo.origin_pos.x, kdtree.nodes[point_index].y, kdtree.nodes[point_index].z - PublicOutputInfo.origin_pos.z);
+                sw.WriteLine(feature_out.x + " " + feature_out.y + " " + feature_out.z + " " + kdtree.parent[point_index] + " " + kdtree.left[point_index] + " " + kdtree.right[point_index]);
+            }
+        }
+        Debug.Log("Write " + file_path + " Successfully!");
     }
 }
