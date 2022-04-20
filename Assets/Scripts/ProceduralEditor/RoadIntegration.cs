@@ -237,13 +237,13 @@ public class RoadIntegration : MonoBehaviour
         {
             Vector3 point = osm_reader.points_lib[osm_reader.pathes[new_road_index].ref_node[new_road_ref_index]].position;
             if (point.x >= piece_min_x)
-                view_max_x = Mathf.Max(view_max_x, piece_min_x + (Mathf.CeilToInt((point.x - piece_min_x) / PublicOutputInfo.piece_length) + 1 + TerrainGenerator.vision_piece) * PublicOutputInfo.piece_length);
+                view_max_x = Mathf.Max(view_max_x, piece_min_x + (Mathf.CeilToInt((point.x - piece_min_x) / PublicOutputInfo.piece_length) + 1 + TerrainGenerator.vision_patch_num) * PublicOutputInfo.piece_length);
             if (point.z >= piece_min_z)
-                view_max_z = Mathf.Max(view_max_z, piece_min_z + (Mathf.CeilToInt((point.z - piece_min_z) / PublicOutputInfo.piece_length) + 1 + TerrainGenerator.vision_piece) * PublicOutputInfo.piece_length);
+                view_max_z = Mathf.Max(view_max_z, piece_min_z + (Mathf.CeilToInt((point.z - piece_min_z) / PublicOutputInfo.piece_length) + 1 + TerrainGenerator.vision_patch_num) * PublicOutputInfo.piece_length);
             if (point.x < piece_min_x)
-                view_min_x = Mathf.Min(view_min_x, piece_min_x - (Mathf.CeilToInt((piece_min_x - point.x) / PublicOutputInfo.piece_length) + TerrainGenerator.vision_piece) * PublicOutputInfo.piece_length);
+                view_min_x = Mathf.Min(view_min_x, piece_min_x - (Mathf.CeilToInt((piece_min_x - point.x) / PublicOutputInfo.piece_length) + TerrainGenerator.vision_patch_num) * PublicOutputInfo.piece_length);
             if (point.z < piece_min_z)
-                view_min_z = Mathf.Min(view_min_z, piece_min_z - (Mathf.CeilToInt((piece_min_z - point.z) / PublicOutputInfo.piece_length) + TerrainGenerator.vision_piece) * PublicOutputInfo.piece_length);
+                view_min_z = Mathf.Min(view_min_z, piece_min_z - (Mathf.CeilToInt((piece_min_z - point.z) / PublicOutputInfo.piece_length) + TerrainGenerator.vision_patch_num) * PublicOutputInfo.piece_length);
             //view_max_x = Mathf.Max(view_max_x, point.x + vision_length);
             //view_max_z = Mathf.Max(view_max_z, point.z + vision_length);
             //view_min_x = Mathf.Min(view_min_x, point.x - vision_length);

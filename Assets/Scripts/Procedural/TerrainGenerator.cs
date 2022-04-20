@@ -6,50 +6,58 @@ using System.IO;
 static public class TerrainGenerator
 {
     static public string file_path = "YangJing1/features_100_16_fix.f"; // _150_32
-    static public bool is_initial = false;
-    static public int x_length;
-    static public int z_length;
-    static public float min_x;
+    static public bool is_initial = false;                              // Whether feature points file has been read
+    static public int x_index_length;                                   // The number of pieces in x
+    static public int z_index_length;                                   // The number of pieces in z
+    static public float min_x;                                          // The minimum of whole terrains x
     static public float min_y;
-    static public float min_z;
+    static public float min_z;                                          // The minimum of whole terrains z
     static float boundary_min_x;
     static float boundary_min_z;
     static float origin_x;
     static float origin_y;
     static float origin_z;
     static public Vector3[] features;
-    static public Material terrain_mat;
-    static public Material terrain_idw_mat;
+    static public Material terrain_mat;                                 // Use the standard material. The vertices are calculated by CPU
+    static public Material terrain_idw_mat;                             // Use the material with IDW shader
     static public bool generate;
-    static public int vision_piece = 10;
-    static public List<GameObject> terrains;
-    static public bool need_update = false;
-    static public int center_piece_x;
-    static public int center_piece_z;
-    static public Queue<Vector3> loading_vec3s = new Queue<Vector3>();
-    static public Queue<int> generate_center_x = new Queue<int>();
-    static public Queue<int> generate_center_z = new Queue<int>();
-    static public bool[] is_generated;
-    static public List<int> generated_x_list;
-    static public List<int> generated_z_list;
-    static public KDTree kdtree;
-    static public int terrain_mode = 0; // 0 is DEM 1 is IDW
+    static public int vision_patch_num = 10;                            // The number of patches the viewer can see
+    static public List<GameObject> terrains;                            // Store all patches of terrains
+    static public bool need_update = false;                             // Call TerrainManager to generate new patches
+    static public int patch_x_index;                                    // Used to calculate the index for removing checking
+    static public int patch_z_index;                                    // Used to calculate the index for removing checking
+    static public Queue<Vector3> loading_vec3s = new Queue<Vector3>();  // Loading Queue
+    static public Queue<int> queue_patch_x_index = new Queue<int>();    // Patches Queue
+    static public Queue<int> queue_patch_z_index = new Queue<int>();    // Patches Queue
+    static public bool[] is_generated;                                  // Check the terrain is generated or not
+    static public List<int> generated_x_list;                           // Used to check and remove terrain whether in view or not
+    static public List<int> generated_z_list;                           // Used to check and remove terrain whether in view or not
+    static public KDTree kdtree;                                        // For searching and recording feature points
+    static public int terrain_mode = 0;                                 // 0 is DEM 1 is IDW
+    static public int piece_num = 4;                                    // The number of piece in a patch
     //static public GameObject feature_ball_prefab;
 
+    /// <summary>
+    /// Load feature points file with file_path.
+    /// Everything that needs height information must wait until is_initial is True.
+    /// </summary>
     static public void loadTerrain()
     {
-        //load terrain info
         readFeatureFile(Application.streamingAssetsPath + "//" + file_path);
-        is_generated = new bool[x_length * z_length];
+        is_generated = new bool[x_index_length * z_index_length];
         generated_x_list = new List<int>();
         generated_z_list = new List<int>();
         is_initial = true;
     }
 
+    /// <summary>
+    /// Generate terrain near position.
+    /// If is_initial is false, every point must store to loading_vec3s and wait TerrainGenerator to initialize.
+    /// </summary>
+    /// <param name="position">The area with position.</param>
     static public void generateTerrain(Vector3 position)
     {
-        //generate terrain near position
-        if (!is_initial)
+        if (!is_initial) // generated_x_list, generated_z_list havn't been initial
         {
             loading_vec3s.Enqueue(position);
         }
@@ -67,6 +75,7 @@ static public class TerrainGenerator
         removeAreaTerrain(position.x, position.z);
     }
 
+    // Read feature points file
     static public void readFeatureFile(string file_path)
     {
         using (StreamReader sr = new StreamReader(file_path))
@@ -79,8 +88,8 @@ static public class TerrainGenerator
             origin_y = float.Parse(inputs[1]);
             origin_z = float.Parse(inputs[2]);
             inputs = sr.ReadLine().Split(' ');
-            x_length = int.Parse(inputs[0]);
-            z_length = int.Parse(inputs[1]);
+            x_index_length = int.Parse(inputs[0]);
+            z_index_length = int.Parse(inputs[1]);
             inputs = sr.ReadLine().Split(' ');
             min_x = float.Parse(inputs[0]);
             min_y = float.Parse(inputs[1]);
@@ -120,7 +129,7 @@ static public class TerrainGenerator
             sw.WriteLine($"{boundary_min_x} {boundary_min_z}");
             origin_y = -min_y;
             sw.WriteLine($"{origin_x} {origin_y} {origin_z}");
-            sw.WriteLine($"{x_length} {z_length}");
+            sw.WriteLine($"{x_index_length} {z_index_length}");
             sw.WriteLine($"{min_x} {min_y} {min_z}");
             sw.WriteLine($"{kdtree.nodes.Length}");
             for (int f_i = 0; f_i < kdtree.nodes.Length; f_i++)
@@ -133,7 +142,7 @@ static public class TerrainGenerator
 
     static public Vector4[] getAreaFeatures(float x_small_min, float z_small_min, int x_piece, int z_piece)
     {
-        float expanded_length = vision_piece * PublicOutputInfo.piece_length;
+        float expanded_length = vision_patch_num * PublicOutputInfo.piece_length;
         int[] area_features_index = kdtree.getAreaPoints(x_small_min - expanded_length, z_small_min - expanded_length, x_small_min + x_piece * PublicOutputInfo.piece_length + expanded_length, z_small_min + z_piece * PublicOutputInfo.piece_length + expanded_length);
         Vector4[] area_features = new Vector4[area_features_index.Length];
         for (int area_features_index_index = 0; area_features_index_index < area_features_index.Length; area_features_index_index++)
@@ -145,7 +154,7 @@ static public class TerrainGenerator
 
     static public Vector3[] getVertexFeatures(float x, float z)
     {
-        float expanded_length = vision_piece * PublicOutputInfo.piece_length;
+        float expanded_length = vision_patch_num * PublicOutputInfo.piece_length;
         int[] area_features_index = kdtree.getAreaPoints(x - expanded_length, z - expanded_length, x + expanded_length, z + expanded_length);
         Vector3[] area_features = new Vector3[area_features_index.Length];
         for (int area_features_index_index = 0; area_features_index_index < area_features_index.Length; area_features_index_index++)
@@ -157,7 +166,7 @@ static public class TerrainGenerator
 
     static public Vector3[] getVertexFeaturesFromArea(float x, float z, Vector4[] area_features)
     {
-        float expanded_length = vision_piece * PublicOutputInfo.piece_length;
+        float expanded_length = vision_patch_num * PublicOutputInfo.piece_length;
         List<Vector3> vertex_features = new List<Vector3>();
         for (int area_features_index_index = 0; area_features_index_index < area_features.Length; area_features_index_index++)
         {
@@ -167,7 +176,14 @@ static public class TerrainGenerator
         return vertex_features.ToArray();
     }
 
-    static public IEnumerator generateTerrainPatch(int x_small_min, int z_small_min, int x_piece_num, int z_piece_num)
+    /// <summary>
+    /// generate a patch terrain with piece_num * piece_num size
+    /// </summary>
+    /// <param name="x_index">the index of vertex which is the beginning to generate in x axis.</param>
+    /// <param name="z_index">the index of vertex which is the beginning to generate in z axis.</param>
+    /// <param name="x_piece_num">the number of piece you want to generate in x axis.</param>
+    /// <param name="z_piece_num">the number of piece you want to generate in z axis.</param>
+    static public IEnumerator generateTerrainPatch(int x_index, int z_index, int x_piece_num, int z_piece_num)
     {
         Mesh mesh = new Mesh();
         float[,,] terrain_points = new float[x_piece_num + 1, (z_piece_num + 1), 3];
@@ -175,22 +191,22 @@ static public class TerrainGenerator
         Vector2[] uv = new Vector2[(x_piece_num + 1) * (z_piece_num + 1)];
         int[] indices = new int[6 * x_piece_num * z_piece_num];
         int indices_index = 0;
-        float center_x = min_x + (2 * x_small_min + x_piece_num) * PublicOutputInfo.piece_length / 2;
-        float center_z = min_z + (2 * z_small_min + z_piece_num) * PublicOutputInfo.piece_length / 2;
+        float center_x = min_x + (2 * x_index + x_piece_num) * PublicOutputInfo.piece_length / 2;
+        float center_z = min_z + (2 * z_index + z_piece_num) * PublicOutputInfo.piece_length / 2;
         float center_y = 0.0f;
         if (terrain_mode == 0)
             center_y = min_y + getDEMHeight(center_x, center_z);
         else
             center_y = 0.0f;
         //float center_y = min_y + IDW.inverseDistanceWeighting(getVertexFeatures(center_x, center_z), center_x, center_z); // -15
-        Vector4[] area_features = getAreaFeatures(min_x + x_small_min * PublicOutputInfo.piece_length, min_z + z_small_min * PublicOutputInfo.piece_length, x_piece_num, z_piece_num);
+        Vector4[] area_features = getAreaFeatures(min_x + x_index * PublicOutputInfo.piece_length, min_z + z_index * PublicOutputInfo.piece_length, x_piece_num, z_piece_num);
         Vector3 center = new Vector3(center_x, center_y, center_z);
         for (int i = 0; i <= x_piece_num; i++)
         {
             for (int j = 0; j <= z_piece_num; j++)
             {
-                terrain_points[i, j, 0] = min_x + (x_small_min + i) * PublicOutputInfo.piece_length;
-                terrain_points[i, j, 2] = min_z + (z_small_min + j) * PublicOutputInfo.piece_length;
+                terrain_points[i, j, 0] = min_x + (x_index + i) * PublicOutputInfo.piece_length;
+                terrain_points[i, j, 2] = min_z + (z_index + j) * PublicOutputInfo.piece_length;
                 if (terrain_mode == 0)
                     terrain_points[i, j, 1] = min_y + getDEMHeight(terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias
                 else
@@ -228,24 +244,25 @@ static public class TerrainGenerator
         mesh.Optimize();
         //Name the mesh
         mesh.name = "terrain_mesh";
-        GameObject terrain = new GameObject("terrain_IDW_" + x_small_min + "_" + z_small_min);
+        GameObject terrain = new GameObject("terrain_peice_" + x_index + "_" + z_index);
         MeshFilter mf = terrain.AddComponent<MeshFilter>();
         MeshRenderer mr = terrain.AddComponent<MeshRenderer>();
         mf.mesh = mesh;
-        //MaterialPropertyBlock mpb = new MaterialPropertyBlock();
-        //mpb.SetVectorArray("features2", area_features);
-        //mpb.SetInt("features_count", area_features.Length);
-        //mr.SetPropertyBlock(mpb);
-
-        //mr.material = new Material(terrain_mat);
-        mr.material = new Material(terrain_idw_mat);
-        mr.material.SetVectorArray("features", area_features);
-        mr.material.SetInt("features_count", area_features.Length);
-        mr.material.SetFloat("height_base", min_y);
+        if (terrain_mode == 0)
+        {
+            mr.material = new Material(terrain_mat);
+        }
+        else
+        {
+            mr.material = new Material(terrain_idw_mat);
+            mr.material.SetVectorArray("features", area_features);
+            mr.material.SetInt("features_count", area_features.Length);
+            mr.material.SetFloat("height_base", min_y);
+        }
         terrain.transform.position = center;
         terrains.Add(terrain);
-        generated_x_list.Add(x_small_min);
-        generated_z_list.Add(z_small_min);
+        generated_x_list.Add(x_index);
+        generated_z_list.Add(z_index);
         //Debug.Log("Success: " + x_small_min + "_" + z_small_min);
 
         terrain.AddComponent<TerrainView>();
@@ -256,11 +273,10 @@ static public class TerrainGenerator
     {
         int x_index = Mathf.FloorToInt((x - min_x) / PublicOutputInfo.piece_length);
         int z_index = Mathf.FloorToInt((z - min_z) / PublicOutputInfo.piece_length);
-        int piece = 4;
-        center_piece_x = x_index - x_index % piece;
-        center_piece_z = z_index - z_index % piece;
-        generate_center_x.Enqueue(center_piece_x);
-        generate_center_z.Enqueue(center_piece_z);
+        patch_x_index = x_index - x_index % piece_num;
+        patch_z_index = z_index - z_index % piece_num;
+        queue_patch_x_index.Enqueue(patch_x_index);
+        queue_patch_z_index.Enqueue(patch_z_index);
         need_update = true;
     }
 
@@ -268,10 +284,10 @@ static public class TerrainGenerator
     {
         for (int generated_list_index = 0; generated_list_index < generated_x_list.Count; generated_list_index++)
         {
-            int ddist = Mathf.Abs(generated_x_list[generated_list_index] - center_piece_x) / 4 + Mathf.Abs(generated_z_list[generated_list_index] - center_piece_z) / 4;
-            if (ddist > vision_piece * 2)
+            int ddist = Mathf.Abs(generated_x_list[generated_list_index] - patch_x_index) / piece_num + Mathf.Abs(generated_z_list[generated_list_index] - patch_z_index) / piece_num;
+            if (ddist > vision_patch_num * 2)
             {
-                is_generated[generated_x_list[generated_list_index] * z_length + generated_z_list[generated_list_index]] = false;
+                is_generated[generated_x_list[generated_list_index] * z_index_length + generated_z_list[generated_list_index]] = false;
                 GameObject.Destroy(terrains[generated_list_index]);
                 generated_x_list.RemoveAt(generated_list_index);
                 generated_z_list.RemoveAt(generated_list_index);
@@ -305,8 +321,6 @@ static public class TerrainGenerator
         getAreaTerrainInfo(x, z);
         //Vector3[] area_features = getAreaFeatures(center_piece_x, center_piece_z, 4, 4);
         Vector3[] vertex_features = getVertexFeatures(x, z);
-        //if (vertex_features.Length > 3800)
-        //    Debug.Log("Warning! " + vertex_features.Length + " appear!");
         return IDW.inverseDistanceWeighting(vertex_features, x, z, old_base);
     }
 
@@ -327,7 +341,7 @@ static public class TerrainGenerator
         float center_x = min_x + (2 * x_small_min + x_small_length - 1) * PublicOutputInfo.piece_length / 2;
         float center_z = min_z + (2 * z_small_min + z_small_length - 1) * PublicOutputInfo.piece_length / 2;
         //float center_y = min_y + getDEMHeight(center_x, center_z);
-        float center_y = min_y; // -15
+        float center_y = min_y;
         Vector3 center = new Vector3(center_x, center_y, center_z);
         for (int i = 0; i < x_small_length; i++)
         {
@@ -338,7 +352,7 @@ static public class TerrainGenerator
                 //terrain_points[i, j, 1] = min_y + getDEMHeight(terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias
                 terrain_points[i, j, 1] = min_y + heightmap.GetPixel(i, j).r * 255; // min_y is a bias  -15
                 vertice[i * z_small_length + j] = new Vector3(terrain_points[i, j, 0] - center.x, terrain_points[i, j, 1] - center.y, terrain_points[i, j, 2] - center.z);
-                uv[i * z_small_length + j] = new Vector2((float)(x_small_min + i) / x_length, (float)(z_small_min + j) / z_length);
+                uv[i * z_small_length + j] = new Vector2((float)(x_small_min + i) / x_index_length, (float)(z_small_min + j) / z_index_length);
             }
         }
 
