@@ -40,13 +40,7 @@ static public class HouseGenerator
             single_point.y = TerrainGenerator.getHeightWithBais(single_point.x, single_point.y);
         }
         GameObject gobj;
-        if (single_point.y < -0.5f)
-        {
-            gobj = builder.build("polygon_house1");
-        }
-        else {
-            gobj = builder.build(component_names[Random.Range(0, component_names.Length)]);
-        }
+        gobj = builder.build(component_names[Random.Range(0, component_names.Length)]);
         gobj.transform.position = single_point;
         gobj.transform.rotation = Quaternion.Euler(0,Random.Range(0,360),0);
         if (!gobj_db.ContainsKey(segment_id)) {

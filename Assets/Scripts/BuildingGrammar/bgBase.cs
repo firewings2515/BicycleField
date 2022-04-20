@@ -72,11 +72,6 @@ public class bgBase : bgComponent
             float total_t = t / 2.0f;
             float length = Vector3.Distance(v1, v2) * t;
             for (int j = 0; j < facades[i].Count; j++) {
-                Debug.Log(i);
-                Debug.Log(vertexs.Count);
-                Debug.Log(j);
-                Debug.Log(facades[i].Count);
-
                 facades[i][j].width = length;
                 facades[i][j].random_background = this.random_background;
                 Vector3 facade_pos = Vector3.Lerp(v1, v2, total_t);

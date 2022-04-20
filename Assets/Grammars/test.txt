@@ -170,3 +170,15 @@ roof_base():Base(){
 hello_house():Building(){
 	floors_base()	
 }
+
+hello_facade2():Facade(){
+	first_floor_wall()
+	nothing_wall()
+	hello_wall()
+	nothing_wall()
+	hello_wall()
+	nothing_wall()
+	hello_wall()
+	nothing_wall()
+	hello_wall()
+}
