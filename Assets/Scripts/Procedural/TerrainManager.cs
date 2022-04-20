@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class TerrainManager : MonoBehaviour
 {
-    public Material terrain_idw_mat;
-    public Material terrain_mat;
-    public int terrain_mode = 0;
+    public Material terrain_idw_mat;                        // Setting TerrainGenerator: Use the standard material. The vertices are calculated by CPU
+    public Material terrain_mat;                            // Setting TerrainGenerator: Use the material with IDW shader
+    public int terrain_mode = 0;                            // Setting TerrainGenerator: 0 is DEM 1 is IDW
     //public GameObject feature_ball_prefab;
-    Queue<int> queue_generate_patch_x = new Queue<int>();
-    Queue<int> queue_generate_patch_z = new Queue<int>();
-    bool loop_begin = false;
+    Queue<int> queue_generate_patch_x = new Queue<int>();   // Patch Queue
+    Queue<int> queue_generate_patch_z = new Queue<int>();   // Patch Queue
+    bool loop_begin = false;                                // Begin InvokeRepeating("generateTerrainPatch", 0.0f, 0.01666f)
 
     // Start is called before the first frame update
     void Start()
@@ -28,12 +28,14 @@ public class TerrainManager : MonoBehaviour
         if (TerrainGenerator.is_initial && !loop_begin)
         {
             loop_begin = true;
-            // Process data while data in queue
+
+            // Pop all Loading Queue 
             while (TerrainGenerator.loading_vec3s.Count > 0)
             {
                 Vector3 loading_vec3 = TerrainGenerator.loading_vec3s.Dequeue();
                 TerrainGenerator.generateTerrain(loading_vec3);
             }
+
             InvokeRepeating("generateTerrainPatch", 0.0f, 0.01666f);
         }
 
@@ -44,6 +46,9 @@ public class TerrainManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Find patches in view.
+    /// </summary>
     void queuePatchesInView()
     {
         while (TerrainGenerator.queue_patch_x_index.Count > 0)
@@ -69,6 +74,9 @@ public class TerrainManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Generate patch in Patches Queue.
+    /// </summary>
     void generateTerrainPatch()
     {
         while (queue_generate_patch_x.Count > 0)

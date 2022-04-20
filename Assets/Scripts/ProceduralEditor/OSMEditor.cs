@@ -40,7 +40,8 @@ public class OSMEditor : MonoBehaviour
 
     void setCam()
     {
-        cam.transform.position = osm_reader.points_lib[initial_point].position + new Vector3(0, 800.0f, 0);
+        if (osm_reader.points_lib.ContainsKey(initial_point))
+            cam.transform.position = osm_reader.points_lib[initial_point].position + new Vector3(0, 800.0f, 0);
         cam.transform.rotation = Quaternion.Euler(90, 0, 0);
     }
 }

@@ -247,15 +247,12 @@ public class OSMReader
             }
         }
 
-
         // normalize points
         List<float> all_elevations = new List<float>();
         if (!is_redundant)
         {
             boundary_min = new Vector2((float)MercatorProjection.lonToX(boundary_min.x), (float)MercatorProjection.latToY(boundary_min.y));
             boundary_max = new Vector2((float)MercatorProjection.lonToX(boundary_max.x), (float)MercatorProjection.latToY(boundary_max.y));
-
-
 
             //////////////////////////////get elevations/////////////////////////////////////////
             List<EarthCoord> all_coords = new List<EarthCoord>();
@@ -287,13 +284,13 @@ public class OSMReader
             pathes[pathes_index].updateOrient(points_lib);
         }
 
-        mergeRoad();
+        //mergeRoad();
         if (write_osm3d)
         {
             writeOSM(osm3d_file_path);
         }
 
-        Debug.Log("Read OSM " + file_path + "Successfully!");
+        Debug.Log("Read OSM " + file_path + " Successfully!");
         read_finish = true;
     }
 

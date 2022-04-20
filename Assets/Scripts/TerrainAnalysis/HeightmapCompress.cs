@@ -165,20 +165,6 @@ public class HeightmapCompress : MonoBehaviour
                 // no near detection
                 terrain_feature_points[dir].Add(terrain_feature_ready);
             }
-            //for (int point_index = 0; point_index < terrain_feature_readys.Count; point_index++)
-            //{
-            //    bool is_too_near = false;
-            //    for (int point_cloud_index = 0; point_cloud_index < point_cloud_list.Count; point_cloud_index++)
-            //    {
-            //        if (distance2D(point_cloud_list[point_cloud_index].x, point_cloud_list[point_cloud_index].z, terrain_feature_readys[point_index].x, terrain_feature_readys[point_index].z) < 0.1f)
-            //        {
-            //            is_too_near = true;
-            //            break;
-            //        }
-            //    }
-            //    if (!is_too_near)
-            //        terrain_feature_points[dir].Add(terrain_feature_readys[point_index]);
-            //}
 
             if (terrain_feature_points[dir].Count > 1)
                 terrain_feature_points[dir] = DouglasPeuckerAlgorithm.DouglasPeucker(terrain_feature_points[dir], epsilon);

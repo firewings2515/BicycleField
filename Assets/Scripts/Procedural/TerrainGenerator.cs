@@ -27,8 +27,8 @@ static public class TerrainGenerator
     static public int patch_x_index;                                    // Used to calculate the index for removing checking
     static public int patch_z_index;                                    // Used to calculate the index for removing checking
     static public Queue<Vector3> loading_vec3s = new Queue<Vector3>();  // Loading Queue
-    static public Queue<int> queue_patch_x_index = new Queue<int>();    // Patches Queue
-    static public Queue<int> queue_patch_z_index = new Queue<int>();    // Patches Queue
+    static public Queue<int> queue_patch_x_index = new Queue<int>();    // Coordinate info Queue
+    static public Queue<int> queue_patch_z_index = new Queue<int>();    // Coordinate info Queue
     static public bool[] is_generated;                                  // Check the terrain is generated or not
     static public List<int> generated_x_list;                           // Used to check and remove terrain whether in view or not
     static public List<int> generated_z_list;                           // Used to check and remove terrain whether in view or not
@@ -65,7 +65,6 @@ static public class TerrainGenerator
         {
             getAreaTerrainInfo(position.x, position.z);
             
-            //remove terrain not near position
             removeAreaTerrain(position.x, position.z);
         }
     }
@@ -280,6 +279,9 @@ static public class TerrainGenerator
         need_update = true;
     }
 
+    /// <summary>
+    /// Remove terrains not near the position
+    /// </summary>
     static void removeAreaTerrain(float x, float z)
     {
         for (int generated_list_index = 0; generated_list_index < generated_x_list.Count; generated_list_index++)

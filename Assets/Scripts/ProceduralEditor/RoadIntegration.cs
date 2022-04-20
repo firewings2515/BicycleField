@@ -189,44 +189,18 @@ public class RoadIntegration : MonoBehaviour
                 if (bicycle_points_list_index + 1 == bicycle_points_list.Count)
                     break;
                 List<string> house_polygon_ids = HouseIntegration.house_polygons_object_index[bicycle_points_list_index];
-                foreach (string house_polygon_id in house_polygon_ids)
+                for (int house_polygon_ids_index = 0; house_polygon_ids_index < house_polygon_ids.Count; house_polygon_ids_index++)
                 {
-                    Vector3[] vertice = HouseIntegration.house_polygons_view_instances[house_polygon_id].points;
-                    sw.Write($"H {vertice.Length + 1} ");
-                    foreach (Vector3 origin_vertex in vertice)
+                    Vector3[] vertices = HouseIntegration.house_polygons_view_instances[house_polygon_ids[house_polygon_ids_index]].points;
+                    sw.Write($"H {vertices.Length} ");
+                    for (int vertices_index = 0; vertices_index < vertices.Length; vertices_index++)
                     {
-                        Vector3 vertex = origin_vertex - PublicOutputInfo.origin_pos;
+                        Vector3 vertex = vertices[vertices_index] - PublicOutputInfo.origin_pos;
                         sw.Write($"{vertex.x} {vertex.y} {vertex.z} ");
                     }
+                    sw.Write("\n");
                 }
             }
-
-            // old method
-            //sw.WriteLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-            //sw.WriteLine("<osm version=\"0.6\" generator=\"CGImap0.8.5(3066139spike-06.openstreetmap.org)\" copyright=\"OpenStreetMapandcontributors\" attribution=\"http://www.openstreetmap.org/copyright\" license=\"http://opendatacommons.org/licenses/odbl/1-0/\">");
-            //foreach (KeyValuePair<string, Node> point in GetComponent<OSMRoadRender>().osm_reader.points_lib)
-            //{
-            //    if (point.Value.tag_k.Count == 0)
-            //    {
-            //        sw.WriteLine($" <node id=\"{point.Key}\" x=\"{point.Value.position.x}\" ele=\"{point.Value.position.y}\" z=\"{point.Value.position.z}\"/>");
-            //    }
-            //    else
-            //    {
-            //        sw.WriteLine($" <node id=\"{point.Key}\" x=\"{point.Value.position.x}\" ele=\"{point.Value.position.y}\" z=\"{point.Value.position.z}\">");
-            //        for (int k_index = 0; k_index < point.Value.tag_k.Count; k_index++)
-            //        {
-            //            sw.WriteLine($"  <tag k=\"{point.Value.tag_k[k_index]}\" v=\"{point.Value.tag_v[k_index]}\"/>");
-            //        }
-            //        sw.WriteLine(" </node>");
-            //    }
-            //}
-
-            //sw.WriteLine($" <way id=\"NTUSTCSIE\">");
-            //foreach (string ref_id in bicycle_points_list)
-            //{
-            //    sw.WriteLine($"  <nd x=\"{pos.x}\"/>");
-            //}
-            //sw.WriteLine(" </way>");
         }
         Debug.Log("Write " + file_path + " Successfully!");
     }
