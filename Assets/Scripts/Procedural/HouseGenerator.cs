@@ -5,7 +5,7 @@ using UnityEngine;
 static public class HouseGenerator
 {
     static string[] component_names = new string[] { 
-        "house1","floors_base","hello_house"
+        "house1","floors_base","hello_house","polygon_house1"
     };
     static string[] grammar_files_path = new string[] {
         @"Assets\Grammars\test.txt",
@@ -36,8 +36,9 @@ static public class HouseGenerator
         //demo code
         string[] house_infos = info.Split(' ');
         Vector3 single_point = new Vector3(float.Parse(house_infos[2]), float.Parse(house_infos[3]), float.Parse(house_infos[4])) + new Vector3(-200, 0, -200);
+        
         if (TerrainGenerator.is_initial) {
-            single_point.y = TerrainGenerator.getHeightWithBais(single_point.x, single_point.y);
+            single_point.y = TerrainGenerator.getHeightWithBais(single_point.x -200, single_point.y -200);
         }
         GameObject gobj;
         gobj = builder.build(component_names[Random.Range(0, component_names.Length)]);
