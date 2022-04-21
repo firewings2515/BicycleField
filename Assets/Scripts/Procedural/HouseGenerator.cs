@@ -35,7 +35,7 @@ static public class HouseGenerator
         Debug.Log("--------------generate--------------");
         //demo code
         string[] house_infos = info.Split(' ');
-        Vector3 single_point = new Vector3(float.Parse(house_infos[2]), float.Parse(house_infos[3]), float.Parse(house_infos[4])) + new Vector3(-200, 0, -200);
+        Vector3 single_point = new Vector3(float.Parse(house_infos[2]), float.Parse(house_infos[3]), float.Parse(house_infos[4]));
         
         if (TerrainGenerator.is_initial) {
             single_point.y = TerrainGenerator.getHeightWithBais(single_point.x, single_point.z);
