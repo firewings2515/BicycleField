@@ -10,6 +10,7 @@ public class OSMEditor : MonoBehaviour
     public bool is_initial = false;
     public GameObject cam;
     public string initial_point = "45263678_226830312+24";
+    public string initial_road = "";
     public GameObject view_instance;
     // Start is called before the first frame update
     void Start()
@@ -40,8 +41,18 @@ public class OSMEditor : MonoBehaviour
 
     void setCam()
     {
-        if (osm_reader.points_lib.ContainsKey(initial_point))
-            cam.transform.position = osm_reader.points_lib[initial_point].position + new Vector3(0, 800.0f, 0);
+        if (!osm_reader.points_lib.ContainsKey(initial_point))
+        {
+            int path_index = osm_reader.findPathNameIndex(initial_road);
+            if (path_index == -1)
+            {
+                Debug.Log(initial_road + " not found");
+                path_index = 0;
+            }
+            initial_point = osm_reader.pathes[path_index].ref_node[0];
+            Debug.Log("need to set exist initial_point");
+        }
+        cam.transform.position = osm_reader.points_lib[initial_point].position + new Vector3(0, 800.0f, 0);
         cam.transform.rotation = Quaternion.Euler(90, 0, 0);
     }
 }

@@ -5,7 +5,7 @@ using System.IO;
 
 static public class TerrainGenerator
 {
-    static public string file_path = "YangJing1/features_100_16_fix.f"; // _150_32
+    static public string file_path = "YangJing1/features.f";            // _150_32 _100_16_fix
     static public bool is_initial = false;                              // Whether feature points file has been read
     static public int x_index_length;                                   // The number of pieces in x
     static public int z_index_length;                                   // The number of pieces in z
