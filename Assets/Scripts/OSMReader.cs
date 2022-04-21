@@ -1140,4 +1140,14 @@ public class OSMReader
         }
         return -1;
     }
+
+    public int findPathNameIndex(string road_name)
+    {
+        for (int pathes_index = 0; pathes_index < pathes.Count; pathes_index++)
+        {
+            if (pathes[pathes_index].name == road_name)
+                return pathes_index;
+        }
+        return -1;
+    }
 }

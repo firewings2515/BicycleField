@@ -17,7 +17,6 @@ public class KDTree
         left = new int[points.Length];
         right = new int[points.Length];
         nodes_length = 0;
-        Debug.Log(points.Length);
         insertPoint(ref points, 0, points.Length, true, -1);
     }
 

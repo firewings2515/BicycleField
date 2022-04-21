@@ -42,6 +42,7 @@ public class ControlPoint : MonoBehaviour
     public void select()
     {
         GetComponent<MeshRenderer>().material = spheres_select_mat;
+        Debug.Log(point_id);
     }
 
     public void unselect()

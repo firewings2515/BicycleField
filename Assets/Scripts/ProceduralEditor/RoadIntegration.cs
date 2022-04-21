@@ -220,18 +220,6 @@ public class RoadIntegration : MonoBehaviour
                 terrain_min_x = Mathf.Min(terrain_min_x, origin_piece_x - expanded_x);
             if (point.z - expanded_z < origin_piece_z)
                 terrain_min_z = Mathf.Min(terrain_min_z, origin_piece_z - expanded_z);
-            //view_max_x = Mathf.Max(view_max_x, point.x + vision_length);
-            //view_max_z = Mathf.Max(view_max_z, point.z + vision_length);
-            //view_min_x = Mathf.Min(view_min_x, point.x - vision_length);
-            //view_min_z = Mathf.Min(view_min_z, point.z - vision_length);
         }
-        Debug.Log(terrain_max_x + " " + terrain_max_z + " " + terrain_min_x + " " + terrain_min_z);
-        float view_max_lon = 0.0f;
-        float view_max_lat = 0.0f;
-        float view_min_lon = 0.0f;
-        float view_min_lat = 0.0f;
-        osm_reader.toLonAndLat(terrain_max_x, terrain_max_z, out view_max_lon, out view_max_lat);
-        osm_reader.toLonAndLat(terrain_min_x, terrain_min_z, out view_min_lon, out view_min_lat);
-        Debug.Log(view_max_lon + " " + view_max_lat + " " + view_min_lon + " " + view_min_lat);
     }
 }
