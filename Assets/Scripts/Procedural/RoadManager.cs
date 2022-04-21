@@ -63,7 +63,7 @@ public class RoadManager : MonoBehaviour
     {
         if (getNextSegment(out string str_point))
         {
-            Vector3 vec3_point = Functions.StrToVec3(str_point) + new Vector3(-200, 0, -200);
+            Vector3 vec3_point = Functions.StrToVec3(str_point);
             vec3_point.y = 0.0f;
             last_segment = vec3_point;
 

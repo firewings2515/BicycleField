@@ -38,7 +38,7 @@ static public class HouseGenerator
         Vector3 single_point = new Vector3(float.Parse(house_infos[2]), float.Parse(house_infos[3]), float.Parse(house_infos[4])) + new Vector3(-200, 0, -200);
         
         if (TerrainGenerator.is_initial) {
-            single_point.y = TerrainGenerator.getHeightWithBais(single_point.x -200, single_point.y -200);
+            single_point.y = TerrainGenerator.getHeightWithBais(single_point.x, single_point.z);
         }
         GameObject gobj;
         gobj = builder.build(component_names[Random.Range(0, component_names.Length)]);

@@ -28,8 +28,6 @@ public class bgBase : bgComponent
         //return go;
         if (facades == null)
         {
-            vertexs = new List<Vector3>();
-            facades = new List<List<bgFacade>>();
 
             if (component_parameter.Count > 0)
             {
@@ -38,6 +36,11 @@ public class bgBase : bgComponent
                     runtime_vertex = true;
                 }
             }
+
+            if (runtime_vertex == false) {
+                vertexs = new List<Vector3>();
+            }
+            facades = new List<List<bgFacade>>();
 
             for (int i = 0; i < commands.Count; i++)
             {
