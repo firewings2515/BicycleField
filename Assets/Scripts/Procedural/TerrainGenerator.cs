@@ -193,10 +193,6 @@ static public class TerrainGenerator
         float center_x = min_x + (2 * x_index + x_piece_num) * PublicOutputInfo.piece_length / 2;
         float center_z = min_z + (2 * z_index + z_piece_num) * PublicOutputInfo.piece_length / 2;
         float center_y = 0.0f;
-        if (terrain_mode == 0)
-            center_y = min_y + getDEMHeight(center_x, center_z);
-        else
-            center_y = 0.0f;
         //float center_y = min_y + IDW.inverseDistanceWeighting(getVertexFeatures(center_x, center_z), center_x, center_z); // -15
         Vector4[] area_features = getAreaFeatures(min_x + x_index * PublicOutputInfo.piece_length, min_z + z_index * PublicOutputInfo.piece_length, x_piece_num, z_piece_num);
         Vector3 center = new Vector3(center_x, center_y, center_z);
@@ -302,9 +298,9 @@ static public class TerrainGenerator
     static public float getHeightWithBais(float x, float z)
     {
         if (terrain_mode == 0)
-            return getDEMHeight(x, z);
+            return getDEMHeight(x, z) + min_y;
         else
-            return getIDWHeightWithBais(x, z);
+            return getIDWHeight(x, z) + min_y;
     }
 
     static public float getDEMHeight(float x, float z)
@@ -324,11 +320,6 @@ static public class TerrainGenerator
         //Vector3[] area_features = getAreaFeatures(center_piece_x, center_piece_z, 4, 4);
         Vector3[] vertex_features = getVertexFeatures(x, z);
         return IDW.inverseDistanceWeighting(vertex_features, x, z, old_base);
-    }
-
-    static public float getIDWHeightWithBais(float x, float z)
-    {
-        return getIDWHeight(x, z) + min_y;
     }
 
     static public void generateSmallHeightmapTerrain(Texture2D heightmap, int x_small_min, int z_small_min, int x_small_length, int z_small_length)
