@@ -62,7 +62,8 @@ public class HgtReader
     {
         List<KeyValuePair<string, int>> rows = new List<KeyValuePair<string, int>>();
         List<float> results = new List<float>();
-        double ratio_lat = 0.0, ratio_lon = 0.0;
+        List<double> ratio_lats = new List<double>();
+        List<double> ratio_lons = new List<double>();
         for (int i = 0; i < all_coords.Count; i++)
         {
             string hgt_file_name = all_coords[i].getHgtFileName();
@@ -90,9 +91,9 @@ public class HgtReader
                 int lat_row_high = (int)Math.Ceiling((latitude - lat_int) * (resolution - 1));
                 int lon_row_high = (int)Math.Ceiling((longitude - lon_int) * (resolution - 1));
                 double lat_row = (latitude - lat_int) * (resolution - 1);
-                ratio_lat = 1 - (lat_row - lat_row_low);
+                ratio_lats.Add(1 - (lat_row - lat_row_low));
                 double lon_row = (longitude - lon_int) * (resolution - 1);
-                ratio_lon = 1 - (lon_row - lon_row_low);
+                ratio_lons.Add(1 - (lon_row - lon_row_low));
                 int position_a = hgtSeekPos(lat_row_low, lon_row_low);
                 int position_b = hgtSeekPos(lat_row_low, lon_row_high);
                 int position_c = hgtSeekPos(lat_row_high, lon_row_high);
@@ -131,18 +132,18 @@ public class HgtReader
                 continue;
             }
             if (interpolation)
-            {
                 results_x.Add((float)result);
-            }
             else
-            {
                 results.Add((float)result);
-            }
         }
+
         if (interpolation)
         {
-            double result = results_x[0] * ratio_lat * ratio_lon + results_x[1] * ratio_lat * (1 - ratio_lon) + results_x[2] * (1 - ratio_lat) * (1 - ratio_lon) + results_x[3] * (1 - ratio_lat) * ratio_lon;
-            results.Add((float)result);
+            for (int i = 0; i < rows.Count / 4; i++)
+            {
+                double result = results_x[i * 4] * ratio_lats[i] * ratio_lons[i] + results_x[i * 4 + 1] * ratio_lats[i] * (1 - ratio_lons[i]) + results_x[i * 4 + 2] * (1 - ratio_lats[i]) * (1 - ratio_lons[i]) + results_x[i * 4 + 3] * (1 - ratio_lats[i]) * ratio_lons[i];
+                results.Add((float)result);
+            }
         }
 
         return results;
