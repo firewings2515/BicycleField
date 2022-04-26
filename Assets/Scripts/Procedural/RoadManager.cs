@@ -21,30 +21,39 @@ public class RoadManager : MonoBehaviour
 
     Vector3 last_segment = new Vector3(0,0,0);
 
+    private bool is_started = false;
+
     private void Start()
     {
-        reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
-
-        //remove first default segment
-        removeEarliestRoad(false);
-
-        while (path_creator.bezierPath.NumSegments < Info.MAX_LOADED_SEGMENT)
-        {
-            getAndSetNextSegment();
-        }
-
-        //remove second default segment
-        getAndSetNextSegment();
-
-        //remove last default segment
-        removeEarliestRoad(false);
-
-        path_creator.bezierPath.NotifyPathModified();
+        
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (TerrainGenerator.is_initial && !is_started) 
+        {
+            reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
+
+            //remove first default segment
+            removeEarliestRoad(false);
+
+            while (path_creator.bezierPath.NumSegments < Info.MAX_LOADED_SEGMENT)
+            {
+                getAndSetNextSegment();
+            }
+
+            //remove second default segment
+            getAndSetNextSegment();
+
+            //remove last default segment
+            removeEarliestRoad(false);
+
+            path_creator.bezierPath.NotifyPathModified();
+            is_started = true;
+        }
+        if (!is_started) return;
+
         if (Info.MAX_LOADED_SEGMENT - current_segment <= Info.PRELOAD_SEGMENT)
         {
             getAndSetNextSegment();
@@ -133,13 +142,13 @@ public class RoadManager : MonoBehaviour
     private void spawnAnchorCheckpoint(Vector3 position)
     {
         GameObject prefab = new GameObject();
-        //position.y = TerrainGenerator.getIDWHeightWithBais(position.x, position.z);
+        position.y = TerrainGenerator.getHeightWithBais(position.x, position.z);
         prefab.transform.position = position;
         prefab.AddComponent<SphereCollider>();
         prefab.GetComponent<SphereCollider>().isTrigger = true;
         prefab.GetComponent<SphereCollider>().transform.localScale *= Info.CHECKPOINT_SIZE;
         prefab.AddComponent<AnchorCheckpoint>();
-
+        prefab.layer = LayerMask.NameToLayer("CollisionDetection");
     }
 
     public void incrementCurrentSegment()
