@@ -158,4 +158,23 @@ public class bgBuilder
             }
         }
     }
+
+    public void load_base_facades(string name, List<List<string>> component_names)
+    {
+        for (int i = 0; i < parser.bases.Count; i++)
+        {
+            if (parser.bases[i].name == name)
+            {
+                parser.bases[i].facades = new List<List<bgFacade>>();
+                for (int j = 0; j < component_names.Count; j++) {
+                    parser.bases[i].facades.Add(new List<bgFacade>());
+                    for (int k = 0; k < component_names[j].Count; k++)
+                    {
+                        bgFacade facade = get_facade(component_names[j][k]);
+                        parser.bases[i].facades[j].Add(facade);
+                    }
+                }
+            }
+        }
+    }
 }

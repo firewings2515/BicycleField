@@ -226,14 +226,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 209496618}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 853e209708f63984d9489175f73b7877, type: 3}
+  m_Script: {fileID: 11500000, guid: 5c81d86aed14f7a46baeb177d80a4b5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  component_name: hello_house
+  component_name: tri_base
   grammar_files_path:
-  - Assets\Grammars\test.txt
-  - Assets\Grammars\house1.txt
-  - Assets\Grammars\backgrounds.txt
+  - ./Assets/Grammars/test.txt
+  - ./Assets/Grammars/backgrounds.txt
   random_pos: 0
   max_house_count: 1
 --- !u!4 &209496620

@@ -148,20 +148,18 @@ floors_base():Base(){
 	hello_facade()
 }
 
-runtime_base():Base(){
-	vertex()
+tri_base():Base(){
+	vertex(10,0,0)
 	hello_facade()
 	hello_facade()
-	vertex()
 	hello_facade()
-	hello_facade()
-	vertex()
-	hello_facade()
-	hello_facade()
-	vertex()
-	hello_facade()
+	vertex(-10,0,0)
+	nothing_facade()
+	nothing_facade()
+	vertex(0,0,5)
 	hello_facade()
 }
+
 
 roof_base():Base(){
 	vertex(-5,0,-5)
@@ -188,4 +186,32 @@ hello_facade2():Facade(){
 	hello_wall()
 	nothing_wall()
 	hello_wall()
+}
+
+
+runtime_base():Base(runtime_vertex){
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
 }

@@ -18,11 +18,11 @@ public class bgTest : MonoBehaviour
         builder = new bgBuilder();
         reCompile();
         //reBuild();
-        build_polygon_house(new List<Vector3> 
-        { new Vector3(2,0,8),new Vector3(2,0,2),new Vector3(8,0,2),new Vector3(8,0,-2),
-         new Vector3(2,0,-2),new Vector3(2,0,-8),new Vector3(-2,0,-8),new Vector3(-2,0,-2),
-         new Vector3(-8,0,-2),new Vector3(-8,0,2),new Vector3(-2,0,2),new Vector3(-2,0,8)
-        });
+        //build_polygon_house(new List<Vector3> 
+        //{ new Vector3(2,0,8),new Vector3(2,0,2),new Vector3(8,0,2),new Vector3(8,0,-2),
+        // new Vector3(2,0,-2),new Vector3(2,0,-8),new Vector3(-2,0,-8),new Vector3(-2,0,-2),
+        // new Vector3(-8,0,-2),new Vector3(-8,0,2),new Vector3(-2,0,2),new Vector3(-2,0,8)
+        //});
     }
     public void reBuild() {
         float start = Time.realtimeSinceStartup;
@@ -52,7 +52,14 @@ public class bgTest : MonoBehaviour
 
     public void build_polygon_house(List<Vector3> vertexs)
     {
+        List<List<string>> component_names = new List<List<string>>();
+        for (int i = 0; i < vertexs.Count; i++) {
+            component_names.Add(new List<string>());
+            //component_names[i].Add("hello_facade");
+            component_names[i].Add("nothing_facade");
+        }
         builder.load_base_coords(component_name, vertexs);
+        builder.load_base_facades(component_name, component_names);
         obj = builder.build(component_name);
     }
 

@@ -35,6 +35,7 @@ static public class HouseGenerator
         Debug.Log("--------------generate--------------");
         //demo code
         string[] house_infos = info.Split(' ');
+        float ploygon_count = float.Parse(house_infos[1]);
         Vector3 single_point = new Vector3(float.Parse(house_infos[2]), float.Parse(house_infos[3]), float.Parse(house_infos[4]));
         
         if (TerrainGenerator.is_initial) {
@@ -79,4 +80,6 @@ static public class HouseGenerator
         Object.Destroy(gobj_db[segment_id][house_id]);
         gobj_db[segment_id].Remove(house_id);
     }
+
+
 }

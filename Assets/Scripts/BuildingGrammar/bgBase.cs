@@ -6,7 +6,7 @@ using System.Linq;
 public class bgBase : bgComponent
 {
     public List<Vector3> vertexs;
-    List<List<bgFacade>> facades;
+    public List<List<bgFacade>> facades;
     public float height = float.MinValue;
     int vertex_read = 0;
     bool runtime_vertex = false;
@@ -24,20 +24,20 @@ public class bgBase : bgComponent
         //    go.name = "Base: " + name;
         //    return go;
         //}
+       
         go = new GameObject("Base:" + name);
         //return go;
+
+        if (component_parameter.Count > 0)
+        {
+            if (component_parameter[0] == "runtime_vertex")
+            {
+                runtime_vertex = true;
+            }
+        }
+
         if (facades == null)
         {
-
-
-            if (component_parameter.Count > 0)
-            {
-                if (component_parameter[0] == "runtime_vertex")
-                {
-                    runtime_vertex = true;
-                }
-            }
-
             if (runtime_vertex == false)
             {
                 vertexs = new List<Vector3>();
@@ -62,7 +62,6 @@ public class bgBase : bgComponent
                 {
                     if (vertex_read > facades.Count)
                     {
-                        Debug.Log("new list facade");
                         facades.Add(new List<bgFacade>());
                     }
                     bgFacade facade = builder.get_facade(commands[i]);
