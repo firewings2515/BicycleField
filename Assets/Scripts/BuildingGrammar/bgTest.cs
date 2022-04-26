@@ -8,18 +8,21 @@ public class bgTest : MonoBehaviour
     public string[] grammar_files_path;
     public bool random_pos = false;
     public int max_house_count = 1;
-    private bgBuilder builder;
+    public bgBuilder builder;
     private GameObject building;
-    Material default_;
     MeshRenderer mr;
     GameObject obj;
     // Start is called before the first frame update
     void Start()
     {
-        default_ = GetComponent<MeshRenderer>().sharedMaterial;
         builder = new bgBuilder();
         reCompile();
         //reBuild();
+        build_polygon_house(new List<Vector3> 
+        { new Vector3(2,0,8),new Vector3(2,0,2),new Vector3(8,0,2),new Vector3(8,0,-2),
+         new Vector3(2,0,-2),new Vector3(2,0,-8),new Vector3(-2,0,-8),new Vector3(-2,0,-2),
+         new Vector3(-8,0,-2),new Vector3(-8,0,2),new Vector3(-2,0,2),new Vector3(-2,0,8)
+        });
     }
     public void reBuild() {
         float start = Time.realtimeSinceStartup;
@@ -37,6 +40,22 @@ public class bgTest : MonoBehaviour
         float end = Time.realtimeSinceStartup;
         //Debug.Log("process time:" + (end - start).ToString());
     }
+
+    public void load_polygon(List<Vector3> vertexs)
+    {
+        builder.load_base_coords(component_name, vertexs);
+    }
+    public GameObject build_polygon()
+    {
+        return  builder.build(component_name);
+    }
+
+    public void build_polygon_house(List<Vector3> vertexs)
+    {
+        builder.load_base_coords(component_name, vertexs);
+        obj = builder.build(component_name);
+    }
+
     public void reCompile()
     {
         float start = Time.realtimeSinceStartup;

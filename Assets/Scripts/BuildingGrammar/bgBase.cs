@@ -29,6 +29,7 @@ public class bgBase : bgComponent
         if (facades == null)
         {
 
+
             if (component_parameter.Count > 0)
             {
                 if (component_parameter[0] == "runtime_vertex")
@@ -37,7 +38,8 @@ public class bgBase : bgComponent
                 }
             }
 
-            if (runtime_vertex == false) {
+            if (runtime_vertex == false)
+            {
                 vertexs = new List<Vector3>();
             }
             facades = new List<List<bgFacade>>();
@@ -60,6 +62,7 @@ public class bgBase : bgComponent
                 {
                     if (vertex_read > facades.Count)
                     {
+                        Debug.Log("new list facade");
                         facades.Add(new List<bgFacade>());
                     }
                     bgFacade facade = builder.get_facade(commands[i]);
@@ -67,6 +70,8 @@ public class bgBase : bgComponent
                 }
             }
         }
+        Debug.Log("vertex count:" + vertexs.Count);
+        Debug.Log("facades count:" + facades.Count);
 
         for (int i = 0; i < vertexs.Count; i++) {
             Vector3 v1 = vertexs[i];
