@@ -9,7 +9,7 @@ public class RoadManager : MonoBehaviour
 {
     private int current_segment = 2;
     private int current_loaded_segment = 0;
-    private int current_running_segment = 0;
+    private int last_segment = 0;
     private int house_id = 0;
 
     private StreamReader reader;
@@ -18,8 +18,6 @@ public class RoadManager : MonoBehaviour
     public PathCreator path_creator;
     public bool path_loop = false;
     private bool update_mesh = false;
-
-    Vector3 last_segment = new Vector3(0,0,0);
 
     private bool is_started = false;
 
@@ -34,6 +32,7 @@ public class RoadManager : MonoBehaviour
         if (TerrainGenerator.is_initial && !is_started) 
         {
             reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
+            reader.ReadLine(); // throw away terrain anchor point
 
             //remove first default segment
             removeEarliestRoad(false);
@@ -74,7 +73,6 @@ public class RoadManager : MonoBehaviour
         {
             Vector3 vec3_point = Functions.StrToVec3(str_point);
             vec3_point.y = 0.0f;
-            last_segment = vec3_point;
 
             spawnAnchorCheckpoint(vec3_point);
 
@@ -134,7 +132,7 @@ public class RoadManager : MonoBehaviour
 
     private void removeEarliestRoad(bool destroy = true)
     {
-        if (destroy) HouseGenerator.destroySegment(current_running_segment - (Info.MAX_LOADED_SEGMENT / 2) + 2);
+        if (destroy) HouseGenerator.destroySegment(last_segment++);
         path_creator.bezierPath.DeleteSegment(0);
         current_segment--;
     }
@@ -148,12 +146,11 @@ public class RoadManager : MonoBehaviour
         prefab.GetComponent<SphereCollider>().isTrigger = true;
         prefab.GetComponent<SphereCollider>().transform.localScale *= Info.CHECKPOINT_SIZE;
         prefab.AddComponent<AnchorCheckpoint>();
-        prefab.layer = LayerMask.NameToLayer("CollisionDetection");
+        prefab.layer = 6; //only collide with cyclist
     }
 
     public void incrementCurrentSegment()
     {
         current_segment++;
-        current_running_segment++;
     }
 }
