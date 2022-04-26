@@ -15,7 +15,7 @@ namespace PathCreation.Examples
         public GameObject speed_display;
         public GameObject slope_display;
 
-        private float cam_y_offset = 1.0f;
+        private float cam_y_offset = 2.0f;
         private bool is_started = false;
 
         void Update()
@@ -29,7 +29,7 @@ namespace PathCreation.Examples
                         // Subscribed to the pathUpdated event so that we're notified if the path changes during the game
                         pathCreator.pathUpdated += OnPathChanged;
                         transform.position = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
-                        transform.position = new Vector3(transform.position.x, TerrainGenerator.getHeightWithBais(transform.position.x, transform.position.z) + cam_y_offset, transform.position.z);
+                        transform.position = new Vector3(transform.position.x, Mathf.Lerp(transform.position.y,TerrainGenerator.getHeightWithBais(transform.position.x, transform.position.z), 0.1f) + cam_y_offset, transform.position.z);
                         transform.rotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
                     }
                     is_started = true;
