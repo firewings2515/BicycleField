@@ -298,12 +298,12 @@ static public class TerrainGenerator
     static public float getHeightWithBais(float x, float z)
     {
         if (terrain_mode == 0)
-            return getDEMHeight(x, z) + min_y;
+            return getDEMHeight(x, z, true) + min_y;
         else
             return getIDWHeight(x, z) + min_y;
     }
 
-    static public float getDEMHeight(float x, float z)
+    static public float getDEMHeight(float x, float z, bool interpolation = true)
     {
         x += boundary_min_x + origin_x;
         z += boundary_min_z + origin_z;
@@ -311,7 +311,7 @@ static public class TerrainGenerator
         float lat = (float)MercatorProjection.yToLat(z);
         List<EarthCoord> all_coords = new List<EarthCoord>();
         all_coords.Add(new EarthCoord(lon, lat));
-        return HgtReader.getElevations(all_coords)[0];
+        return HgtReader.getElevations(all_coords, interpolation)[0];
     }
 
     static public float getIDWHeight(float x, float z, float old_base = 0.0f)

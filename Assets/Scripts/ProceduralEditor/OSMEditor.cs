@@ -11,6 +11,11 @@ public class OSMEditor : MonoBehaviour
     public GameObject cam;
     public string initial_point = "45263678_226830312+24";
     public string initial_road = "";
+    public bool open_limit = false;
+    public float lon_max;
+    public float lon_min;
+    public float lat_max;
+    public float lat_min;
     public GameObject view_instance;
     // Start is called before the first frame update
     void Start()
@@ -23,7 +28,7 @@ public class OSMEditor : MonoBehaviour
     {
         if (!osm_reader.read_finish)
         {
-            osm_reader.readOSM(Application.streamingAssetsPath + "//" + osm3d_file_name, false, Application.streamingAssetsPath + "//" + osm3d_file_name);
+            osm_reader.readOSM(Application.streamingAssetsPath + "//" + osm3d_file_name, false, Application.streamingAssetsPath + "//" + osm3d_file_name, open_limit, lon_max, lon_min, lat_max, lat_min);
 
             // each hierarchy manage range is 200m x 200m
             hierarchy_c = new HierarchyControl();

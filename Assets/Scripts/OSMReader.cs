@@ -22,6 +22,10 @@ public class OSMReader
     public bool read_finish = false;
     //float x_length = 1.0f;
     //float y_length = 1.0f;
+    public float lon_max;
+    public float lon_min;
+    public float lat_max;
+    public float lat_min;
 
     public void toUnityLocation(float lon, float lat, out float x, out float z)
     {
@@ -39,7 +43,7 @@ public class OSMReader
         lat = (float)MercatorProjection.yToLat(z);
     }
 
-    public void readOSM(string file_path, bool write_osm3d = false, string osm3d_file_path = "")  //, Vector2 _OSM_size
+    public void readOSM(string file_path, bool write_osm3d = false, string osm3d_file_path = "", bool open_limit = false, float _lon_max = 0.0f, float _lon_min = 0.0f, float _lat_max = 0.0f, float _lat_min = 0.0f)  //, Vector2 _OSM_size
     {
         if (!write_osm3d)
         {
@@ -54,6 +58,13 @@ public class OSMReader
         List<List<string>> node_tag_vs = new List<List<string>>();
         Dictionary<string, List<string>> connect_points = new Dictionary<string, List<string>>();
         bool is_redundant = false;
+        if (open_limit)
+        {
+            lon_max = _lon_max;
+            lon_min = _lon_max;
+            lat_max = _lat_max;
+            lat_min = _lat_min;
+        }
 
         while (reader.Read())
         {
@@ -78,6 +89,14 @@ public class OSMReader
                 }
                 else if (reader.Name == "node")
                 {
+                    if (open_limit)
+                    {
+                        float lon = float.Parse(reader.GetAttribute("lon"));
+                        float lat = float.Parse(reader.GetAttribute("lat"));
+                        if (lon > lon_max || lon < lon_min || lat > lat_max || lat < lat_min)
+                            continue;
+                    }
+
                     if (!is_redundant)
                     {
                         boundary_min.x = Mathf.Min(boundary_min.x, float.Parse(reader.GetAttribute("lon")));

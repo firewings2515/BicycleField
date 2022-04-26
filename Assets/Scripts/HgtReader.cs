@@ -58,10 +58,11 @@ public class HgtReader
         return (float)result;
     }
 
-    static public List<float> getElevations(List<EarthCoord> all_coords)
+    static public List<float> getElevations(List<EarthCoord> all_coords, bool interpolation = false)
     {
         List<KeyValuePair<string, int>> rows = new List<KeyValuePair<string, int>>();
         List<float> results = new List<float>();
+        double ratio_lat = 0.0, ratio_lon = 0.0;
         for (int i = 0; i < all_coords.Count; i++)
         {
             string hgt_file_name = all_coords[i].getHgtFileName();
@@ -71,7 +72,8 @@ public class HgtReader
                 {
                     hgt_file_map.Add(hgt_file_name, new FileStream(hgt_file_location + hgt_file_name, FileMode.Open));
                 }
-                else {
+                else
+                {
                     //insert empty string if coord not found in files
                     rows.Add(new KeyValuePair<string, int>("", 0));
                     continue;
@@ -81,15 +83,41 @@ public class HgtReader
             float longitude = all_coords[i].longitude;
             int lat_int = m_floor(latitude);
             int lon_int = m_floor(longitude);
-            int lat_row = (int)Math.Round((latitude - lat_int) * (resolution - 1));
-            int lon_row = (int)Math.Round((longitude - lon_int) * (resolution - 1));
-            int position = hgtSeekPos(lat_row, lon_row);
-            rows.Add(new KeyValuePair<string, int>(hgt_file_name, position));
+            if (interpolation)
+            {
+                int lat_row_low = (int)Math.Floor((latitude - lat_int) * (resolution - 1));
+                int lon_row_low = (int)Math.Floor((longitude - lon_int) * (resolution - 1));
+                int lat_row_high = (int)Math.Ceiling((latitude - lat_int) * (resolution - 1));
+                int lon_row_high = (int)Math.Ceiling((longitude - lon_int) * (resolution - 1));
+                double lat_row = (latitude - lat_int) * (resolution - 1);
+                ratio_lat = 1 - (lat_row - lat_row_low);
+                double lon_row = (longitude - lon_int) * (resolution - 1);
+                ratio_lon = 1 - (lon_row - lon_row_low);
+                int position_a = hgtSeekPos(lat_row_low, lon_row_low);
+                int position_b = hgtSeekPos(lat_row_low, lon_row_high);
+                int position_c = hgtSeekPos(lat_row_high, lon_row_high);
+                int position_d = hgtSeekPos(lat_row_high, lon_row_low);
+
+                rows.Add(new KeyValuePair<string, int>(hgt_file_name, position_a));
+                rows.Add(new KeyValuePair<string, int>(hgt_file_name, position_b));
+                rows.Add(new KeyValuePair<string, int>(hgt_file_name, position_c));
+                rows.Add(new KeyValuePair<string, int>(hgt_file_name, position_d));
+            }
+            else
+            {
+                int lat_row = (int)Math.Round((latitude - lat_int) * (resolution - 1));
+                int lon_row = (int)Math.Round((longitude - lon_int) * (resolution - 1));
+                int position = hgtSeekPos(lat_row, lon_row);
+
+                rows.Add(new KeyValuePair<string, int>(hgt_file_name, position));
+            }
         }
 
+        List<float> results_x = new List<float>();
         for (int i = 0; i < rows.Count; i++)
         {
-            if (string.IsNullOrEmpty(rows[i].Key)) {
+            if (string.IsNullOrEmpty(rows[i].Key))
+            {
                 results.Add(0.0f);//return 0 if not found
                 continue;
             }
@@ -97,13 +125,26 @@ public class HgtReader
             int byte1 = hgt_file_map[rows[i].Key].ReadByte();
             int byte2 = hgt_file_map[rows[i].Key].ReadByte();
             int result = byte1 << 8 | byte2;
-            if (result > 9000.0f || result < 0.0f) { //if strange value shows
+            if (result > 9000.0f || result < 0.0f)
+            { //if strange value shows
                 results.Add(0.0f);
                 continue;
             }
+            if (interpolation)
+            {
+                results_x.Add((float)result);
+            }
+            else
+            {
+                results.Add((float)result);
+            }
+        }
+        if (interpolation)
+        {
+            double result = results_x[0] * ratio_lat * ratio_lon + results_x[1] * ratio_lat * (1 - ratio_lon) + results_x[2] * (1 - ratio_lat) * (1 - ratio_lon) + results_x[3] * (1 - ratio_lat) * ratio_lon;
             results.Add((float)result);
         }
+
         return results;
     }
-
 }
