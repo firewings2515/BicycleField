@@ -64,7 +64,7 @@ hello_wall():Wall(vertical,const,4.0){
 	pos(0.25,0.5)
 	window_frame3D()
 	pos(0.75,0.5)
-	wall_balconyFBX()
+	window()
 }
 
 hello_wall2():Wall(vertical,const,6.0){
@@ -121,7 +121,7 @@ hello_facade():Facade(){
 }
 
 nothing_facade():Facade(){
-	3D_door_wall()
+	first_floor_wall()
 
 	nothing_wall()
 	balcony_wall()
