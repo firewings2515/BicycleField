@@ -54,6 +54,7 @@ public class OSMEditor : MonoBehaviour
                 Debug.Log(initial_road + " not found");
                 path_index = 0;
             }
+            Debug.Log(osm_reader.pathes.Count);
             initial_point = osm_reader.pathes[path_index].ref_node[0];
             Debug.Log("need to set exist initial_point");
         }

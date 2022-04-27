@@ -61,7 +61,7 @@ public class OSMReader
         if (open_limit)
         {
             lon_max = _lon_max;
-            lon_min = _lon_max;
+            lon_min = _lon_min;
             lat_max = _lat_max;
             lat_min = _lat_min;
         }
@@ -151,6 +151,8 @@ public class OSMReader
                     float road_width = 6; // 6 is default
                     List<string> tag_k = new List<string>();
                     List<string> tag_v = new List<string>();
+                    bool ignore_road = false;
+                    bool ignore_house = false;
                     if (!reader.IsEmptyElement)
                     {
                         while (reader.Read())
@@ -158,6 +160,11 @@ public class OSMReader
                             if (reader.Name == "nd")
                             {
                                 string way_ref = reader.GetAttribute("ref");
+                                if (!points_id.Contains(way_ref))
+                                {
+                                    ignore_road = true;
+                                    ignore_house = true;
+                                }
                                 current_points.Add(way_ref); // point id
                                 if (ref_index == 0)
                                 {
@@ -229,7 +236,7 @@ public class OSMReader
                         }
                     }
 
-                    if (fetch_road)
+                    if (!ignore_road && fetch_road)
                     {
                         Way way = new Way();
                         way.ref_node = new List<string>(current_points);
@@ -252,7 +259,7 @@ public class OSMReader
                             }
                         }
                     }
-                    else if (fetch_house)
+                    else if (!ignore_house && fetch_house)
                     {
                         House house = new House();
                         house.ref_node = new List<string>(current_points);
