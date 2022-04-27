@@ -69,8 +69,11 @@ public class bgBase : bgComponent
                 }
             }
         }
-        Debug.Log("vertex count:" + vertexs.Count);
-        Debug.Log("facades count:" + facades.Count);
+
+        if (!determine_clock_wise(vertexs)) {
+            vertexs.Reverse();
+        }
+
 
         for (int i = 0; i < vertexs.Count; i++) {
             Vector3 v1 = vertexs[i];
@@ -119,5 +122,17 @@ public class bgBase : bgComponent
         }
 
         return go;
+    }
+
+    bool determine_clock_wise(List<Vector3> points) { //§PÂ_¶¶®É°wOR°f®É°w
+        //https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
+        int coords_size = points.Count;
+        float result = 0.0f;
+        for (int index = 0; index < coords_size; index++) {
+            Vector3 current = points[index];
+            Vector3 next = points[(index + 1) % coords_size];
+            result += (next.x - current.x) * (next.z + current.z);
+        }
+        return result >= 0.0f;
     }
 }
