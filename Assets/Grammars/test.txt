@@ -29,6 +29,8 @@ balcony3D():Asset(model){
 	Location("Assets/Model/BALCONY.obj")
 	Scale(0.0007772131,0.0007772131,0.0007772131)
 	Extrude(0.1)
+	Rotate(0,180,0)
+	Scale(3,3,3)
 }
 
 balconyFBX():Asset(model){
@@ -50,6 +52,7 @@ wall_balconyFBX():Asset(model){
 	Rotate(0,180,0)
 
 	Scale(50,50,50)
+	Scael(1.5,1.5,1.5)
 }
 
 window_frame3D():Asset(model){
@@ -61,7 +64,7 @@ window_frame3D():Asset(model){
 
 hello_wall():Wall(vertical,const,4.0){
 	background()
-	pos(0.25,0.5)
+	pos(0.25,0.25)
 	window_frame3D()
 	pos(0.75,0.5)
 	window()
@@ -83,7 +86,7 @@ balcony_wall():Wall(vertical,const,4.0){
 
 	background()
 	pos(0.5,0.5)
-	balcony()
+	balcony3D()
 
 }
 
@@ -122,9 +125,8 @@ hello_facade():Facade(){
 
 nothing_facade():Facade(){
 	first_floor_wall()
-
 	nothing_wall()
-	balcony_wall()
+	nothing_wall()
 	nothing_wall()
 }
 
@@ -215,3 +217,60 @@ runtime_base():Base(runtime_vertex){
 	vertex()
 	hello_facade()
 }
+
+arcade_4_floor():Wall(vertical,const,4.0){
+	background()
+	pos(0.5,0.5)
+	wall_balconyFBX()
+}
+
+real_nothing():Facade(){
+	nothing_wall()
+	nothing_wall()
+	nothing_wall()
+	nothing_wall()
+}
+
+arcade_front_facade():Facade(){
+	empty(vertical,const,4)
+	balcony_wall()
+	hello_wall()
+	arcade_4_floor()
+}
+
+first_floor_empty():Facade(){
+	empty(vertical,const,4)
+	nothing_wall()
+	nothing_wall()
+	nothing_wall()
+}
+
+arcade_back():Base(){
+	vertex(-3,0,8)
+	real_nothing()
+	vertex(3,0,8)
+	real_nothing()
+	vertex(3,0,0)
+	nothing_facade()
+	vertex(-3,0,0)
+	real_nothing()
+}
+
+arcade_front():Base(){
+	vertex(-3,0,0)
+	first_floor_empty()
+	vertex(3,0,0)
+	first_floor_empty()
+	vertex(3,0,-4)
+	arcade_front_facade()
+	vertex(-3,0,-4)
+	first_floor_empty()
+}
+
+arcade_house():Building(){
+	center(0,0,0)
+	arcade_back()
+	center(0,0,0)
+	arcade_front()
+}
+
