@@ -18,11 +18,11 @@ public class bgTest : MonoBehaviour
         builder = new bgBuilder();
         reCompile();
         //reBuild();
-        //build_polygon_house(new List<Vector3> 
-        //{ new Vector3(2,0,8),new Vector3(2,0,2),new Vector3(8,0,2),new Vector3(8,0,-2),
-        // new Vector3(2,0,-2),new Vector3(2,0,-8),new Vector3(-2,0,-8),new Vector3(-2,0,-2),
-        // new Vector3(-8,0,-2),new Vector3(-8,0,2),new Vector3(-2,0,2),new Vector3(-2,0,8)
-        //});
+        build_polygon_house(new List<Vector3>
+        { new Vector3(2,0,8),new Vector3(2,0,2),new Vector3(8,0,2),new Vector3(8,0,-2),
+         new Vector3(2,0,-2),new Vector3(2,0,-8),new Vector3(-2,0,-8),new Vector3(-2,0,-2),
+         new Vector3(-8,0,-2),new Vector3(-8,0,2),new Vector3(-2,0,2),new Vector3(-2,0,8)
+        });
     }
     public void reBuild() {
         float start = Time.realtimeSinceStartup;
@@ -58,9 +58,9 @@ public class bgTest : MonoBehaviour
             //component_names[i].Add("hello_facade");
             component_names[i].Add("nothing_facade");
         }
-        builder.load_base_coords(component_name, vertexs);
-        builder.load_base_facades(component_name, component_names);
-        obj = builder.build(component_name);
+        builder.load_base_coords("runtime_base", vertexs);
+        builder.load_base_facades("runtime_base", component_names);
+        obj = builder.build("runtime_base");
     }
 
     public void reCompile()

@@ -21,6 +21,11 @@ public class bgFacade : bgComponent
         height = 0.0f;
         for (int i = 0; i < commands.Count; i++)
         {
+            if (commands[i] == "empty") {
+                height += float.Parse(commands_parameter[i][2]);
+                create_floor_split();
+                continue;
+            }
             bgWall wall = builder.get_wall(commands[i]);
             wall.width = this.width;
             
@@ -32,19 +37,23 @@ public class bgFacade : bgComponent
             positions.Add(new Vector3(0, height, 0));
             height += wall.height / 2.0f;
 
-            GameObject floor_split = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            GameObject.Destroy(floor_split.GetComponent<MeshCollider>());
-            floor_split.transform.localScale = new Vector3(width, 0.1f, 1.0f);
-            floor_split.transform.localPosition = new Vector3(0, height, -0.01f);
+            create_floor_split();
             //floor_split.GetComponent<MeshRenderer>().material = new Material(Shader.Find("Standard"));
             //floor_split.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", new Color(133, 94, 66));
-            floor_split.GetComponent<MeshRenderer>().material = Resources.Load<Material>("Material/brown");
             obj.transform.parent = go.transform;
-            floor_split.transform.parent = go.transform;
 
         }
 
         return go;
+    }
+
+    void create_floor_split() {
+        GameObject floor_split = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        GameObject.Destroy(floor_split.GetComponent<MeshCollider>());
+        floor_split.transform.localScale = new Vector3(width, 0.1f, 1.0f);
+        floor_split.transform.localPosition = new Vector3(0, height, -0.01f);
+        floor_split.GetComponent<MeshRenderer>().material = Resources.Load<Material>("Material/brown");
+        floor_split.transform.parent = go.transform;
     }
 
     public override Mesh build_mesh()
