@@ -43,7 +43,7 @@ public class OSMReader
         lat = (float)MercatorProjection.yToLat(z);
     }
 
-    public void readOSM(string file_path, bool write_osm3d = false, string osm3d_file_path = "", bool open_limit = false, float _lon_max = 0.0f, float _lon_min = 0.0f, float _lat_max = 0.0f, float _lat_min = 0.0f)  //, Vector2 _OSM_size
+    public void readOSM(string file_path, bool write_osm3d = false, string osm3d_file_path = "", bool open_limit = false, float _lon_max = 0.0f, float _lon_min = 0.0f, float _lat_max = 0.0f, float _lat_min = 0.0f, bool keep_lon_lat = false)  //, Vector2 _OSM_size
     {
         if (!write_osm3d)
         {
@@ -66,6 +66,7 @@ public class OSMReader
             lat_min = _lat_min;
         }
 
+        HashSet<string> point_id_set = new HashSet<string>();
         while (reader.Read())
         {
             if (reader.NodeType == XmlNodeType.Element)
@@ -111,8 +112,9 @@ public class OSMReader
                     else
                         point.position = new Vector3(float.Parse(reader.GetAttribute("lon")), 0.5f, float.Parse(reader.GetAttribute("lat"))); // 0.5f is default altitude
                     points.Add(point);
-                    string id = reader.GetAttribute("id");
+                    string id = getAttributeString(ref reader, "id");
                     points_id.Add(id);
+                    point_id_set.Add(id);
 
                     connect_points[id] = new List<string>();
 
@@ -124,8 +126,8 @@ public class OSMReader
                         {
                             if (reader.Name == "tag")
                             {
-                                tag_k.Add(reader.GetAttribute("k"));
-                                tag_v.Add(reader.GetAttribute("v").Replace(">", ">gt;").Replace("<", "<lt;").Replace("&", "&amp;").Replace("\"", "&quot;"));
+                                tag_k.Add(getAttributeString(ref reader, "k"));
+                                tag_v.Add(getAttributeString(ref reader, "v").Replace(">", ">gt;").Replace("<", "<lt;").Replace("&", "&amp;").Replace("\"", "&quot;"));
                             }
                             else if (reader.Name == "node")
                             {
@@ -141,7 +143,7 @@ public class OSMReader
                     current_points.Clear();
                     bool fetch_road = false;
                     bool fetch_house = false;
-                    string id = reader.GetAttribute("id");
+                    string id = getAttributeString(ref reader, "id");
                     string road_name = string.Empty;
                     int ref_index = 0;
                     string road_head = string.Empty;
@@ -159,8 +161,8 @@ public class OSMReader
                         {
                             if (reader.Name == "nd")
                             {
-                                string way_ref = reader.GetAttribute("ref");
-                                if (!points_id.Contains(way_ref))
+                                string way_ref = getAttributeString(ref reader, "ref");
+                                if (!point_id_set.Contains(way_ref))
                                 {
                                     ignore_road = true;
                                     ignore_house = true;
@@ -175,58 +177,62 @@ public class OSMReader
                             }
                             else if (reader.Name == "tag")
                             {
-                                tag_k.Add(reader.GetAttribute("k"));
-                                tag_v.Add(reader.GetAttribute("v").Replace(">", ">gt;").Replace("<", "<lt;").Replace("&", "&amp;").Replace("\"", "&quot;"));
-                                if (reader.GetAttribute("v") == "motorway") // road
+                                tag_k.Add(getAttributeString(ref reader, "k"));
+                                tag_v.Add(getAttributeString(ref reader, "v").Replace(">", ">gt;").Replace("<", "<lt;").Replace("&", "&amp;").Replace("\"", "&quot;"));
+                                if (getAttributeString(ref reader, "v") == "motorway") // road
                                 {
                                     fetch_road = true;
                                     highway = Highway.Motorway;
                                 }
-                                else if (reader.GetAttribute("v") == "trunk") // road
+                                else if (getAttributeString(ref reader, "v") == "trunk") // road
                                 {
                                     fetch_road = true;
                                     highway = Highway.Trunk;
                                 }
-                                else if (reader.GetAttribute("v") == "primary") // road
+                                else if (getAttributeString(ref reader, "v") == "primary") // road
                                 {
                                     fetch_road = true;
                                     highway = Highway.Primary;
                                 }
-                                else if (reader.GetAttribute("v") == "secondary") // road
+                                else if (getAttributeString(ref reader, "v") == "secondary") // road
                                 {
                                     fetch_road = true;
                                     highway = Highway.Secondary;
                                 }
-                                else if (reader.GetAttribute("v") == "tertiary") // road
+                                else if (getAttributeString(ref reader, "v") == "tertiary") // road
                                 {
                                     fetch_road = true;
                                     highway = Highway.Tertiary;
                                 }
-                                else if (reader.GetAttribute("v") == "unclassified") // road
+                                else if (getAttributeString(ref reader, "v") == "unclassified") // road
                                 {
                                     fetch_road = true;
                                     highway = Highway.Unclassified;
                                 }
-                                else if (reader.GetAttribute("v") == "residential") // road
+                                else if (getAttributeString(ref reader, "v") == "residential") // road
                                 {
                                     fetch_road = true;
                                     highway = Highway.Residential;
                                 }
-                                else if (reader.GetAttribute("k") == "name") // get road name
+                                else if (getAttributeString(ref reader, "k") == "name") // get road name
                                 {
-                                    road_name = reader.GetAttribute("v").Replace(">", ">gt;").Replace("<", "<lt;").Replace("&", "&amp;").Replace("\"", "&quot;");
+                                    road_name = getAttributeString(ref reader, "v").Replace(">", ">gt;").Replace("<", "<lt;").Replace("&", "&amp;").Replace("\"", "&quot;");
                                 }
-                                else if (reader.GetAttribute("k").IndexOf("addr") == 0 || reader.GetAttribute("k").IndexOf("building") == 0) // house
+                                else if (getAttributeString(ref reader, "k").IndexOf("addr") == 0 || getAttributeString(ref reader, "k").IndexOf("building") == 0) // house
                                 {
                                     fetch_house = true;
                                 }
-                                else if (reader.GetAttribute("k") == "layer") // road height
+                                else if (getAttributeString(ref reader, "k") == "layer") // road height
                                 {
-                                    layer = int.Parse(reader.GetAttribute("v"));
+                                    string v = getAttributeString(ref reader, "v");
+                                    if (!int.TryParse(v, out layer))
+                                        Debug.Log("Warning: to get layer: " + v);
                                 }
-                                else if (reader.GetAttribute("k") == "road_width") // road height
+                                else if (getAttributeString(ref reader, "k") == "road_width") // road height
                                 {
-                                    road_width = float.Parse(reader.GetAttribute("v"));
+                                    string v = getAttributeString(ref reader, "v");
+                                    if (!float.TryParse(v, out road_width))
+                                        Debug.Log("Warning: to get road_width: " + v);
                                 }
                             }
                             else if (reader.Name == "way")
@@ -275,7 +281,7 @@ public class OSMReader
 
         // normalize points
         List<float> all_elevations = new List<float>();
-        if (!is_redundant)
+        if (!is_redundant && !keep_lon_lat)
         {
             boundary_min = new Vector2((float)MercatorProjection.lonToX(boundary_min.x), (float)MercatorProjection.latToY(boundary_min.y));
             boundary_max = new Vector2((float)MercatorProjection.lonToX(boundary_max.x), (float)MercatorProjection.latToY(boundary_max.y));
@@ -293,7 +299,7 @@ public class OSMReader
 
         for (int point_index = 0; point_index < points.Count; point_index++)
         {
-            if (!is_redundant)
+            if (!is_redundant && !keep_lon_lat)
             {
                 float unity_x, unity_z;
                 toUnityLocation(points[point_index].position.x, points[point_index].position.z, out unity_x, out unity_z);
@@ -318,6 +324,14 @@ public class OSMReader
 
         Debug.Log("Read OSM " + file_path + " Successfully!");
         read_finish = true;
+    }
+
+    string getAttributeString(ref XmlReader reader, string attribute)
+    {
+        string v_value_str = reader.GetAttribute(attribute);
+        if (v_value_str.Contains(","))
+            v_value_str = v_value_str.Split(';')[0];
+        return v_value_str;
     }
 
     private void mergeRoad()

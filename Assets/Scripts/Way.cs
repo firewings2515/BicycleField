@@ -97,4 +97,28 @@ public class Way
         if (points_lib[do_on_point_id].connect_way.Count == 0)
             points_lib.Remove(do_on_point_id);
     }
+
+    public string writeWay()
+    {
+        string output = string.Empty;
+        output += $"  <way id=\"{id}\"";
+        if (tag_k.Count > 0)
+        {
+            output += ">\n";
+            for (int nd_index = 0; nd_index < ref_node.Count; nd_index++)
+            {
+                output += $"    <nd ref=\"{ref_node[nd_index]}\"/>\n";
+            }
+            for (int tag_index = 0; tag_index < tag_k.Count; tag_index++)
+            {
+                output += $"    <tag k=\"{tag_k[tag_index]}\" v=\"{tag_v[tag_index]}\"/>\n";
+            }
+            output += "  </way>\n";
+        }
+        else
+        {
+            output += "/>\n";
+        }
+        return output;
+    }
 }
