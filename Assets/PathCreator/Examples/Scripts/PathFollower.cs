@@ -17,6 +17,7 @@ namespace PathCreation.Examples
         private float cam_y_offset = 2.5f;
         private bool is_started = false;
 
+        private float add_speed = 0.05f;
         private float last_speed = 0.0f;
 
         void Update()
@@ -42,9 +43,8 @@ namespace PathCreation.Examples
                     is_started = true;
                 }
 
-                float add_speed = 0.05f;
-                if (Input.GetKey(KeyCode.O)) if (speed < Info.CHECKPOINT_SIZE - add_speed) speed += add_speed;
-                if (Input.GetKey(KeyCode.P)) if (speed > 0) speed -= add_speed;
+                if (Input.GetKey(KeyCode.O)) accelerate();
+                if (Input.GetKey(KeyCode.P)) decelerate();
                 if (Input.GetKeyDown(KeyCode.L))
                 {
                     speed_display.SetActive(!speed_display.activeSelf);
@@ -56,12 +56,12 @@ namespace PathCreation.Examples
                 Vector3 there = pathCreator.path.GetPointAtDistance(distanceTravelled + 1f, endOfPathInstruction);
                 there.y = TerrainGenerator.getHeightWithBais(there.x, there.z);
                 float slope = (there.y - here.y) / (Mathf.Sqrt(Mathf.Pow(there.x - here.x, 2) + Mathf.Pow(there.z - here.z, 2)));
-                slope_display.GetComponent<Text>().text = "Slope: " + slope.ToString();
+                //slope_display.GetComponent<Text>().text = "Slope: " + slope.ToString();
                 if (speed < 0) speed = 0;
 
                 last_speed = Mathf.Lerp(last_speed, speed * (1 - slope), 0.1f);
                 if (last_speed < 1f && speed > 0) last_speed = 1f;
-                speed_display.GetComponent<Text>().text = "Speed: " + ((int)(last_speed * 3.6f)).ToString("0") + " km/hr (base: " + (int)(speed * 3.6f) + ")\n(P/O (de/ac)celerate, L to hide)";
+                speed_display.GetComponent<Text>().text = "Speed: " + ((int)(last_speed * 3.6f)).ToString("0") + " km/hr (base: " + (int)(speed * 3.6f) + ")";
                 
                 if (pathCreator != null)
                 {
@@ -86,6 +86,17 @@ namespace PathCreation.Examples
         public void setDistance(float value)
         {
             distanceTravelled = value;
+        }
+
+        public void accelerate()
+        {
+            if (speed < Info.CHECKPOINT_SIZE - add_speed) speed += add_speed;
+        }
+
+        public void decelerate()
+        {
+
+            if (Input.GetKey(KeyCode.P)) if (speed > 0) speed -= add_speed;
         }
     }
 }

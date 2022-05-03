@@ -9,6 +9,9 @@ public class Interface : MonoBehaviour
     private double recorded_time;
     private double worst_time;
     private double second_counter = 1.0;
+
+    public GameObject cyclist;
+    public Slider slider;
     // Start is called before the first frame update
     void Start()
     {
@@ -27,5 +30,20 @@ public class Interface : MonoBehaviour
         }
         fps_display.GetComponent<Text>().text = "FPS: " + (int)(1.0/worst_time);
         recorded_time = Time.realtimeSinceStartupAsDouble;
+    }
+
+    public void speedUp()
+    {
+        cyclist.GetComponent<PathCreation.Examples.PathFollower>().accelerate();
+    }
+
+    public void speedDown()
+    {
+        cyclist.GetComponent<PathCreation.Examples.PathFollower>().decelerate();
+    }
+
+    public void changeSpeed()
+    {
+        cyclist.GetComponent<PathCreation.Examples.PathFollower>().speed = slider.value;
     }
 }
