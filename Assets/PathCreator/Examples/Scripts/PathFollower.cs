@@ -15,8 +15,10 @@ namespace PathCreation.Examples
         public GameObject speed_display;
         public GameObject slope_display;
 
-        private float cam_y_offset = 2.0f;
+        private float cam_y_offset = 2.5f;
         private bool is_started = false;
+
+        private float last_speed = 0.0f;
 
         void Update()
         {
@@ -51,19 +53,25 @@ namespace PathCreation.Examples
                     speed_display.SetActive(!speed_display.activeSelf);
                     slope_display.SetActive(!slope_display.activeSelf);
                 }
-                if (speed < 0) speed = 0;
-                speed_display.GetComponent<Text>().text = "Speed: " + speed.ToString("0") + " (O to speed up, P to speed down, L to hide)";
-                if (pathCreator != null && run)
-                {
-                    distanceTravelled += speed * Time.deltaTime;
-                    transform.position = Vector3.Lerp(transform.position, tempGPA + Vector3.up * cam_y_offset, 0.1f);
-                    transform.rotation = Quaternion.Lerp(transform.rotation, pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction), 0.02f);
-                }
+
+
                 Vector3 here = tempGPA;
-                Vector3 there = pathCreator.path.GetPointAtDistance(distanceTravelled + 0.01f, endOfPathInstruction);
+                Vector3 there = pathCreator.path.GetPointAtDistance(distanceTravelled + 1f, endOfPathInstruction);
                 there.y = TerrainGenerator.getHeightWithBais(there.x, there.z);
                 float slope = (there.y - here.y) / (Mathf.Sqrt(Mathf.Pow(there.x - here.x, 2) + Mathf.Pow(there.z - here.z, 2)));
                 slope_display.GetComponent<Text>().text = "Slope: " + slope.ToString();
+                if (speed < 0) speed = 0;
+
+                last_speed = Mathf.Lerp(last_speed, speed * (1 - slope), 0.1f);
+                if (last_speed < 1f && speed > 0) last_speed = 1f;
+                speed_display.GetComponent<Text>().text = "Speed: " + ((int)(last_speed * 3.6f)).ToString("0") + " km/hr (base: " + (int)(speed * 3.6f) + ")\n(P/O (de/ac)celerate, L to hide)";
+                
+                if (pathCreator != null && run)
+                {
+                    distanceTravelled += last_speed * Time.deltaTime;
+                    transform.position = Vector3.Lerp(transform.position, tempGPA + Vector3.up * cam_y_offset, 0.1f);
+                    transform.rotation = Quaternion.Lerp(transform.rotation, pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction), 0.02f);
+                }
             }
         }
 
