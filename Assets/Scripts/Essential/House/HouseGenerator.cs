@@ -79,7 +79,7 @@ static public class HouseGenerator
 
         //gobj.transform.Translate(0, single_point.y,0);
 
-        gobj.transform.rotation = Quaternion.Euler(0,Random.Range(0,360),0);
+        //gobj.transform.rotation = Quaternion.Euler(0,Random.Range(0,360),0);
         if (!gobj_db.ContainsKey(segment_id)) {
             gobj_db.Add(segment_id, new Dictionary<int, GameObject>());
             segment_id_q.Add(segment_id);
