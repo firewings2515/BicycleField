@@ -22,7 +22,7 @@ static public class TerrainGenerator
     static public Material terrain_idw_mat;                             // Use the material with IDW shader
     static public Material terrain_nni_mat;                             // Use the material with NNI shader
     static public bool generate;
-    static public int vision_patch_num = 10;                            // The number of patches the viewer can see
+    static public int vision_patch_num = 20;                            // The number of patches the viewer can see
     static public List<GameObject> terrains;                            // Store all patches of terrains
     static public bool need_update = false;                             // Call TerrainManager to generate new patches
     static public int patch_x_index;                                    // Used to calculate the index for removing checking
@@ -35,7 +35,7 @@ static public class TerrainGenerator
     static public List<int> generated_z_list;                           // Used to check and remove terrain whether in view or not
     static public KDTree kdtree;                                        // For searching and recording feature points
     static public int terrain_mode = 0;                                 // 0 is DEM, 1 is IDW, 2 is NNI, controled by TerrainManager
-    static public int piece_num = 4;                                    // The number of piece in a patch
+    static public int piece_num = 8;                                    // The number of piece in a patch
     static public bool show_feature_ball = false;
     static public GameObject feature_ball_prefab;
 
@@ -91,6 +91,8 @@ static public class TerrainGenerator
             inputs = sr.ReadLine().Split(' ');
             x_index_length = int.Parse(inputs[0]);
             z_index_length = int.Parse(inputs[1]);
+            x_index_length *= 2;
+            z_index_length *= 2;
             inputs = sr.ReadLine().Split(' ');
             min_x = float.Parse(inputs[0]);
             min_y = float.Parse(inputs[1]);

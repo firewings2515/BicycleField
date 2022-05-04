@@ -6,10 +6,9 @@ public static class IDW
 {
     static public float getWeight(float d)
     {
-        d /= 128.0f;
-        float f = Mathf.Pow(d, 2);
+        float f = Mathf.Pow(d, 1);
         if (f < 1e-6)
-            return 1.0f;
+            return 0.000001f;
         return 1 / f;
     }
 
@@ -27,7 +26,7 @@ public static class IDW
             }
         }
         if (sum_down < 1e-6)
-            sum_down = 1.0f;
+            sum_down = 0.000001f;
         return sum_up / sum_down;
     }
 }

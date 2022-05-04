@@ -44,10 +44,9 @@ Shader "Terrain/IDW"
 
         float getWeight(float d)
         {
-            d /= 128.0;
-            float f = pow(d, 2);
+            float f = pow(d, 1);
             if (f < 0.000001)
-                return 1.0;
+                return 0.000001;
             return 1 / f;
         }
 
@@ -65,7 +64,7 @@ Shader "Terrain/IDW"
                 }
             }
             if (sum_down < 0.000001)
-                sum_down = 1.0;
+                sum_down = 0.000001;
             return sum_up / sum_down;
         }
 
@@ -75,11 +74,21 @@ Shader "Terrain/IDW"
             //v.vertex.y = IDW2(v.vertex.x, v.vertex.z);
             float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
             float4 idw_vertex = float4(worldPos.x, IDW(worldPos.x, worldPos.z) + height_base, worldPos.z, worldPos.w);
-            float dxz = 1;
-            float3 dx = float3(worldPos.x + dxz, IDW(worldPos.x + dxz, worldPos.z) + height_base, worldPos.z) - float3(idw_vertex.x, idw_vertex.y, idw_vertex.z);
-            float3 dz = float3(worldPos.x, IDW(worldPos.x, worldPos.z + dxz) + height_base, worldPos.z + dxz) - float3(idw_vertex.x, idw_vertex.y, idw_vertex.z);
-            v.normal = normalize(cross(dx, dz));
+            float dxz = 0.1;
+            float3 dpx = float3(worldPos.x + dxz, IDW(worldPos.x + dxz, worldPos.z) + height_base, worldPos.z) - float3(idw_vertex.x, idw_vertex.y, idw_vertex.z);
+            float3 dpz = float3(worldPos.x, IDW(worldPos.x, worldPos.z + dxz) + height_base, worldPos.z + dxz) - float3(idw_vertex.x, idw_vertex.y, idw_vertex.z);
+            float3 dnx = float3(worldPos.x - dxz, IDW(worldPos.x - dxz, worldPos.z) + height_base, worldPos.z) - float3(idw_vertex.x, idw_vertex.y, idw_vertex.z);
+            float3 dnz = float3(worldPos.x, IDW(worldPos.x, worldPos.z - dxz) + height_base, worldPos.z - dxz) - float3(idw_vertex.x, idw_vertex.y, idw_vertex.z);
             v.vertex = mul(unity_WorldToObject, idw_vertex);
+            float3 n1 = normalize(cross(dpx, dpz));
+            float3 n2 = normalize(cross(dpz, dnx));
+            float3 n3 = normalize(cross(dnx, dnz));
+            float3 n4 = normalize(cross(dnz, dpx));
+            float3 n = normalize((n1 + n2 + n3 + n4) / 4);
+            TANGENT_SPACE_ROTATION;
+            float3 tangentSpaceNormal = mul(rotation, n);
+            v.normal = normalize(tangentSpaceNormal);
+            //v.normal = n;
             /*float3 p = (unity_ObjectToWorld * gl_Vertex).xyz;
             p.y = IDW2(p.x, p.z);
             v.vertex = gl_ModelViewProjectionMatrix * p;*/
