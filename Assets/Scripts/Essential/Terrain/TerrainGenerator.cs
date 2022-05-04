@@ -20,6 +20,7 @@ static public class TerrainGenerator
     static public Vector3[] features;
     static public Material terrain_mat;                                 // Use the standard material. The vertices are calculated by CPU
     static public Material terrain_idw_mat;                             // Use the material with IDW shader
+    static public Material terrain_nni_mat;                             // Use the material with NNI shader
     static public bool generate;
     static public int vision_patch_num = 10;                            // The number of patches the viewer can see
     static public List<GameObject> terrains;                            // Store all patches of terrains
@@ -33,9 +34,10 @@ static public class TerrainGenerator
     static public List<int> generated_x_list;                           // Used to check and remove terrain whether in view or not
     static public List<int> generated_z_list;                           // Used to check and remove terrain whether in view or not
     static public KDTree kdtree;                                        // For searching and recording feature points
-    static public int terrain_mode = 0;                                 // 0 is DEM 1 is IDW
+    static public int terrain_mode = 0;                                 // 0 is DEM, 1 is IDW, 2 is NNI, controled by TerrainManager
     static public int piece_num = 4;                                    // The number of piece in a patch
-    //static public GameObject feature_ball_prefab;
+    static public bool show_feature_ball = false;
+    static public GameObject feature_ball_prefab;
 
     /// <summary>
     /// Load feature points file with file_path.
@@ -115,8 +117,11 @@ static public class TerrainGenerator
             }
             Debug.Log("Read Feature File " + file_path + " Successfully");
 
-            GameObject feature_manager = new GameObject("feature_manager");
-            //showPoint(kdtree.nodes, "feature", feature_manager.transform, feature_ball_prefab, 1.0f);
+            if (show_feature_ball)
+            {
+                GameObject feature_manager = new GameObject("feature_manager");
+                showPoint(kdtree.nodes, "feature", feature_manager.transform, feature_ball_prefab, 1.0f);
+            }
         }
         terrains = new List<GameObject>();
     }
@@ -139,10 +144,10 @@ static public class TerrainGenerator
         }
     }
 
-    static public Vector4[] getAreaFeatures(float x_small_min, float z_small_min, int x_piece, int z_piece)
+    static public Vector4[] getAreaFeatures(float x, float z, int x_piece, int z_piece)
     {
         float expanded_length = vision_patch_num * PublicOutputInfo.piece_length;
-        int[] area_features_index = kdtree.getAreaPoints(x_small_min - expanded_length, z_small_min - expanded_length, x_small_min + x_piece * PublicOutputInfo.piece_length + expanded_length, z_small_min + z_piece * PublicOutputInfo.piece_length + expanded_length);
+        int[] area_features_index = kdtree.getAreaPoints(x - expanded_length, z - expanded_length, x + x_piece * PublicOutputInfo.piece_length + expanded_length, z + z_piece * PublicOutputInfo.piece_length + expanded_length);
         Vector4[] area_features = new Vector4[area_features_index.Length];
         for (int area_features_index_index = 0; area_features_index_index < area_features_index.Length; area_features_index_index++)
         {
@@ -247,9 +252,16 @@ static public class TerrainGenerator
         {
             mr.material = new Material(terrain_mat);
         }
-        else
+        else if (terrain_mode == 1)
         {
             mr.material = new Material(terrain_idw_mat);
+            mr.material.SetVectorArray("features", area_features);
+            mr.material.SetInt("features_count", area_features.Length);
+            mr.material.SetFloat("height_base", min_y);
+        }
+        else
+        {
+            mr.material = new Material(terrain_nni_mat);
             mr.material.SetVectorArray("features", area_features);
             mr.material.SetInt("features_count", area_features.Length);
             mr.material.SetFloat("height_base", min_y);
@@ -299,8 +311,10 @@ static public class TerrainGenerator
     {
         if (terrain_mode == 0)
             return getDEMHeight(x, z, true) + min_y;
-        else
+        else if (terrain_mode == 1)
             return getIDWHeight(x, z) + min_y;
+        else
+            return getNNIHeight(x, z) + min_y;
     }
 
     static public float getDEMHeight(float x, float z, bool interpolation = true)
@@ -320,6 +334,14 @@ static public class TerrainGenerator
         //Vector3[] area_features = getAreaFeatures(center_piece_x, center_piece_z, 4, 4);
         Vector3[] vertex_features = getVertexFeatures(x, z);
         return IDW.inverseDistanceWeighting(vertex_features, x, z, old_base);
+    }
+
+    static public float getNNIHeight(float x, float z, float old_base = 0.0f)
+    {
+        getAreaTerrainInfo(x, z);
+        //Vector3[] area_features = getAreaFeatures(center_piece_x, center_piece_z, 4, 4);
+        Vector3[] vertex_features = getVertexFeatures(x, z);
+        return NNI.naturalNeighborInterpolation(vertex_features, x, z, old_base);
     }
 
     static public void generateSmallHeightmapTerrain(Texture2D heightmap, int x_small_min, int z_small_min, int x_small_length, int z_small_length)

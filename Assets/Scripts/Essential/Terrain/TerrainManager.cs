@@ -4,10 +4,11 @@ using UnityEngine;
 
 public class TerrainManager : MonoBehaviour
 {
-    public Material terrain_idw_mat;                        // Setting TerrainGenerator: Use the standard material. The vertices are calculated by CPU
-    public Material terrain_mat;                            // Setting TerrainGenerator: Use the material with IDW shader
+    public Material terrain_mat;                            // Setting TerrainGenerator: Use the standard material. The vertices are calculated by CPU
+    public Material terrain_idw_mat;                        // Setting TerrainGenerator: Use the material with IDW shader
+    public Material terrain_nni_mat;                        // Setting TerrainGenerator: Use the material with NNI shader
     public int terrain_mode = 0;                            // Setting TerrainGenerator: 0 is DEM 1 is IDW
-    //public GameObject feature_ball_prefab;
+    public GameObject feature_ball_prefab;
     Queue<int> queue_generate_patch_x = new Queue<int>();   // Patch Queue
     Queue<int> queue_generate_patch_z = new Queue<int>();   // Patch Queue
     bool loop_begin = false;                                // Begin InvokeRepeating("generateTerrainPatch", 0.0f, 0.01666f)
@@ -17,8 +18,9 @@ public class TerrainManager : MonoBehaviour
     {
         TerrainGenerator.terrain_mat = terrain_mat;
         TerrainGenerator.terrain_idw_mat = terrain_idw_mat;
+        TerrainGenerator.terrain_nni_mat = terrain_nni_mat;
         TerrainGenerator.terrain_mode = terrain_mode;
-        //TerrainGenerator.feature_ball_prefab = feature_ball_prefab;
+        TerrainGenerator.feature_ball_prefab = feature_ball_prefab;
         TerrainGenerator.loadTerrain();
     }
 

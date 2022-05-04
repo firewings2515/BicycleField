@@ -150,7 +150,7 @@ public class OSMReader
                     string road_tail = string.Empty;
                     Highway highway = Highway.None;
                     int layer = 0;
-                    float road_width = 6; // 6 is default
+                    float road_width = 5; // 6 is default
                     List<string> tag_k = new List<string>();
                     List<string> tag_v = new List<string>();
                     bool ignore_road = false;

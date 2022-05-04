@@ -44,7 +44,8 @@ Shader "Terrain/IDW"
 
         float getWeight(float d)
         {
-            float f = d * d;
+            d /= 128.0;
+            float f = pow(d, 2);
             if (f < 0.000001)
                 return 1.0;
             return 1 / f;
@@ -56,9 +57,9 @@ Shader "Terrain/IDW"
             float sum_down = 0.0;
             for (int i = 0; i < features_count; i++)
             {
-                if (abs(features[i].x - x) < 320.0 && abs(features[i].z - z) < 320.0)
+                float dist = sqrt(pow(features[i].x - x, 2) + pow(features[i].z - z, 2));
+                if (dist < 320.0)
                 {
-                    float dist = sqrt(pow(features[i].x - x, 2) + pow(features[i].z - z, 2));
                     sum_up += getWeight(dist) * features[i].y;
                     sum_down += getWeight(dist);
                 }
