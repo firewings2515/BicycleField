@@ -1,5 +1,7 @@
 // Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
 
+// Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
+
 Shader "Terrain/IDW"
 {
     Properties
@@ -25,6 +27,7 @@ Shader "Terrain/IDW"
         sampler2D _MainTex;
         int features_count;
         float height_base;
+        float dxz;
         float4 features[512];
 
         struct Input {
@@ -70,11 +73,8 @@ Shader "Terrain/IDW"
 
         void vert(inout appdata_full v)
         {
-            //v.vertex.y += features[((int)(v.texcoord.x * 4) + (int)(v.texcoord.y * 4) * 5)].y;
-            //v.vertex.y = IDW2(v.vertex.x, v.vertex.z);
             float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
             float4 idw_vertex = float4(worldPos.x, IDW(worldPos.x, worldPos.z) + height_base, worldPos.z, worldPos.w);
-            float dxz = 0.1;
             float3 dpx = float3(worldPos.x + dxz, IDW(worldPos.x + dxz, worldPos.z) + height_base, worldPos.z) - float3(idw_vertex.x, idw_vertex.y, idw_vertex.z);
             float3 dpz = float3(worldPos.x, IDW(worldPos.x, worldPos.z + dxz) + height_base, worldPos.z + dxz) - float3(idw_vertex.x, idw_vertex.y, idw_vertex.z);
             float3 dnx = float3(worldPos.x - dxz, IDW(worldPos.x - dxz, worldPos.z) + height_base, worldPos.z) - float3(idw_vertex.x, idw_vertex.y, idw_vertex.z);
@@ -88,10 +88,6 @@ Shader "Terrain/IDW"
             TANGENT_SPACE_ROTATION;
             float3 tangentSpaceNormal = mul(rotation, n);
             v.normal = normalize(tangentSpaceNormal);
-            //v.normal = n;
-            /*float3 p = (unity_ObjectToWorld * gl_Vertex).xyz;
-            p.y = IDW2(p.x, p.z);
-            v.vertex = gl_ModelViewProjectionMatrix * p;*/
         }
 
         void surf(Input IN, inout SurfaceOutputStandard o)

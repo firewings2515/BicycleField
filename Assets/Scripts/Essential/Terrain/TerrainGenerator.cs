@@ -91,7 +91,7 @@ static public class TerrainGenerator
             inputs = sr.ReadLine().Split(' ');
             x_index_length = int.Parse(inputs[0]);
             z_index_length = int.Parse(inputs[1]);
-            x_index_length *= 2;
+            x_index_length *= 2;                        // infect piece_num and piece_length
             z_index_length *= 2;
             inputs = sr.ReadLine().Split(' ');
             min_x = float.Parse(inputs[0]);
@@ -260,6 +260,7 @@ static public class TerrainGenerator
             mr.material.SetVectorArray("features", area_features);
             mr.material.SetInt("features_count", area_features.Length);
             mr.material.SetFloat("height_base", min_y);
+            mr.material.SetFloat("dxz", PublicOutputInfo.piece_length);
         }
         else
         {
