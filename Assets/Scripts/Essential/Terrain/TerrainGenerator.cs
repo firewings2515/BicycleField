@@ -200,6 +200,8 @@ static public class TerrainGenerator
         float center_x = min_x + (2 * x_index + x_piece_num) * PublicOutputInfo.piece_length / 2;
         float center_z = min_z + (2 * z_index + z_piece_num) * PublicOutputInfo.piece_length / 2;
         float center_y = 0.0f;
+        if (terrain_mode == 1)
+            center_y = min_y + getIDWHeight(center_x, center_z);
         //float center_y = min_y + IDW.inverseDistanceWeighting(getVertexFeatures(center_x, center_z), center_x, center_z); // -15
         Vector4[] area_features = getAreaFeatures(min_x + x_index * PublicOutputInfo.piece_length, min_z + z_index * PublicOutputInfo.piece_length, x_piece_num, z_piece_num);
         Vector3 center = new Vector3(center_x, center_y, center_z);
@@ -212,7 +214,7 @@ static public class TerrainGenerator
                 if (terrain_mode == 0)
                     terrain_points[i, j, 1] = min_y + getDEMHeight(terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias
                 else
-                    terrain_points[i, j, 1] = 0.0f;
+                    terrain_points[i, j, 1] = center_y;
                 //terrain_points[i, j, 1] = min_y + getDEMHeight(terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias
                 //Vector3[] vf = getVertexFeatures(terrain_points[i, j, 0], terrain_points[i, j, 2]);
                 //terrain_points[i, j, 1] = min_y + IDW.inverseDistanceWeighting(vf, terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias  -15

@@ -14,8 +14,8 @@ Shader "Terrain/IDW"
     SubShader
     {
         Tags { "RenderType" = "Opaque" }
-        Cull Off
         LOD 200
+        Cull Off
 
         CGPROGRAM
         // Physically based Standard lighting model, and enable shadows on all light types
@@ -85,7 +85,7 @@ Shader "Terrain/IDW"
             float3 n3 = normalize(cross(dnx, dnz));
             float3 n4 = normalize(cross(dnz, dpx));
             float3 n = normalize((n1 + n2 + n3 + n4) / 4);
-            TANGENT_SPACE_ROTATION;
+            TANGENT_SPACE_ROTATION; // https://stackoverflow.com/questions/41776411/unity-shader-normals-wrong
             float3 tangentSpaceNormal = mul(rotation, n);
             v.normal = normalize(tangentSpaceNormal);
         }
