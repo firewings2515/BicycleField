@@ -19,9 +19,16 @@ window2():Asset(image){
 	Extrude(0.1)
 }
 
+
 window3():Asset(image){
-	Location("Assets/Image/window.jpg")
-	Scale(1.5,1)
+	Location("Assets/Image/window3.png")
+	Scale(0.5,0.5)
+	Extrude(0.1)
+}
+
+window4():Asset(image){
+	Location("Assets/Image/window4.png")
+	Scale(0.5,0.5)
 	Extrude(0.1)
 }
 
@@ -70,13 +77,39 @@ hello_wall():Wall(vertical,const,4.0){
 	window()
 }
 
-hello_wall2():Wall(vertical,const,6.0){
+hello_wall2():Wall(vertical,const,4.0){
 	background()
 	pos(0.25,0.5)
-	window3()
-	pos(0.75,0.5)
 	window()
+	pos(0.75,0.5)
+	window3()
 }
+
+hello_wall3():Wall(vertical,const,4.0){
+	background()
+	pos(0.25,0.5)
+	window2()
+	pos(0.75,0.5)
+	window4()
+}
+
+hello_wall4():Wall(vertical,const,4.0){
+	background()
+	pos(0.25,0.5)
+	window2()
+	pos(0.75,0.5)
+	window3()
+}
+
+hello_wall5():Wall(vertical,const,4.0){
+	background()
+	pos(0.25,0.5)
+	window4()
+	pos(0.75,0.5)
+	window_frame3D()
+}
+
+
 
 balcony():Asset(image){
 	Location("Assets/Image/balcony.png")
@@ -86,7 +119,7 @@ balcony_wall():Wall(vertical,const,4.0){
 
 	background()
 	pos(0.5,0.5)
-	balcony3D()
+	balcony()
 
 }
 
@@ -117,10 +150,37 @@ roof_wall():Wall(vertical,ratio,0.2){
 	
 hello_facade():Facade(){
 	first_floor_wall()
+	nothing_wall()
+	hello_wall2()
+	hello_wall()
+}
 
+hello_facade2():Facade(){
+	first_floor_wall()
+	balcony_wall()
 	hello_wall()
+	hello_wall3()
+}
+
+hello_facade3():Facade(){
+	first_floor_wall()
+	balcony_wall()
+	nothing_wall()
+	hello_wall4()
+}
+
+hello_facade4():Facade(){
+	first_floor_wall()
+	hello_wall5()
+	hello_wall2()
+	hello_wall3()
+}
+
+hello_facade5():Facade(){
+	first_floor_wall()
 	hello_wall()
-	hello_wall()
+	hello_wall4()
+	hello_wall5()
 }
 
 nothing_facade():Facade(){
@@ -176,18 +236,6 @@ roof_base():Base(){
 
 hello_house():Building(){
 	floors_base()	
-}
-
-hello_facade2():Facade(){
-	first_floor_wall()
-	nothing_wall()
-	hello_wall()
-	nothing_wall()
-	hello_wall()
-	nothing_wall()
-	hello_wall()
-	nothing_wall()
-	hello_wall()
 }
 
 

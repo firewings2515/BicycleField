@@ -9,7 +9,7 @@ static public class HouseGenerator
     };
 
     static string[] facade_names = new string[] {
-        "nothing_facade","hello_facade"
+        "hello_facade2","hello_facade","hello_facade3","hello_facade4","hello_facade5"
     };
 
     static string[] grammar_files_path = new string[] {
@@ -74,7 +74,7 @@ static public class HouseGenerator
         GameObject gobj;
         //gobj = builder.build(component_names[Random.Range(0, component_names.Length)]);
         //gobj.transform.position = single_point;
-        gobj = build_polygon_house(points);
+        gobj = build_polygon_house(points,4);
         gobj.transform.position = averge;
 
         //gobj.transform.Translate(0, single_point.y,0);
@@ -116,13 +116,21 @@ static public class HouseGenerator
         gobj_db[segment_id].Remove(house_id);
     }
 
-    static public GameObject build_polygon_house(List<Vector3> vertexs)
+    static public GameObject build_polygon_house(List<Vector3> vertexs,float width_per_facade)
     {
         List<List<string>> component_names = new List<List<string>>();
         for (int i = 0; i < vertexs.Count; i++)
         {
             component_names.Add(new List<string>());
-            int facade_count = Random.Range(1,3);
+            //int facade_count = Random.Range(1,3);
+            float dis;
+            if (i != vertexs.Count - 1) {
+                dis = Vector3.Distance(vertexs[i], vertexs[i + 1]);
+            }
+            else { 
+                dis = Vector3.Distance(vertexs[i], vertexs[0]);
+            }
+            int facade_count = (int)Mathf.Floor(dis / width_per_facade);
             for (int j = 0; j < facade_count; j++)
             {
                 component_names[i].Add(facade_names[Random.Range(0, facade_names.Length)]);
