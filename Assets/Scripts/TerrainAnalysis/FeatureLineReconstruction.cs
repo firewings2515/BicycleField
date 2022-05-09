@@ -77,7 +77,15 @@ public class FeatureLineReconstruction : MonoBehaviour
             }
 
             point_cloud = point_cloud_list.ToArray();
-            TerrainGenerator.features = point_cloud;
+            WVec3[] w_vec3 = new WVec3[point_cloud.Length];
+            for (int i = 0; i < w_vec3.Length; i++)
+            {
+                w_vec3[i].x = point_cloud[i].x;
+                w_vec3[i].y = point_cloud[i].y;
+                w_vec3[i].z = point_cloud[i].z;
+                w_vec3[i].w = 1;
+            }
+            TerrainGenerator.features = w_vec3;
             PublicOutputInfo.piece_length = 1;
             TerrainGenerator.min_x = 0;
             TerrainGenerator.min_y = 0;
@@ -90,7 +98,7 @@ public class FeatureLineReconstruction : MonoBehaviour
             Debug.Log(point_cloud.Length);
             Debug.Log("Get feature finish");
             TerrainGenerator.kdtree = new KDTree();
-            TerrainGenerator.kdtree.buildKDTree(point_cloud);
+            TerrainGenerator.kdtree.buildKDTree(w_vec3);
         }
 
         if (generate_heightmap)

@@ -88,7 +88,12 @@ public class OSMTerrainCompress : MonoBehaviour
                 point_cloud_inside[point_cloud_inside_index] = false;
             showPoint(point_cloud, "feature");
 
-            generateIDWTerrain(point_cloud);
+            Vector4[] point_cloud_w = new Vector4[point_cloud.Length];
+            for (int i = 0; i < point_cloud.Length; i++)
+            {
+                point_cloud_w[i] = new Vector4(point_cloud[i].x, point_cloud[i].y, point_cloud[i].z, 1);
+            }
+            generateIDWTerrain(point_cloud_w);
             //generateTINTerrain(point_cloud);
         }
     }
@@ -814,7 +819,7 @@ public class OSMTerrainCompress : MonoBehaviour
         return false;
     }
 
-    void generateIDWTerrain(Vector3[] point_cloud)
+    void generateIDWTerrain(Vector4[] point_cloud)
     {
         Mesh mesh = new Mesh();
         int resolution = 64;

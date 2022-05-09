@@ -36,7 +36,7 @@ public class FeatureReconstruction : MonoBehaviour
     }
 
     // Only for whole small terrain. Small terrain is put into TerrainGenerator.cs
-    void generateIDWTerrain(Vector3[] features)
+    void generateIDWTerrain(Vector4[] features)
     {
         Mesh mesh = new Mesh();
         float[,,] terrain_points = new float[x_length, z_length, 3];

@@ -17,7 +17,7 @@ static public class TerrainGenerator
     static float origin_x;
     static float origin_y;
     static float origin_z;
-    static public Vector3[] features;
+    static public WVec3[] features;
     static public Material terrain_mat;                                 // Use the standard material. The vertices are calculated by CPU
     static public Material terrain_idw_mat;                             // Use the material with IDW shader
     static public Material terrain_nni_mat;                             // Use the material with NNI shader
@@ -99,7 +99,7 @@ static public class TerrainGenerator
             min_z = float.Parse(inputs[2]);
             int n = int.Parse(sr.ReadLine());
             kdtree = new KDTree();
-            kdtree.nodes = new Vector3[n];
+            kdtree.nodes = new WVec3[n];
             kdtree.parent = new int[n];
             kdtree.left = new int[n];
             kdtree.right = new int[n];
@@ -109,12 +109,16 @@ static public class TerrainGenerator
                 float x = float.Parse(inputs[0]);
                 float y = float.Parse(inputs[1]);
                 float z = float.Parse(inputs[2]);
-                kdtree.nodes[f_i] = new Vector3(x, y, z);
-                int p = int.Parse(inputs[3]);
+                float w = float.Parse(inputs[3]);
+                kdtree.nodes[f_i].x = x;
+                kdtree.nodes[f_i].y = y;
+                kdtree.nodes[f_i].z = z;
+                kdtree.nodes[f_i].w = w;
+                int p = int.Parse(inputs[4]);
                 kdtree.parent[f_i] = p;
-                int l = int.Parse(inputs[4]);
+                int l = int.Parse(inputs[5]);
                 kdtree.left[f_i] = l;
-                int r = int.Parse(inputs[5]);
+                int r = int.Parse(inputs[6]);
                 kdtree.right[f_i] = r;
             }
             Debug.Log("Read Feature File " + file_path + " Successfully");
@@ -153,19 +157,21 @@ static public class TerrainGenerator
         Vector4[] area_features = new Vector4[area_features_index.Length];
         for (int area_features_index_index = 0; area_features_index_index < area_features_index.Length; area_features_index_index++)
         {
-            area_features[area_features_index_index] = kdtree.nodes[area_features_index[area_features_index_index]];
+            WVec3 feature = kdtree.nodes[area_features_index[area_features_index_index]];
+            area_features[area_features_index_index] = new Vector4(feature.x, feature.y, feature.z, feature.w);
         }
         return area_features;
     }
 
-    static public Vector3[] getVertexFeatures(float x, float z)
+    static public Vector4[] getVertexFeatures(float x, float z)
     {
         float expanded_length = vision_patch_num * PublicOutputInfo.piece_length;
         int[] area_features_index = kdtree.getAreaPoints(x - expanded_length, z - expanded_length, x + expanded_length, z + expanded_length);
-        Vector3[] area_features = new Vector3[area_features_index.Length];
+        Vector4[] area_features = new Vector4[area_features_index.Length];
         for (int area_features_index_index = 0; area_features_index_index < area_features_index.Length; area_features_index_index++)
         {
-            area_features[area_features_index_index] = kdtree.nodes[area_features_index[area_features_index_index]];
+            WVec3 feature = kdtree.nodes[area_features_index[area_features_index_index]];
+            area_features[area_features_index_index] = new Vector4(feature.x, feature.y, feature.z, feature.w);
         }
         return area_features;
     }
@@ -337,7 +343,7 @@ static public class TerrainGenerator
     {
         getAreaTerrainInfo(x, z);
         //Vector3[] area_features = getAreaFeatures(center_piece_x, center_piece_z, 4, 4);
-        Vector3[] vertex_features = getVertexFeatures(x, z);
+        Vector4[] vertex_features = getVertexFeatures(x, z);
         return IDW.inverseDistanceWeighting(vertex_features, x, z, old_base);
     }
 
@@ -345,7 +351,7 @@ static public class TerrainGenerator
     {
         getAreaTerrainInfo(x, z);
         //Vector3[] area_features = getAreaFeatures(center_piece_x, center_piece_z, 4, 4);
-        Vector3[] vertex_features = getVertexFeatures(x, z);
+        Vector4[] vertex_features = getVertexFeatures(x, z);
         return NNI.naturalNeighborInterpolation(vertex_features, x, z, old_base);
     }
 
@@ -409,11 +415,11 @@ static public class TerrainGenerator
         //Debug.Log("Success: " + x_small_min + "_" + z_small_min);
     }
 
-    static void showPoint(Vector3[] points, string tag, Transform parent, GameObject ball_prefab, float ball_size)
+    static void showPoint(WVec3[] points, string tag, Transform parent, GameObject ball_prefab, float ball_size)
     {
         for (int point_index = 0; point_index < points.Length; point_index++)
         {
-            GameObject ball = GameObject.Instantiate(ball_prefab, points[point_index], Quaternion.identity);
+            GameObject ball = GameObject.Instantiate(ball_prefab, new Vector3(points[point_index].x, points[point_index].y, points[point_index].z), Quaternion.identity);
             ball.transform.localScale = new Vector3(ball_size, ball_size, ball_size);
             ball.name = tag + "_" + point_index.ToString();
             ball.transform.parent = parent;
