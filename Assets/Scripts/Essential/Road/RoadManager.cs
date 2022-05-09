@@ -21,6 +21,10 @@ public class RoadManager : MonoBehaviour
 
     private bool is_started = false;
 
+    private string last_data = null;
+    public GameObject finish_flag;
+    private bool finished = false;
+
     private void Start()
     {
         
@@ -90,7 +94,16 @@ public class RoadManager : MonoBehaviour
         List< int > house_id_list = new List<int>();
         List<string> info_list = new List<string>();
         //
-        point_data = reader.ReadLine();
+        string new_data = reader.ReadLine();
+        if (new_data == null && last_data != null && !finished)
+        {
+            string[] infos = last_data.Split(' ');
+            Vector3 point = new Vector3(float.Parse(infos[0]), float.Parse(infos[1]) + 20, float.Parse(infos[2]));
+            GameObject.Instantiate(finish_flag, point, Quaternion.identity);
+            finished = true;
+        }
+        last_data = new_data;
+        point_data = new_data;
 
         if (path_loop)
         {

@@ -14,7 +14,7 @@ namespace PathCreation.Examples
         public GameObject speed_display;
         public GameObject slope_display;
 
-        private float cam_y_offset = 2.5f;
+        private float cam_y_offset = 5f;
         private bool is_started = false;
 
         private float add_speed = 0.05f;
