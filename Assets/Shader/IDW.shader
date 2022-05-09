@@ -45,9 +45,9 @@ Shader "Terrain/IDW"
         // put more per-instance properties here
         UNITY_INSTANCING_BUFFER_END(Props)
 
-        float getWeight(float d)
+        float getWeight(float d, float w)
         {
-            float f = pow(d, 1);
+            float f = pow(d, w);
             if (f < 0.000001)
                 return 0.000001;
             return 1 / f;
@@ -62,8 +62,16 @@ Shader "Terrain/IDW"
                 float dist = sqrt(pow(features[i].x - x, 2) + pow(features[i].z - z, 2));
                 if (dist < 320.0)
                 {
-                    sum_up += getWeight(dist) * features[i].y;
-                    sum_down += getWeight(dist);
+                    if (features[i].w > 8)
+                    {
+                        sum_up += getWeight(dist, 0.9) * features[i].y;
+                        sum_down += getWeight(dist, 0.9);
+                    }
+                    else
+                    {
+                        sum_up += getWeight(dist, 1) * features[i].y;
+                        sum_down += getWeight(dist, 1);
+                    }
                 }
             }
             if (sum_down < 0.000001)

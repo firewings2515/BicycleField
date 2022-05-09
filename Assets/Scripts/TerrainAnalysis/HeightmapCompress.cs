@@ -75,7 +75,16 @@ public class HeightmapCompress : MonoBehaviour
         {
             is_fetched_features = true;
             wait_features = false;
-            writeFeatureFile(file_path, point_cloud_list.ToArray());
+            Vector3[] point_cloud_array = point_cloud_list.ToArray();
+            WVec3[] features = new WVec3[point_cloud.Length];
+            for (int i = 0; i < point_cloud.Length; i++)
+            {
+                features[i].x = point_cloud_array[i].x;
+                features[i].y = point_cloud_array[i].y;
+                features[i].z = point_cloud_array[i].z;
+                features[i].w = 1;
+            }
+            writeFeatureFile(file_path, features);
         }
     }
 
@@ -198,10 +207,10 @@ public class HeightmapCompress : MonoBehaviour
         }
     }
 
-    void writeFeatureFile(string file_path, Vector3[] point_cloud)
+    void writeFeatureFile(string file_path, WVec3[] features)
     {
         KDTree kdtree = new KDTree();
-        kdtree.buildKDTree(point_cloud);
+        kdtree.buildKDTree(features);
 
         Debug.Log("Writing " + file_path);
         using (StreamWriter sw = new StreamWriter(file_path))
@@ -210,8 +219,8 @@ public class HeightmapCompress : MonoBehaviour
             sw.WriteLine(PublicOutputInfo.origin_pos.x + " " + PublicOutputInfo.origin_pos.y + " " + PublicOutputInfo.origin_pos.z);
             sw.WriteLine(chunk_x_piece_num + " " + chunk_z_piece_num);
             sw.WriteLine((chunk_x_min - PublicOutputInfo.origin_pos.x).ToString() + " " + (-PublicOutputInfo.origin_pos.y).ToString() + " " + (chunk_z_min - PublicOutputInfo.origin_pos.z).ToString());
-            sw.WriteLine(point_cloud.Length);
-            for (int point_index = 0; point_index < point_cloud.Length; point_index++)
+            sw.WriteLine(features.Length);
+            for (int point_index = 0; point_index < features.Length; point_index++)
             {
                 Vector3 feature_out = new Vector3(kdtree.nodes[point_index].x - PublicOutputInfo.origin_pos.x, kdtree.nodes[point_index].y, kdtree.nodes[point_index].z - PublicOutputInfo.origin_pos.z);
                 sw.WriteLine(feature_out.x + " " + feature_out.y + " " + feature_out.z + " " + kdtree.parent[point_index] + " " + kdtree.left[point_index] + " " + kdtree.right[point_index]);

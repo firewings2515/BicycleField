@@ -53,7 +53,23 @@ public class FeatureFileGenerator : MonoBehaviour
         if (wait_terrain_count == 0)
         {
             wait_terrain_count = -1;
-            writeFeatureFile(Application.streamingAssetsPath + "//" + file_path, point_cloud_list.Distinct().ToArray());
+            List<Vector3> point_list = new List<Vector3>(point_cloud_list);
+            List<Vector3> bicycle_points_list = road_integration.bicyclePointsListToVec3();
+            point_list.AddRange(bicycle_points_list);
+            int bicycle_constrain_reverse_index = bicycle_points_list.Count;
+            Vector3[] points = point_list.Distinct().ToArray();
+            WVec3[] features = new WVec3[points.Length];
+            for (int i = 0; i < points.Length; i++)
+            {
+                features[i].x = points[i].x;
+                features[i].y = points[i].y;
+                features[i].z = points[i].z;
+                if (i < points.Length - bicycle_constrain_reverse_index)
+                    features[i].w = 1;
+                else
+                    features[i].w = 16;
+            }
+            writeFeatureFile(Application.streamingAssetsPath + "//" + file_path, features);
         }
     }
 
@@ -234,10 +250,10 @@ public class FeatureFileGenerator : MonoBehaviour
         return edges;
     }
 
-    void writeFeatureFile(string file_path, Vector3[] point_cloud)
+    void writeFeatureFile(string file_path, WVec3[] features)
     {
         KDTree kdtree = new KDTree();
-        kdtree.buildKDTree(point_cloud);
+        kdtree.buildKDTree(features);
 
         Debug.Log("Writing " + file_path);
         using (StreamWriter sw = new StreamWriter(file_path))
@@ -246,11 +262,11 @@ public class FeatureFileGenerator : MonoBehaviour
             sw.WriteLine(PublicOutputInfo.origin_pos.x + " " + PublicOutputInfo.origin_pos.y + " " + PublicOutputInfo.origin_pos.z);
             sw.WriteLine(x_piece_num + " " + z_piece_num);
             sw.WriteLine((road_integration.terrain_min_x - PublicOutputInfo.origin_pos.x).ToString() + " " + (-PublicOutputInfo.origin_pos.y).ToString() + " " + (road_integration.terrain_min_z - PublicOutputInfo.origin_pos.z).ToString());
-            sw.WriteLine(point_cloud.Length);
-            for (int point_index = 0; point_index < point_cloud.Length; point_index++)
+            sw.WriteLine(features.Length);
+            for (int point_index = 0; point_index < features.Length; point_index++)
             {
                 Vector3 feature_out = new Vector3(kdtree.nodes[point_index].x - PublicOutputInfo.origin_pos.x, kdtree.nodes[point_index].y, kdtree.nodes[point_index].z - PublicOutputInfo.origin_pos.z);
-                sw.WriteLine(feature_out.x + " " + feature_out.y + " " + feature_out.z + " " + kdtree.parent[point_index] + " " + kdtree.left[point_index] + " " + kdtree.right[point_index]);
+                sw.WriteLine(feature_out.x + " " + feature_out.y + " " + feature_out.z + " " + kdtree.nodes[point_index].w + " " + kdtree.parent[point_index] + " " + kdtree.left[point_index] + " " + kdtree.right[point_index]);
             }
         }
         Debug.Log("Write " + file_path + " Successfully!");

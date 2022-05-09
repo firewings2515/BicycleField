@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class NNI
 {
-    static public float naturalNeighborInterpolation(Vector3[] point_cloud, float x, float z, float old_base = 0.0f)
+    static public float naturalNeighborInterpolation(Vector4[] point_cloud, float x, float z, float old_base = 0.0f)
     {
         float d_min = Mathf.Sqrt(Mathf.Pow(point_cloud[0].x - x, 2) + Mathf.Pow(point_cloud[0].z - z, 2));
         int p_index = 0;

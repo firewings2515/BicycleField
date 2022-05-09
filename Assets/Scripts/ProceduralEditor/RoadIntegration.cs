@@ -222,4 +222,14 @@ public class RoadIntegration : MonoBehaviour
                 terrain_min_z = Mathf.Min(terrain_min_z, origin_piece_z - expanded_z);
         }
     }
+
+    public List<Vector3> bicyclePointsListToVec3()
+    {
+        List<Vector3> output = new List<Vector3>();
+        for (int index = 0; index < bicycle_points_list.Count; index++)
+        {
+            output.Add(osm_reader.points_lib[bicycle_points_list[index]].position);
+        }
+        return output;
+    }
 }

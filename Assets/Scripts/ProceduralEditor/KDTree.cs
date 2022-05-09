@@ -2,27 +2,39 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public struct WVec3
+{
+    public float x;
+    public float y;
+    public float z;
+    public float w;
+}
+
 public class KDTree
 {
-    public Vector3[] nodes;
+    public WVec3[] nodes;
     public int[] parent;
     public int[] left;
     public int[] right;
+    public int[] weight;
     static int nodes_length;
 
-    public void buildKDTree(Vector3[] points)
+    public void buildKDTree(WVec3[] points)
     {
-        nodes = new Vector3[points.Length];
+        if (points.Length == 0)
+            Debug.LogError("The number of points can not be 0!");
+        nodes = new WVec3[points.Length];
         parent = new int[points.Length];
         left = new int[points.Length];
         right = new int[points.Length];
+        weight = new int[points.Length];
         nodes_length = 0;
         insertPoint(ref points, 0, points.Length, true, -1);
     }
 
-    int insertPoint(ref Vector3[] points, int x, int y, bool is_x, int the_parent)
+    int insertPoint(ref WVec3[] points, int x, int y, bool is_x, int the_parent)
     {
-        mergeSortPoints(ref points, x, y, new Vector3[points.Length], is_x);
+        mergeSortPoints(ref points, x, y, new WVec3[points.Length], is_x);
         int middle = x + (y - x) / 2;
         int nodes_index = nodes_length;
         nodes_length++;
@@ -38,7 +50,7 @@ public class KDTree
         return nodes_index;
     }
 
-    void mergeSortPoints(ref Vector3[] points, int x, int y, Vector3[] points_t, bool is_x)
+    void mergeSortPoints(ref WVec3[] points, int x, int y, WVec3[] points_t, bool is_x)
     {
         if (y - x > 1)
         {
