@@ -118,6 +118,10 @@ static public class HouseGenerator
 
     static public GameObject build_polygon_house(List<Vector3> vertexs,float width_per_facade)
     {
+        if (!determine_clock_wise(vertexs))
+        {
+            vertexs.Reverse();
+        }
         List<List<string>> component_names = new List<List<string>>();
         for (int i = 0; i < vertexs.Count; i++)
         {
@@ -131,6 +135,11 @@ static public class HouseGenerator
                 dis = Vector3.Distance(vertexs[i], vertexs[0]);
             }
             int facade_count = (int)Mathf.Floor(dis / width_per_facade);
+            if (facade_count == 0)
+            {
+                component_names[i].Add("nothing_facade");
+                continue;
+            }
             for (int j = 0; j < facade_count; j++)
             {
                 component_names[i].Add(facade_names[Random.Range(0, facade_names.Length)]);
@@ -140,5 +149,19 @@ static public class HouseGenerator
         builder.load_base_coords("runtime_base", vertexs);
         builder.load_base_facades("runtime_base", component_names);
         return builder.build("runtime_base");
+    }
+
+    static bool determine_clock_wise(List<Vector3> points)
+    { //§PÂ_¶¶®É°wOR°f®É°w
+        //https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
+        int coords_size = points.Count;
+        float result = 0.0f;
+        for (int index = 0; index < coords_size; index++)
+        {
+            Vector3 current = points[index];
+            Vector3 next = points[(index + 1) % coords_size];
+            result += (next.x - current.x) * (next.z + current.z);
+        }
+        return result >= 0.0f;
     }
 }

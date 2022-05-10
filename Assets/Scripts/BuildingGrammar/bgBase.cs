@@ -17,7 +17,7 @@ public class bgBase : bgComponent
     public override GameObject build()
     {
         height = float.MinValue;
-        //random_background = Random.Range(0, 15);
+        random_background = Random.Range(0, 15);
         //if (go != null)
         //{
         //    go = GameObject.Instantiate(go);
@@ -72,6 +72,7 @@ public class bgBase : bgComponent
 
         if (!determine_clock_wise(vertexs)) {
             vertexs.Reverse();
+            facades.Reverse();
         }
 
 
