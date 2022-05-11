@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ce58035a221cef4e9f89ce0e83ee118, type: 3}
+  m_Name: pine2
+  m_EditorClassIdentifier: 
+  rendererScale: {x: 1.43, y: 2.22, z: 1}
+  uvCoordinates:
+  - bottomLeft: {x: 0, y: 0}
+    bottomRight: {x: 0.3101777, y: 0}
+    topRight: {x: 0.3101777, y: 0.3338832}
+    topLeft: {x: 0, y: 0.3338832}
+  - bottomLeft: {x: 0.3101777, y: 0}
+    bottomRight: {x: 0.6486268, y: 0}
+    topRight: {x: 0.6486268, y: 0.3312438}
+    topLeft: {x: 0.3101777, y: 0.3312438}
+  - bottomLeft: {x: 0.6486268, y: 0}
+    bottomRight: {x: 1, y: 0}
+    topRight: {x: 1, y: 0.33289343}
+    topLeft: {x: 0.6486268, y: 0.33289343}
+  - bottomLeft: {x: 0.3101777, y: 0.3312438}
+    bottomRight: {x: 0.61954767, y: 0.3312438}
+    topRight: {x: 0.61954767, y: 0.66512704}
+    topLeft: {x: 0.3101777, y: 0.66512704}
+  - bottomLeft: {x: 0.61954767, y: 0.33289343}
+    bottomRight: {x: 0.92972535, y: 0.33289343}
+    topRight: {x: 0.92972535, y: 0.6661168}
+    topLeft: {x: 0.61954767, y: 0.6661168}
+  - bottomLeft: {x: 0, y: 0.66512704}
+    bottomRight: {x: 0.33844912, y: 0.66512704}
+    topRight: {x: 0.33844912, y: 0.9990102}
+    topLeft: {x: 0, y: 0.9990102}
+  - bottomLeft: {x: 0.33844912, y: 0.6661168}
+    bottomRight: {x: 0.68901455, y: 0.6661168}
+    topRight: {x: 0.68901455, y: 1}
+    topLeft: {x: 0.33844912, y: 1}
+  - bottomLeft: {x: 0, y: 0.3338832}
+    bottomRight: {x: 0.30936995, y: 0.3338832}
+    topRight: {x: 0.30936995, y: 0.66281754}
+    topLeft: {x: 0, y: 0.66281754}
