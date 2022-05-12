@@ -8,6 +8,7 @@ public class bgBase : bgComponent
     public List<Vector3> vertexs;
     public List<List<bgFacade>> facades;
     public float height = float.MinValue;
+    float floor_height = float.MaxValue;
     int vertex_read = 0;
     bool runtime_vertex = false;
     public bgBase(List<string> _input_parameter, List<string> _component_parameter, List<string> _commands, List<List<string>> _commands_parameter) : base(_input_parameter, _component_parameter, _commands, _commands_parameter)
@@ -17,6 +18,7 @@ public class bgBase : bgComponent
     public override GameObject build()
     {
         height = float.MinValue;
+        floor_height = float.MaxValue;
         random_background = Random.Range(0, 15);
         //if (go != null)
         //{
@@ -75,6 +77,7 @@ public class bgBase : bgComponent
             facades.Reverse();
         }
 
+        
 
         for (int i = 0; i < vertexs.Count; i++) {
             Vector3 v1 = vertexs[i];
@@ -122,6 +125,27 @@ public class bgBase : bgComponent
 
         }
 
+        //create floor
+        List<Vector2> floor_vertex2D = new List<Vector2>();
+        float floor_scale = 1.0f;
+        for (int i = 0; i < vertexs.Count; i++)
+        {
+            floor_vertex2D.Add(new Vector2(vertexs[i].x * floor_scale, vertexs[i].z * floor_scale));
+            if (floor_height > vertexs[i].y) floor_height = vertexs[i].y;
+        }
+        GameObject floor = PolygonPlane.create(floor_vertex2D);
+        floor.transform.parent = go.transform;
+        floor.transform.localPosition = new Vector3(0, floor_height, 0);
+
+        //create roof
+        List<Vector2> roof_vertex2D= new List<Vector2>();
+        float roof_scale = 1.2f;
+        for (int i = 0; i < vertexs.Count; i++) {
+            roof_vertex2D.Add(new Vector2(vertexs[i].x * roof_scale, vertexs[i].z * roof_scale));
+        }
+        GameObject roof = PolygonPlane.create(roof_vertex2D);
+        roof.transform.parent = go.transform;
+        roof.transform.localPosition = new Vector3(0,height,0);
         return go;
     }
 
