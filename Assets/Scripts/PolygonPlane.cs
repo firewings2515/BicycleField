@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TriangleNet.Geometry;
 
 public class PolygonPlane
 {
@@ -18,7 +19,6 @@ public class PolygonPlane
         List<Vector3> vertices = null;
 
         Triangulation.triangulate(points, holes, 0.0f, out indices, out vertices);
-
         Mesh mesh = mf.mesh;
         mesh.Clear();
         mesh.vertices = vertices.ToArray();

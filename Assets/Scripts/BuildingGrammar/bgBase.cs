@@ -138,10 +138,20 @@ public class bgBase : bgComponent
         floor.transform.localPosition = new Vector3(0, floor_height, 0);
 
         //create roof
+        Vector3 center = new Vector3();
         List<Vector2> roof_vertex2D= new List<Vector2>();
+        float roof_out = 1.0f;
         float roof_scale = 1.2f;
-        for (int i = 0; i < vertexs.Count; i++) {
-            roof_vertex2D.Add(new Vector2(vertexs[i].x * roof_scale, vertexs[i].z * roof_scale));
+        for (int i = 0; i < vertexs.Count; i++)
+        {
+            center += vertexs[i];
+        }
+        center /= vertexs.Count;
+        for (int i = 0; i < vertexs.Count; i++)
+        {
+            float dis_from_center = Vector3.Distance(vertexs[i], center);// + roof_out;
+            Vector3 roof_vert = roof_scale * dis_from_center * Vector3.Normalize(vertexs[i] - center) + center;
+            roof_vertex2D.Add(new Vector2(roof_vert.x, roof_vert.z));
         }
         GameObject roof = PolygonPlane.create(roof_vertex2D);
         roof.transform.parent = go.transform;
