@@ -110,15 +110,18 @@ namespace PathCreation.Examples
             distanceTravelled = value;
         }
 
-        public void accelerate()
+        public void accelerate(float set_speed = 0)
         {
-            if (speed < Info.CHECKPOINT_SIZE - add_speed) speed += add_speed;
+            if (set_speed == 0) speed += add_speed;
+            else speed += set_speed;
+            if (speed > Info.CHECKPOINT_SIZE) speed = Info.CHECKPOINT_SIZE;
         }
 
-        public void decelerate()
+        public void decelerate(float set_speed = 0)
         {
-
-            if (Input.GetKey(KeyCode.P)) if (speed > 0) speed -= add_speed;
+            if (set_speed == 0) speed -= add_speed;
+            else speed -= set_speed;
+            if (speed < 0) speed = 0;
         }
     }
 }

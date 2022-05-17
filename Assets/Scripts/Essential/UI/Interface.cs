@@ -14,6 +14,8 @@ public class Interface : MonoBehaviour
     public Slider slider;
 
     public GameObject slope_display;
+
+    private bool play = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -34,16 +36,27 @@ public class Interface : MonoBehaviour
         recorded_time = Time.realtimeSinceStartupAsDouble;
 
         if (Input.GetKeyDown(KeyCode.Alpha9)) slope_display.SetActive(!slope_display.activeSelf);
+
+        if (Input.GetKeyDown(KeyCode.P)) play = !play;
+        if (play)
+        {
+            Debug.Log("playing");
+            if (Input.GetKeyDown(KeyCode.Space)) speedUp();
+            else
+            {
+                speedDown();
+            }
+        }
     }
 
     public void speedUp()
     {
-        cyclist.GetComponent<PathCreation.Examples.PathFollower>().accelerate();
+        cyclist.GetComponent<PathCreation.Examples.PathFollower>().accelerate(1.0f);
     }
 
     public void speedDown()
     {
-        cyclist.GetComponent<PathCreation.Examples.PathFollower>().decelerate();
+        cyclist.GetComponent<PathCreation.Examples.PathFollower>().decelerate(0.1f);
     }
 
     public void changeSpeed()
