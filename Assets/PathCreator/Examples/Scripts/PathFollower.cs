@@ -21,6 +21,7 @@ namespace PathCreation.Examples
         private float last_speed = 0.0f;
 
         public GameObject[] slope_displays;
+        private float slope_diff = 0;
 
         void Update()
         {
@@ -78,10 +79,10 @@ namespace PathCreation.Examples
                 slope_displays[id].transform.localPosition = new_pos;
             }
 
-            float slope_diff = 5f;
-            float diff = slope_displays[anchor + 2].transform.localPosition.y - slope_displays[anchor - 2].transform.localPosition.y;
-            if (diff > slope_diff) slope_display.GetComponent<Text>().text = "上坡";
-            else if (diff < -slope_diff) slope_display.GetComponent<Text>().text = "下坡";
+            float slope_buffer = 5f;
+            slope_diff = slope_displays[anchor + 2].transform.localPosition.y - slope_displays[anchor - 2].transform.localPosition.y;
+            if (slope_diff > slope_buffer) slope_display.GetComponent<Text>().text = "上坡";
+            else if (slope_diff < -slope_buffer) slope_display.GetComponent<Text>().text = "下坡";
             else slope_display.GetComponent<Text>().text = "平坡";
         }
 
@@ -112,15 +113,18 @@ namespace PathCreation.Examples
 
         public void accelerate(float set_speed = 0)
         {
-            if (set_speed == 0) speed += add_speed;
-            else speed += set_speed;
+            speed -= slope_diff * 0.1f * Time.deltaTime;
+            if (set_speed == 0) speed += add_speed * Time.deltaTime;
+            else speed += set_speed * Time.deltaTime;
             if (speed > Info.CHECKPOINT_SIZE) speed = Info.CHECKPOINT_SIZE;
         }
 
         public void decelerate(float set_speed = 0)
         {
-            if (set_speed == 0) speed -= add_speed;
-            else speed -= set_speed;
+            Debug.Log(slope_diff * 0.1f * Time.deltaTime);
+            speed -= slope_diff * 0.1f * Time.deltaTime;
+            if (set_speed == 0) speed -= add_speed * Time.deltaTime;
+            else speed -= set_speed * Time.deltaTime;
             if (speed < 0) speed = 0;
         }
     }

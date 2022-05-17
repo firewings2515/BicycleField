@@ -40,23 +40,19 @@ public class Interface : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.P)) play = !play;
         if (play)
         {
-            Debug.Log("playing");
             if (Input.GetKeyDown(KeyCode.Space)) speedUp();
-            else
-            {
-                speedDown();
-            }
+            else speedDown();
         }
     }
 
     public void speedUp()
     {
-        cyclist.GetComponent<PathCreation.Examples.PathFollower>().accelerate(1.0f);
+        cyclist.GetComponent<PathCreation.Examples.PathFollower>().accelerate(20.0f);
     }
 
     public void speedDown()
     {
-        cyclist.GetComponent<PathCreation.Examples.PathFollower>().decelerate(0.1f);
+        cyclist.GetComponent<PathCreation.Examples.PathFollower>().decelerate(1f);
     }
 
     public void changeSpeed()
