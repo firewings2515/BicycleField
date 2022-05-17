@@ -12,6 +12,8 @@ public class Interface : MonoBehaviour
 
     public GameObject cyclist;
     public Slider slider;
+
+    public GameObject slope_display;
     // Start is called before the first frame update
     void Start()
     {
@@ -30,6 +32,8 @@ public class Interface : MonoBehaviour
         }
         fps_display.GetComponent<Text>().text = "FPS: " + (int)(1.0/worst_time);
         recorded_time = Time.realtimeSinceStartupAsDouble;
+
+        if (Input.GetKeyDown(KeyCode.Alpha9)) slope_display.SetActive(!slope_display.activeSelf);
     }
 
     public void speedUp()

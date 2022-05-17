@@ -20,6 +20,8 @@ namespace PathCreation.Examples
         private float add_speed = 0.05f;
         private float last_speed = 0.0f;
 
+        public GameObject[] slope_displays;
+
         void Update()
         {
             if (TerrainGenerator.is_initial)
@@ -43,15 +45,6 @@ namespace PathCreation.Examples
                     is_started = true;
                 }
 
-                if (Input.GetKey(KeyCode.O)) accelerate();
-                if (Input.GetKey(KeyCode.P)) decelerate();
-                if (Input.GetKeyDown(KeyCode.L))
-                {
-                    speed_display.SetActive(!speed_display.activeSelf);
-                    slope_display.SetActive(!slope_display.activeSelf);
-                }
-
-
                 Vector3 here = tempGPA;
                 Vector3 there = pathCreator.path.GetPointAtDistance(distanceTravelled + 1f, endOfPathInstruction);
                 there.y = TerrainGenerator.getHeightWithBais(there.x, there.z);
@@ -69,7 +62,36 @@ namespace PathCreation.Examples
                     transform.position = Vector3.Lerp(transform.position, tempGPA + Vector3.up * cam_y_offset, 0.1f);
                     transform.rotation = Quaternion.Lerp(transform.rotation, pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction), 0.02f);
                 }
+
+                manageSlopeDisplay();
             }
+        }
+
+        private void manageSlopeDisplay()
+        {
+            int anchor = 4;
+            for (int id = 0; id < slope_displays.Length; id++)
+            {
+                if (id == anchor) continue;
+                Vector3 new_pos = slope_displays[id].transform.localPosition;
+                new_pos.y = slope_displays[anchor].transform.localPosition.y + -calculateSlopeHeightDiff(id, anchor);
+                slope_displays[id].transform.localPosition = new_pos;
+            }
+
+            float slope_diff = 5f;
+            float diff = slope_displays[anchor + 2].transform.localPosition.y - slope_displays[anchor - 2].transform.localPosition.y;
+            if (diff > slope_diff) slope_display.GetComponent<Text>().text = "上坡";
+            else if (diff < -slope_diff) slope_display.GetComponent<Text>().text = "下坡";
+            else slope_display.GetComponent<Text>().text = "平坡";
+        }
+
+        private float calculateSlopeHeightDiff(int id, int anchor)
+        {
+            Vector3 there = pathCreator.path.GetPointAtDistance(distanceTravelled + (id - anchor) * 10, endOfPathInstruction);
+            float result = (TerrainGenerator.getHeightWithBais(transform.position.x, transform.position.z) - TerrainGenerator.getHeightWithBais(there.x, there.z)) * 5;
+            if (result > 100) result = 100;
+            if (result < -100) result = -100;
+            return result;
         }
 
         // If the path changes during the game, update the distance travelled so that the follower's position on the new path
