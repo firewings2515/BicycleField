@@ -116,16 +116,22 @@ namespace PathCreation.Examples
             speed -= slope_diff * 0.1f * Time.deltaTime;
             if (set_speed == 0) speed += add_speed * Time.deltaTime;
             else speed += set_speed * Time.deltaTime;
-            if (speed > Info.CHECKPOINT_SIZE) speed = Info.CHECKPOINT_SIZE;
+            slopeCelerate();
         }
 
         public void decelerate(float set_speed = 0)
         {
-            Debug.Log(slope_diff * 0.1f * Time.deltaTime);
             speed -= slope_diff * 0.1f * Time.deltaTime;
             if (set_speed == 0) speed -= add_speed * Time.deltaTime;
             else speed -= set_speed * Time.deltaTime;
+            slopeCelerate();
+        }
+
+        private void slopeCelerate()
+        {
+            speed -= slope_diff * 0.1f * Time.deltaTime;
             if (speed < 0) speed = 0;
+            if (speed > Info.CHECKPOINT_SIZE) speed = Info.CHECKPOINT_SIZE;
         }
     }
 }
