@@ -46,6 +46,9 @@ namespace WinterboltGames.BillboardGenerator.Runtime.Renderers
 		[Tooltip("Disable this if the billboard is using the alternative workflow.")]
 		public bool render;
 
+
+
+
 		/// <summary>
 		/// The last recorded target position.
 		/// </summary>
@@ -132,6 +135,8 @@ namespace WinterboltGames.BillboardGenerator.Runtime.Renderers
 			{
 				meshFilter.mesh = mesh;
 			}
+
+			target = Camera.main.transform;
 		}
 
 		/// <summary>

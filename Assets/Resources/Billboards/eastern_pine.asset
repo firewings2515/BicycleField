@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ce58035a221cef4e9f89ce0e83ee118, type: 3}
+  m_Name: eastern_pine
+  m_EditorClassIdentifier: 
+  rendererScale: {x: 0.5736868, y: 1.743889, z: 1}
+  uvCoordinates:
+  - bottomLeft: {x: 0, y: 0}
+    bottomRight: {x: 0.32730356, y: 0}
+    topRight: {x: 0.32730356, y: 0.33333334}
+    topLeft: {x: 0, y: 0.33333334}
+  - bottomLeft: {x: 0.32730356, y: 0}
+    bottomRight: {x: 0.6551724, y: 0}
+    topRight: {x: 0.6551724, y: 0.33333334}
+    topLeft: {x: 0.32730356, y: 0.33333334}
+  - bottomLeft: {x: 0.6551724, y: 0}
+    bottomRight: {x: 1, y: 0}
+    topRight: {x: 1, y: 0.33333334}
+    topLeft: {x: 0.6551724, y: 0.33333334}
+  - bottomLeft: {x: 0, y: 0.33333334}
+    bottomRight: {x: 0.33295646, y: 0.33333334}
+    topRight: {x: 0.33295646, y: 0.6666667}
+    topLeft: {x: 0, y: 0.6666667}
+  - bottomLeft: {x: 0.33295646, y: 0.33333334}
+    bottomRight: {x: 0.6608253, y: 0.33333334}
+    topRight: {x: 0.6608253, y: 0.6666667}
+    topLeft: {x: 0.33295646, y: 0.6666667}
+  - bottomLeft: {x: 0.6608253, y: 0.33333334}
+    bottomRight: {x: 0.9886942, y: 0.33333334}
+    topRight: {x: 0.9886942, y: 0.6666667}
+    topLeft: {x: 0.6608253, y: 0.6666667}
+  - bottomLeft: {x: 0, y: 0.6666667}
+    bottomRight: {x: 0.34539288, y: 0.6666667}
+    topRight: {x: 0.34539288, y: 1}
+    topLeft: {x: 0, y: 1}
+  - bottomLeft: {x: 0.34539288, y: 0.6666667}
+    bottomRight: {x: 0.6783494, y: 0.6666667}
+    topRight: {x: 0.6783494, y: 1}
+    topLeft: {x: 0.34539288, y: 1}
