@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657826, g: 0.49641263, b: 0.57481676, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -849,7 +849,7 @@ MonoBehaviour:
       - 0
       globalNormalsAngle: 0
       flipNormals: 0
-    vertexPathUpToDate: 0
+    vertexPathUpToDate: 1
     vertexPathMaxAngleError: 0.3
     vertexPathMinVertexSpacing: 0.01
     showTransformTool: 1
@@ -920,7 +920,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 333408365}
-  m_Mesh: {fileID: 1154043585}
+  m_Mesh: {fileID: 1014413579}
 --- !u!114 &333408374
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2004,7 +2004,7 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!43 &1154043585
+--- !u!43 &1014413579
 Mesh:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2730,6 +2730,7 @@ GameObject:
   - component: {fileID: 1759723936}
   - component: {fileID: 1759723935}
   - component: {fileID: 1759723933}
+  - component: {fileID: 1759723934}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -2768,6 +2769,35 @@ MonoBehaviour:
   freeLookSensitivity: 3
   zoomSensitivity: 10
   fastZoomSensitivity: 50
+--- !u!114 &1759723934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1759723931}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56d22d330c5aede499cc02c40c1bd90d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tree_prefabs:
+  - {fileID: 8425275225976099517, guid: a7759afb0d298c74e8d354b2df3830b3, type: 3}
+  - {fileID: 879822440257008674, guid: 5301f16ea4d9de04d882820f02487e07, type: 3}
+  - {fileID: 7189027878369153800, guid: 7a6547c0ecacc8942ad04c4acf616865, type: 3}
+  - {fileID: 6395527445091645365, guid: a5fa49f69d0221c4897a2adcb4760d5d, type: 3}
+  - {fileID: 993935168366326144, guid: 02093e090c19bd2458cdbbc40335c4a2, type: 3}
+  - {fileID: 993935168366326144, guid: 02093e090c19bd2458cdbbc40335c4a2, type: 3}
+  - {fileID: 4469183709851513230, guid: 7db87544774a47c4a97e6b0c2d7cc700, type: 3}
+  - {fileID: 6554593999070723722, guid: a383b9fc3153b0e4bb66977d0031aaf4, type: 3}
+  - {fileID: 7262818070784387047, guid: 920ca03612cf0e645a0ca1c4624fb7b1, type: 3}
+  - {fileID: 4027620430889792187, guid: 152c19bec8c8a764295220ba87e9a18f, type: 3}
+  - {fileID: 4354947332505869136, guid: 5be24eeb7aa95d04cbab3b4cbaf2b2c1, type: 3}
+  instance: []
+  tree_amount: 60
+  nearest_dis: 5
+  gen_scope: 50
+  exist_scope: 100
 --- !u!81 &1759723935
 AudioListener:
   m_ObjectHideFlags: 0
