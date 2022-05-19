@@ -419,10 +419,15 @@ static public class TerrainGenerator
     {
         for (int point_index = 0; point_index < points.Length; point_index++)
         {
-            GameObject ball = GameObject.Instantiate(ball_prefab, new Vector3(points[point_index].x, points[point_index].y, points[point_index].z), Quaternion.identity);
+            GameObject ball = GameObject.Instantiate(ball_prefab, new Vector3(points[point_index].x, points[point_index].y + min_y, points[point_index].z), Quaternion.identity);
             ball.transform.localScale = new Vector3(ball_size, ball_size, ball_size);
             ball.name = tag + "_" + point_index.ToString();
             ball.transform.parent = parent;
+
+            if (points[point_index].w > 8)
+            {
+                ball.GetComponent<MeshRenderer>().material.color = Color.red;
+            }
         }
     }
 }

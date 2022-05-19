@@ -57,23 +57,34 @@ Shader "Terrain/IDW"
         {
             float sum_up = 0.0;
             float sum_down = 0.0;
+            int constrain = 0;
+            float dist_min = 9.0f;
+            float nni_height = 0.0f;
             for (int i = 0; i < features_count; i++)
             {
                 float dist = sqrt(pow(features[i].x - x, 2) + pow(features[i].z - z, 2));
-                if (dist < 320.0)
+                if (pow(dist, 1) < 0.000001)
+                    return features[i].y;
+                if (dist < 320.0 && features[i].w > 8)
                 {
-                    if (features[i].w > 8)
+                    /*if (features[i].w > 8 && dist < 8.0f)
                     {
-                        sum_up += getWeight(dist, 0.9) * features[i].y;
-                        sum_down += getWeight(dist, 0.9);
+                        constrain = 1;
+                        if (dist_min > dist)
+                        {
+                            dist_min = dist;
+                            nni_height = features[i].y;
+                        }
                     }
-                    else
+                    else*/
                     {
                         sum_up += getWeight(dist, 1) * features[i].y;
                         sum_down += getWeight(dist, 1);
                     }
                 }
             }
+            if (constrain == 1)
+                return nni_height;
             if (sum_down < 0.000001)
                 sum_down = 0.000001;
             return sum_up / sum_down;
