@@ -4,6 +4,7 @@ using UnityEngine;
 using System.IO;
 using PathCreation;
 using UnityEditor;
+using UnityEngine.UI;
 
 public class RoadManager : MonoBehaviour
 {
@@ -36,6 +37,10 @@ public class RoadManager : MonoBehaviour
         if (TerrainGenerator.is_initial && !is_started) 
         {
             reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
+
+            string end_point_data = reader.ReadLine();
+            Info.end_point = Functions.StrToVec3(end_point_data);
+
             reader.ReadLine(); // throw away terrain anchor point
 
             //remove first default segment

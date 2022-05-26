@@ -23,6 +23,8 @@ namespace PathCreation.Examples
         public GameObject[] slope_displays;
         private float slope_diff = 0;
 
+        public GameObject end_text;
+
         void Update()
         {
             if (TerrainGenerator.is_initial)
@@ -65,6 +67,7 @@ namespace PathCreation.Examples
                 }
 
                 manageSlopeDisplay();
+                endDistanceDisplay();
             }
         }
 
@@ -84,6 +87,13 @@ namespace PathCreation.Examples
             if (slope_diff > slope_buffer) slope_display.GetComponent<Text>().text = "上坡";
             else if (slope_diff < -slope_buffer) slope_display.GetComponent<Text>().text = "下坡";
             else slope_display.GetComponent<Text>().text = "平坡";
+        }
+
+        private void endDistanceDisplay()
+        {
+            Vector3 end = Info.end_point;
+            Vector3 here = transform.position;
+            end_text.GetComponent<Text>().text = "終點: " + (int)((end - here).magnitude) + "公尺";
         }
 
         private float calculateSlopeHeightDiff(int id, int anchor)
