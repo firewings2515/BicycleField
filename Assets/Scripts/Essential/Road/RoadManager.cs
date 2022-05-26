@@ -116,6 +116,7 @@ public class RoadManager : MonoBehaviour
             {
                 reader.Close();
                 reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
+                reader.ReadLine(); // last point repeats -> delete
                 point_data = reader.ReadLine();
             }
         }
