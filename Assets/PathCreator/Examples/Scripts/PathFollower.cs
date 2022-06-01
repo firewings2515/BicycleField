@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 namespace PathCreation.Examples
 {
@@ -24,6 +25,8 @@ namespace PathCreation.Examples
         private float slope_diff = 0;
 
         public GameObject end_text;
+        public GameObject compass;
+        private List<float> directions = new List<float>() { };
 
         void Update()
         {
@@ -62,7 +65,26 @@ namespace PathCreation.Examples
                 if (pathCreator != null)
                 {
                     distanceTravelled += last_speed * Time.deltaTime;
-                    transform.position = Vector3.Lerp(transform.position, tempGPA + Vector3.up * cam_y_offset, 0.1f);
+                    Vector3 new_pos = Vector3.Lerp(transform.position, tempGPA + Vector3.up * cam_y_offset, 0.1f);
+                    Vector3 direction = new_pos - transform.position;
+                    direction.y = 0;
+                    float direction_angle = Vector3.Angle(direction, new Vector3(0, 0, 1));
+                    if (Vector3.Angle(direction, new Vector3(1, 0, 0)) > 90) direction_angle = -direction_angle + 360;
+                    if (Mathf.Abs(direction_angle - compass.transform.eulerAngles.z) < 30 || compass.transform.eulerAngles.z == 0) directions.Add(direction_angle);
+
+                    int segment = 5;
+                    if (directions.Count == segment || compass.transform.eulerAngles.z == 0)
+                    {
+                        float avg_angle = 0;
+                        for (int id = 0; id < directions.Count; id++)
+                        {
+                            avg_angle += directions[id];
+                        }
+                        compass.transform.eulerAngles = new Vector3(compass.transform.eulerAngles.x, compass.transform.eulerAngles.y, avg_angle / directions.Count);
+                        directions.Clear();
+                    }
+
+                    transform.position = new_pos;
                     transform.rotation = Quaternion.Lerp(transform.rotation, pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction), 0.02f);
                 }
 
