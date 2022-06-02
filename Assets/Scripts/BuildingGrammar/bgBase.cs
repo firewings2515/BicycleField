@@ -156,6 +156,36 @@ public class bgBase : bgComponent
         GameObject roof = PolygonPlane.create(roof_vertex2D);
         roof.transform.parent = go.transform;
         roof.transform.localPosition = new Vector3(0,height,0);
+        roof.SetActive(false);
+
+
+
+        Vector3[] pitched_roof_vertices = new Vector3[vertexs.Count + 1];
+        Vector2[] pitched_roof_uvs = new Vector2[vertexs.Count + 1];
+        int[] pitched_roof_triangles = new int[vertexs.Count * 3];
+
+        Vector3 up_center = center; up_center.y += 4;
+        pitched_roof_vertices[0] = up_center;
+        pitched_roof_uvs[0] = new Vector2(0.5f, 0.0f);
+        for (int i = 0, tri_index = 0; i < vertexs.Count; i++,tri_index+=3) {
+            int vert_index = i + 1;
+            pitched_roof_vertices[vert_index] = vertexs[i];
+            pitched_roof_triangles[tri_index + 2] = vert_index;
+            pitched_roof_triangles[tri_index + 1] = 0;
+            if (i == vertexs.Count - 1) pitched_roof_triangles[tri_index] = 1;
+            else pitched_roof_triangles[tri_index] = vert_index + 1;
+        }
+        GameObject pitched_roof = new GameObject("pitched_roof");
+        MeshRenderer pitched_roof_mr = pitched_roof.AddComponent<MeshRenderer>();
+        Mesh pitched_roof_mesh = pitched_roof.AddComponent<MeshFilter>().mesh;
+        pitched_roof_mesh.vertices = pitched_roof_vertices;
+        pitched_roof_mesh.triangles = pitched_roof_triangles;
+        pitched_roof_mesh.RecalculateNormals();
+        //pitched_roof_mesh.uv = roof_uv_generate(pitched_roof_mesh,4.0f);
+        pitched_roof_mr.material = new Material(Shader.Find("Diffuse - Worldspace"));
+        pitched_roof_mr.material.mainTexture = Resources.Load<Texture2D>("roof");
+        pitched_roof.transform.parent = go.transform;
+        pitched_roof.transform.localPosition = new Vector3(0, height, 0);
         return go;
     }
 
@@ -169,5 +199,31 @@ public class bgBase : bgComponent
             result += (next.x - current.x) * (next.z + current.z);
         }
         return result >= 0.0f;
+    }
+
+    Vector2[] roof_uv_generate(Mesh mesh) {
+        Vector2[] uvs = new Vector2[mesh.vertices.Length];
+        for (var v = 0; v < mesh.vertices.Length; v++)
+        {
+            var vertex = mesh.vertices[v];
+            var normal = mesh.normals[v];
+
+            // This will make the u axis run along the roof edge
+            // (Same as before, I just collapsed the old "vAxis" into this line)
+            var uAxis = (new Vector3(-normal.z, 0, normal.x)).normalized;
+
+            // This will make the v axis run up the roof
+            // (Rising off the xz plane, unlike the old one)
+            var vAxis = Vector3.Cross(uAxis, normal);
+            // I'm assu$$anonymous$$g the normal is already unit length, but you can normalize for safety.
+
+            // Translates the UVs so the eaves sit at v = 0
+            var eaveCorrection = Vector3.Dot(vAxis, vertex + vAxis * (0.0f - vertex.y) / vAxis.y);
+
+            var uv = new Vector2(Vector3.Dot(vertex, uAxis), Vector3.Dot(vAxis, vertex) - eaveCorrection);
+
+            uvs[v] = uv;
+        }
+        return uvs;
     }
 }
