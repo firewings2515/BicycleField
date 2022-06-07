@@ -153,10 +153,10 @@ public class bgBase : bgComponent
             Vector3 roof_vert = roof_scale * dis_from_center * Vector3.Normalize(vertexs[i] - center) + center;
             roof_vertex2D.Add(new Vector2(roof_vert.x, roof_vert.z));
         }
-        GameObject roof = PolygonPlane.create(roof_vertex2D);
-        roof.transform.parent = go.transform;
-        roof.transform.localPosition = new Vector3(0,height,0);
-        roof.SetActive(false);
+        GameObject _roof = PolygonPlane.create(roof_vertex2D);
+        _roof.transform.parent = go.transform;
+        _roof.transform.localPosition = new Vector3(0,height,0);
+        _roof.SetActive(false);
 
 
 
@@ -186,6 +186,18 @@ public class bgBase : bgComponent
         pitched_roof_mr.material.mainTexture = Resources.Load<Texture2D>("roof");
         pitched_roof.transform.parent = go.transform;
         pitched_roof.transform.localPosition = new Vector3(0, height, 0);
+
+        pitched_roof.SetActive(false);
+
+
+        if (component_parameter.Count > 1) {
+            bgRoof roof = builder.get_roof(component_parameter[1]);
+            roof.vertexs = vertexs;
+            GameObject roof_obj = roof.build();
+            roof_obj.transform.parent = go.transform;
+            roof_obj.transform.localPosition = new Vector3(0, height, 0);
+        }
+
         return go;
     }
 
