@@ -20,4 +20,4 @@ MonoBehaviour:
     shadowCastingMode: 1
     receiveShadows: 1
     motionVectorGenerationMode: 2
-  roofMaterial: {fileID: 2100000, guid: 6ce7f224d5b65714682ae04ffbeade75, type: 2}
+  roofMaterial: {fileID: 2100000, guid: e94fa49b3af42524589f9f41afa4f4d7, type: 2}
