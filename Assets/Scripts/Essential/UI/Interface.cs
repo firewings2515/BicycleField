@@ -14,6 +14,8 @@ public class Interface : MonoBehaviour
     public Slider slider;
 
     public GameObject slope_display;
+    public GameObject end_display;
+    public GameObject minimap_display;
 
     private bool play = false;
     // Start is called before the first frame update
@@ -35,7 +37,9 @@ public class Interface : MonoBehaviour
         fps_display.GetComponent<Text>().text = "FPS: " + (int)(1.0/worst_time);
         recorded_time = Time.realtimeSinceStartupAsDouble;
 
-        if (Input.GetKeyDown(KeyCode.Alpha9)) slope_display.SetActive(!slope_display.activeSelf);
+        if (Input.GetKeyDown(KeyCode.Alpha1)) toggleSlope();
+        if (Input.GetKeyDown(KeyCode.Alpha2)) toggleEnd();
+        if (Input.GetKeyDown(KeyCode.Alpha3)) toggleMinimap();
 
         if (Input.GetKeyDown(KeyCode.P)) play = !play;
         if (play)
@@ -58,5 +62,20 @@ public class Interface : MonoBehaviour
     public void changeSpeed()
     {
         cyclist.GetComponent<PathCreation.Examples.PathFollower>().speed = slider.value;
+    }
+
+    public void toggleSlope()
+    {
+        slope_display.SetActive(!slope_display.activeSelf);
+    }
+
+    public void toggleEnd()
+    {
+        end_display.SetActive(!end_display.activeSelf);
+    }
+
+    public void toggleMinimap()
+    {
+        minimap_display.SetActive(!minimap_display.activeSelf);
     }
 }

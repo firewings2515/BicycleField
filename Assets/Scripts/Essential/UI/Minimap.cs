@@ -5,8 +5,6 @@ using UnityEngine;
 public class Minimap : MonoBehaviour
 {
     public Transform player;
-    public GameObject minimap;
-    private float height = 20.0f;
 
     // Start is called before the first frame update
     void Start()
@@ -17,18 +15,17 @@ public class Minimap : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha0)) minimap.SetActive(!minimap.activeSelf);
-        if (Input.GetKey(KeyCode.Alpha1)) height += 1f;
-        if (Input.GetKey(KeyCode.Alpha2)) height -= 1f;
+        if (Input.GetKey(KeyCode.Minus)) Info.mapview_height += 1f;
+        if (Input.GetKey(KeyCode.Equals)) Info.mapview_height -= 1f;
 
-        if (height < 1f) height = 1;
-        if (height > 1000f) height = 1000f;
+        if (Info.mapview_height < 1f) Info.mapview_height = 1;
+        if (Info.mapview_height > 1000f) Info.mapview_height = 1000f;
     }
 
     private void LateUpdate()
     {
         Vector3 newPosition = player.position;
-        newPosition.y = player.position.y + height;
+        newPosition.y = player.position.y + Info.mapview_height;
         transform.position = newPosition;
     }
 }

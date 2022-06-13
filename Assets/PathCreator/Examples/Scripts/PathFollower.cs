@@ -120,7 +120,7 @@ namespace PathCreation.Examples
 
         private float calculateSlopeHeightDiff(int id, int anchor)
         {
-            Vector3 there = pathCreator.path.GetPointAtDistance(distanceTravelled + (id - anchor) * 10, endOfPathInstruction);
+            Vector3 there = pathCreator.path.GetPointAtDistance(distanceTravelled + (id - anchor) * Info.mapview_height, endOfPathInstruction);
             float result = (TerrainGenerator.getHeightWithBais(transform.position.x, transform.position.z) - TerrainGenerator.getHeightWithBais(there.x, there.z)) * 5;
             if (result > 100) result = 100;
             if (result < -100) result = -100;
