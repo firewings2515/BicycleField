@@ -28,12 +28,14 @@ public class tree_gen : MonoBehaviour
         GameObject tree = Instantiate(tree_prefabs[Random.Range(0, tree_prefabs.Length)]);
         tree.transform.position = transform.position;
         Vector3 offset = random_offset();
+        Vector3 pos = new Vector3(tree.transform.position.x + offset.x, 0, tree.transform.position.z + offset.z);
         if (TerrainGenerator.is_initial)
         {
-            offset.y = TerrainGenerator.getHeightWithBais(offset.x, offset.z);
+            pos.y = TerrainGenerator.getHeightWithBais(pos.x, pos.y);
         }
+        pos.y += 5.0f;
+        tree.transform.position = pos;
         tree.transform.localScale = new Vector3(5,5,1);
-        tree.transform.Translate(offset);
         return tree;
     }
 

@@ -239,7 +239,7 @@ hello_house():Building(){
 }
 
 
-runtime_base():Base(runtime_vertex){
+runtime_base():Base(runtime_vertex,test_roof){
 	vertex()
 	hello_facade()
 	vertex()
@@ -304,7 +304,7 @@ arcade_back():Base(){
 	real_nothing()
 }
 
-arcade_front():Base(){
+arcade_front():Base(null,test_roof){
 	vertex(-3,0,0)
 	first_floor_empty()
 	vertex(3,0,0)
@@ -321,4 +321,9 @@ arcade_house():Building(){
 	center(0,0,0)
 	arcade_front()
 }
+
+
+test_roof():Roof(1,1.5,Hipped){
+}
+
 

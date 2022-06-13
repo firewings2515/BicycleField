@@ -60,6 +60,10 @@ public class bgComponent
         {
             return ((bgBase)this).build();
         }
+        else if (this.type == "Roof")
+        {
+            return ((bgRoof)this).build();
+        }
         else if (this.type == "Building")
         {
             return ((bgBuilding)this).build();
@@ -84,6 +88,10 @@ public class bgComponent
         else if (this.type == "Base")
         {
             return ((bgBase)this).build_mesh();
+        }
+        else if (this.type == "Roof")
+        {
+            return ((bgRoof)this).build_mesh();
         }
         else if (this.type == "Building")
         {

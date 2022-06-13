@@ -9,6 +9,7 @@ public class bgBuilder
     List<bgWall> walls;
     List<bgFacade> facades;
     List<bgBase> bases;
+    List<bgRoof> roofs;
     List<bgBuilding> buildings;
 
     List<bgComponent> components;
@@ -36,6 +37,7 @@ public class bgBuilder
         components.AddRange(parser.walls);
         components.AddRange(parser.facades);
         components.AddRange(parser.bases);
+        components.AddRange(parser.roofs);
         components.AddRange(parser.buildings);
 
         link_component();
@@ -125,6 +127,18 @@ public class bgBuilder
             if (parser.bases[i].name == name)
             {
                 return parser.bases[i];
+            }
+        }
+        return null;
+    }
+
+    public bgRoof get_roof(string name)
+    {
+        for (int i = 0; i < parser.roofs.Count; i++)
+        {
+            if (parser.roofs[i].name == name)
+            {
+                return parser.roofs[i];
             }
         }
         return null;

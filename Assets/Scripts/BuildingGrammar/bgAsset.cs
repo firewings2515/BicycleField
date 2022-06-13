@@ -32,7 +32,6 @@ public class bgAsset : bgComponent
             image = new Texture2D(2, 2);
             image.LoadImage(bytes);
             image.Apply();
-            Debug.Log(name + " texture mipmap:" + image.mipmapCount);
             
             //Debug.Log(tex2d.width);
             //Debug.Log(tex2d.height);
