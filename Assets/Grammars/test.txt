@@ -54,6 +54,17 @@ doorFBX():Asset(model){
 	Scale(1.36,1.36,1.36)
 }
 
+
+air_conditioner():Asset(model){
+	Location("Assets/Model/Air Conditioner.fbx")
+	Scale(50,50,50)
+}
+
+home_flower():Asset(model){
+	Location("Assets/Model/PLANTS ON TABLE.fbx")
+	Scale(50,50,50)
+}
+
 wall_balconyFBX():Asset(model){
 	Location("Assets/Model/fbxBalcony.fbx")
 	Rotate(0,180,0)
@@ -323,7 +334,11 @@ arcade_house():Building(){
 }
 
 
-test_roof():Roof(1,1.5,Hipped){
+test_roof():Roof(1,1.5,Flat){
+	pos(0,1,0)
+	air_conditioner()
+	pos(3,1,0)
+	home_flower()
 }
 
 

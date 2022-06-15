@@ -15,6 +15,8 @@ public class bgRoof : bgComponent
     RoofType roof_type = RoofType.Flat;
     float thickness = 0.2f;
     float overhang = 0.2f;
+
+    public Vector3 model_pos = new Vector3(0, 0, 0);
     public bgRoof(List<string> _input_parameter, List<string> _component_parameter, List<string> _commands, List<List<string>> _commands_parameter) : base(_input_parameter, _component_parameter, _commands, _commands_parameter)
     {
         roofPlanner = Resources.Load<RoofPlanner>("ProceduralRoofPlanner");
@@ -63,6 +65,22 @@ public class bgRoof : bgComponent
             var trans = go.transform;
             trans.localRotation = Quaternion.identity;
             roofConstructor.Construct(roofConstructible, trans);
+        }
+
+        for (int i = 0; i < commands.Count; i++)
+        {
+            if (commands[i] == "pos")
+            {
+                model_pos = new Vector3(float.Parse(commands_parameter[i][0]), float.Parse(commands_parameter[i][1]), float.Parse(commands_parameter[i][2]));
+                continue;
+            }
+            else { 
+                bgAsset model = builder.get_asset(commands[i]);
+                GameObject obj = model.build();
+                obj.transform.parent = go.transform;
+                obj.transform.localPosition = model_pos;
+            }
+
         }
 
         return go;
