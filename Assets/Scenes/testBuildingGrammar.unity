@@ -229,7 +229,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c81d86aed14f7a46baeb177d80a4b5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  component_name: arcade_house
+  component_name: balc
   grammar_files_path:
   - ./Assets/Grammars/test.txt
   - ./Assets/Grammars/backgrounds.txt

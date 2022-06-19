@@ -18,11 +18,11 @@ public class bgTest : MonoBehaviour
         builder = new bgBuilder();
         reCompile();
         //reBuild();
-        build_polygon_house(new List<Vector3>
-        { new Vector3(2,0,8),new Vector3(2,0,2),new Vector3(8,0,2),new Vector3(8,0,-2),
-         new Vector3(2,0,-2),new Vector3(2,0,-8),new Vector3(-2,0,-8),new Vector3(-2,0,-2),
-         new Vector3(-8,0,-2),new Vector3(-8,0,2),new Vector3(-2,0,2),new Vector3(-2,0,8)
-        });
+        //build_polygon_house(new List<Vector3>
+        //{ new Vector3(2,0,8),new Vector3(2,0,2),new Vector3(8,0,2),new Vector3(8,0,-2),
+        // new Vector3(2,0,-2),new Vector3(2,0,-8),new Vector3(-2,0,-8),new Vector3(-2,0,-2),
+        // new Vector3(-8,0,-2),new Vector3(-8,0,2),new Vector3(-2,0,2),new Vector3(-2,0,8)
+        //});
     }
     public void reBuild() {
         float start = Time.realtimeSinceStartup;

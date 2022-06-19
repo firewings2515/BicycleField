@@ -62,7 +62,7 @@ air_conditioner():Asset(model){
 
 home_flower():Asset(model){
 	Location("Assets/Model/PLANTS ON TABLE.fbx")
-	Scale(50,50,50)
+	Scale(0.5,0.5,0.5)
 }
 
 wall_balconyFBX():Asset(model){
@@ -342,3 +342,6 @@ test_roof():Roof(1,1.5,Flat){
 }
 
 
+balc():Balcony(){
+
+}

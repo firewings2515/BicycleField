@@ -48,6 +48,10 @@ public class bgComponent
         {
             return ((bgAsset)this).build();
         }
+        else if (this.type == "Balcony")
+        {
+            return ((bgBalcony)this).build();
+        }
         else if (this.type == "Wall")
         {
             return ((bgWall)this).build();
@@ -76,6 +80,10 @@ public class bgComponent
         if (this.type == "Asset")
         {
             return ((bgAsset)this).build_mesh();
+        }
+        else if (this.type == "Balcony")
+        {
+            return ((bgBalcony)this).build_mesh();
         }
         else if (this.type == "Wall")
         {

@@ -15,6 +15,7 @@ public class bgParser
     public List<bgFacade> facades;
     public List<bgBase> bases;
     public List<bgRoof> roofs;
+    public List<bgBalcony> balconys;
     public List<bgBuilding> buildings;
 
     public bgParser() {
@@ -23,6 +24,7 @@ public class bgParser
         facades = new List<bgFacade>();
         bases = new List<bgBase>();
         roofs = new List<bgRoof>();
+        balconys = new List<bgBalcony>();
         buildings = new List<bgBuilding>();
         file_start_line = new List<int>();
     }
@@ -283,6 +285,11 @@ public class bgParser
                 roofs.Add(new bgRoof(input_parameters[component_index], componet_parameters[component_index], commands[component_index], command_parameters[component_index]));
                 comp = roofs.Last();
             }
+            else if (componet_types[component_index] == "Balcony")
+            {
+                balconys.Add(new bgBalcony(input_parameters[component_index], componet_parameters[component_index], commands[component_index], command_parameters[component_index]));
+                comp = balconys.Last();
+            }
             else if (componet_types[component_index] == "Building")
             {
                 buildings.Add(new bgBuilding(input_parameters[component_index], componet_parameters[component_index], commands[component_index], command_parameters[component_index]));
@@ -348,6 +355,7 @@ public class bgParser
         facades.Clear();
         bases.Clear();
         roofs.Clear();
+        balconys.Clear();
         buildings.Clear();
     }
 

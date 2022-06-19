@@ -10,6 +10,7 @@ public class bgBuilder
     List<bgFacade> facades;
     List<bgBase> bases;
     List<bgRoof> roofs;
+    List<bgBalcony> balconys;
     List<bgBuilding> buildings;
 
     List<bgComponent> components;
@@ -38,6 +39,7 @@ public class bgBuilder
         components.AddRange(parser.facades);
         components.AddRange(parser.bases);
         components.AddRange(parser.roofs);
+        components.AddRange(parser.balconys);
         components.AddRange(parser.buildings);
 
         link_component();
@@ -143,6 +145,20 @@ public class bgBuilder
         }
         return null;
     }
+
+
+    public bgBalcony get_balcony(string name)
+    {
+        for (int i = 0; i < parser.balconys.Count; i++)
+        {
+            if (parser.balconys[i].name == name)
+            {
+                return parser.balconys[i];
+            }
+        }
+        return null;
+    }
+
 
     public bgBuilding get_building(string name)
     {
