@@ -4531,30 +4531,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1832167179}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e00ae41ad51a48428a857669e06696b, type: 3}
+  m_Script: {fileID: 11500000, guid: b510f488838d93d4da41c2b25fd299cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isScanningDevices: 0
-  isScanningServices: 0
-  isScanningCharacteristics: 0
-  isSubscribed: 0
-  deviceScanButtonText: {fileID: 0}
-  deviceScanStatusText: {fileID: 0}
-  deviceScanResultProto: {fileID: 0}
-  serviceScanButton: {fileID: 0}
-  serviceScanStatusText: {fileID: 0}
-  serviceDropdown: {fileID: 0}
-  characteristicScanButton: {fileID: 0}
-  characteristicScanStatusText: {fileID: 0}
-  characteristicDropdown: {fileID: 0}
-  subscribeButton: {fileID: 0}
-  subcribeText: {fileID: 0}
-  writeButton: {fileID: 0}
-  writeInput: {fileID: 0}
-  errorText: {fileID: 0}
-  selectedDeviceId: 
-  selectedServiceId: 
-  selectedCharacteristicId: 
+  connect_device: 1
 --- !u!4 &1832167181
 Transform:
   m_ObjectHideFlags: 0
