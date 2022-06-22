@@ -17,6 +17,8 @@ public class Interface : MonoBehaviour
     public GameObject end_display;
     public GameObject minimap_display;
 
+    public FTMS_show ftms_show;
+
     private bool play = false;
     // Start is called before the first frame update
     void Start()
@@ -46,6 +48,12 @@ public class Interface : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Space)) speedUp();
             else speedDown();
+        }
+        if (ftms_show.connect) {
+            if (ftms_show.connector.has_speed)
+            {
+                cyclist.GetComponent<PathCreation.Examples.PathFollower>().speed = ftms_show.connector.speed;
+            }
         }
     }
 
