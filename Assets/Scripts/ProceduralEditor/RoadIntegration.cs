@@ -210,8 +210,8 @@ public class RoadIntegration : MonoBehaviour
         for (int new_road_ref_index = 0; new_road_ref_index < osm_reader.pathes[new_road_index].ref_node.Count; new_road_ref_index++)
         {
             Vector3 point = osm_reader.points_lib[osm_reader.pathes[new_road_index].ref_node[new_road_ref_index]].position;
-            float expanded_x = (Mathf.CeilToInt(Mathf.Abs(point.x - origin_piece_x) / PublicOutputInfo.piece_length) + 1 + TerrainGenerator.vision_patch_num / 2) * PublicOutputInfo.piece_length * TerrainGenerator.piece_num;
-            float expanded_z = (Mathf.CeilToInt(Mathf.Abs(point.z - origin_piece_z) / PublicOutputInfo.piece_length) + 1 + TerrainGenerator.vision_patch_num / 2) * PublicOutputInfo.piece_length * TerrainGenerator.piece_num;
+            float expanded_x = (Mathf.CeilToInt(Mathf.Abs(point.x - origin_piece_x) / PublicOutputInfo.piece_length) + 1 + TerrainGenerator.vision_patch_num) * PublicOutputInfo.piece_length; // 2 is a adjust value
+            float expanded_z = (Mathf.CeilToInt(Mathf.Abs(point.z - origin_piece_z) / PublicOutputInfo.piece_length) + 1 + TerrainGenerator.vision_patch_num) * PublicOutputInfo.piece_length; // 2 is a adjust value
             if (point.x + expanded_x >= origin_piece_x)
                 terrain_max_x = Mathf.Max(terrain_max_x, origin_piece_x + expanded_x);
             if (point.z + expanded_z >= origin_piece_z)

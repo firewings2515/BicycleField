@@ -22,9 +22,9 @@ public static class IDW
         for (int point_index = 0; point_index < point_cloud.Length; point_index++)
         {
             float dist = Mathf.Sqrt(Mathf.Pow(point_cloud[point_index].x - x, 2) + Mathf.Pow(point_cloud[point_index].z - z, 2));
-            if (Mathf.Pow(dist, 1) < 0.000001)
-                return point_cloud[point_index].y;
-            if (dist < 320.0 && point_cloud[point_index].w > 8)
+            //if (Mathf.Pow(dist, 2) < 0.000001)
+            //    return point_cloud[point_index].y;
+            if (dist < 320.0)
             {
                 //if (point_cloud[point_index].w > 8 && dist < 8.0f)
                 //{
@@ -37,8 +37,8 @@ public static class IDW
                 //}
                 //else
                 {
-                    sum_up += getWeight(dist, 1) * (point_cloud[point_index].y - old_base);
-                    sum_down += getWeight(dist, 1);
+                    sum_up += getWeight(dist, 2) * (point_cloud[point_index].y - old_base);
+                    sum_down += getWeight(dist, 2);
                 }
             }
         }

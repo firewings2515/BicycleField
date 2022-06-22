@@ -9,6 +9,7 @@ public class FeatureFileGenerator : MonoBehaviour
     OSMEditor osm_editor;
     RoadIntegration road_integration;
     public bool generate;
+    bool getFeatureAfterGenerate = true;
     public Material heightmap_mat;
     public Texture2D heightmap;
     public GameObject blue_ball;
@@ -40,36 +41,39 @@ public class FeatureFileGenerator : MonoBehaviour
             separateGenerateTerrain(road_integration.terrain_min_x, road_integration.terrain_min_z, road_integration.terrain_max_x, road_integration.terrain_max_z);
         }
 
-        for (int terrain_index = 0; terrain_index < terrains.Count; terrain_index++)
+        if (getFeatureAfterGenerate)
         {
-            if (!terrains[terrain_index].GetComponent<HeightmapCompress>().is_fetched_features && terrains[terrain_index].GetComponent<HeightmapCompress>().is_finished)
+            for (int terrain_index = 0; terrain_index < terrains.Count; terrain_index++)
             {
-                terrains[terrain_index].GetComponent<HeightmapCompress>().is_fetched_features = true;
-                point_cloud_list.AddRange(terrains[terrain_index].GetComponent<HeightmapCompress>().point_cloud_list);
-                wait_terrain_count--;
+                if (!terrains[terrain_index].GetComponent<HeightmapCompress>().is_fetched_features && terrains[terrain_index].GetComponent<HeightmapCompress>().is_finished)
+                {
+                    terrains[terrain_index].GetComponent<HeightmapCompress>().is_fetched_features = true;
+                    point_cloud_list.AddRange(terrains[terrain_index].GetComponent<HeightmapCompress>().point_cloud_list);
+                    wait_terrain_count--;
+                }
             }
-        }
 
-        if (wait_terrain_count == 0)
-        {
-            wait_terrain_count = -1;
-            List<Vector3> point_list = new List<Vector3>(point_cloud_list);
-            List<Vector3> bicycle_points_list = road_integration.bicyclePointsListToVec3();
-            point_list.AddRange(bicycle_points_list);
-            int bicycle_constrain_reverse_index = bicycle_points_list.Count;
-            Vector3[] points = point_list.Distinct().ToArray();
-            WVec3[] features = new WVec3[points.Length];
-            for (int i = 0; i < points.Length; i++)
+            if (wait_terrain_count == 0)
             {
-                features[i].x = points[i].x;
-                features[i].y = points[i].y;
-                features[i].z = points[i].z;
-                if (i < points.Length - bicycle_constrain_reverse_index)
-                    features[i].w = 1;
-                else
-                    features[i].w = 16;
+                wait_terrain_count = -1;
+                List<Vector3> point_list = new List<Vector3>(point_cloud_list);
+                List<Vector3> bicycle_points_list = road_integration.bicyclePointsListToVec3();
+                point_list.AddRange(bicycle_points_list);
+                int bicycle_constrain_reverse_index = bicycle_points_list.Count;
+                Vector3[] points = point_list.Distinct().ToArray();
+                WVec3[] features = new WVec3[points.Length];
+                for (int i = 0; i < points.Length; i++)
+                {
+                    features[i].x = points[i].x;
+                    features[i].y = points[i].y;
+                    features[i].z = points[i].z;
+                    if (i < points.Length - bicycle_constrain_reverse_index)
+                        features[i].w = 1;
+                    else
+                        features[i].w = 16;
+                }
+                writeFeatureFile(Application.streamingAssetsPath + "//" + file_path, features);
             }
-            writeFeatureFile(Application.streamingAssetsPath + "//" + file_path, features);
         }
     }
 

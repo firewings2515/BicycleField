@@ -63,9 +63,9 @@ Shader "Terrain/IDW"
             for (int i = 0; i < features_count; i++)
             {
                 float dist = sqrt(pow(features[i].x - x, 2) + pow(features[i].z - z, 2));
-                if (pow(dist, 1) < 0.000001)
-                    return features[i].y;
-                if (dist < 320.0 && features[i].w > 8)
+                //if (pow(dist, 2) < 0.000001)
+                //    return features[i].y;
+                if (dist < 320.0)
                 {
                     /*if (features[i].w > 8 && dist < 8.0f)
                     {
@@ -78,8 +78,8 @@ Shader "Terrain/IDW"
                     }
                     else*/
                     {
-                        sum_up += getWeight(dist, 1) * features[i].y;
-                        sum_down += getWeight(dist, 1);
+                        sum_up += getWeight(dist, 2) * features[i].y;
+                        sum_down += getWeight(dist, 2);
                     }
                 }
             }
