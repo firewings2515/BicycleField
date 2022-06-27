@@ -29,6 +29,7 @@ Shader "Terrain/IDW"
         float height_base;
         float dxz;
         float4 features[512];
+        sampler2D output_texture;
 
         struct Input {
             float2 uv_MainTex;
@@ -83,8 +84,8 @@ Shader "Terrain/IDW"
                     }
                 }
             }
-            if (constrain == 1)
-                return nni_height;
+            //if (constrain == 1)
+            //    return nni_height;
             if (sum_down < 0.000001)
                 sum_down = 0.000001;
             return sum_up / sum_down;

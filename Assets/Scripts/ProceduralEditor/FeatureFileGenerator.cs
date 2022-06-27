@@ -59,7 +59,8 @@ public class FeatureFileGenerator : MonoBehaviour
                 List<Vector3> point_list = new List<Vector3>(point_cloud_list);
                 List<Vector3> bicycle_points_list = road_integration.bicyclePointsListToVec3();
                 point_list.AddRange(bicycle_points_list);
-                int bicycle_constrain_reverse_index = bicycle_points_list.Count;
+                int bicycle_constrain_reverse_count = bicycle_points_list.Count;
+                int bicycle_constrain_reverse_index = 0;
                 Vector3[] points = point_list.Distinct().ToArray();
                 WVec3[] features = new WVec3[points.Length];
                 for (int i = 0; i < points.Length; i++)
@@ -67,10 +68,10 @@ public class FeatureFileGenerator : MonoBehaviour
                     features[i].x = points[i].x;
                     features[i].y = points[i].y;
                     features[i].z = points[i].z;
-                    if (i < points.Length - bicycle_constrain_reverse_index)
-                        features[i].w = 1;
+                    if (i < points.Length - bicycle_constrain_reverse_count)
+                        features[i].w = -1;
                     else
-                        features[i].w = 16;
+                        features[i].w = bicycle_constrain_reverse_index++;
                 }
                 writeFeatureFile(Application.streamingAssetsPath + "//" + file_path, features);
             }

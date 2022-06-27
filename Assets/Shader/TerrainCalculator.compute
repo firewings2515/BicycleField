@@ -1,0 +1,110 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+float4 features[512];
+int features_count;
+float4 constraints[512];
+int constraints_count;
+//float height_base;
+float x;
+float z;
+float patch_length;
+
+float getWeight(float d, float w)
+{
+    float f = pow(d, w);
+    if (f < 0.000001)
+        return 0.000001;
+    return 1 / f;
+}
+
+float IDW(float x, float z)
+{
+    float sum_up = 0.0;
+    float sum_down = 0.0;
+    int constrain = 0;
+    float dist_min = 9.0f;
+    float nni_height = 0.0f;
+    for (int i = 0; i < features_count; i++)
+    {
+        float dist = sqrt(pow(features[i].x - x, 2) + pow(features[i].z - z, 2));
+        //if (pow(dist, 2) < 0.000001)
+        //    return features[i].y;
+        if (dist < 320.0)
+        {
+            /*if (features[i].w > 8 && dist < 8.0f)
+            {
+                constrain = 1;
+                if (dist_min > dist)
+                {
+                    dist_min = dist;
+                    nni_height = features[i].y;
+                }
+            }
+            else*/
+            {
+                sum_up += getWeight(dist, 2) * features[i].y;
+                sum_down += getWeight(dist, 2);
+            }
+        }
+    }
+    //if (constrain == 1)
+    //    return nni_height;
+    if (sum_down < 0.000001)
+        sum_down = 0.000001;
+    return sum_up / sum_down;
+}
+
+float roadConstraint(float x, float z)
+{
+    for (int i = 0; i < constraints_count - 1; i++)
+    {
+        float dist = sqrt(pow(constraints[i].x - x, 2) + pow(constraints[i].z - z, 2));
+        float2 AB = float2(constraints[i + 1].x - constraints[i].x, constraints[i + 1].z - constraints[i].z);
+        float2 AC = float2(x - constraints[i].x, z - constraints[i].z);
+        float2 BC = float2(x - constraints[i + 1].x, z - constraints[i + 1].z);
+        float ab = normalize(AB);
+        float ac = normalize(AC);
+        float angle = acos(dot(ab, ac));
+        float distance = sin(angle) * length(AC);
+
+        // Calculating the dot product
+        float AB_BC = (AB.x * BC.x + AB.y * BC.y);
+        float AB_AC = (AB.x * AC.x + AB.y * AC.y);
+
+        // Minimum distance from
+        // point E to the line segment
+        float reqAns = 1e6;
+
+        if (AB_BC < -1e-6 && AB_AC > 1e-6)
+        {
+            // Finding the perpendicular distance
+            double x1 = AB.x;
+            double y1 = AB.y;
+            double x2 = AC.x;
+            double y2 = AC.y;
+            double mod = sqrt(x1 * x1 + y1 * y1);
+            reqAns = abs(x1 * y2 - y1 * x2) / mod;
+        }
+
+        distance = reqAns;
+
+        if (distance < 16.0)
+        {
+            return 1.0f;
+        }
+    }
+    return 0.0f;
+}
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float height = IDW(x + id.x, z + id.y);
+    float road_constraint = roadConstraint(x + id.x, z + id.y);
+    Result[id.xy] = float4(height / 3000, road_constraint, height / 3000, 1.0);
+    //Result[id.xy] = float4(id.x / 768.0f, id.x / 768.0f, id.x / 768.0f, 1.0);
+}
