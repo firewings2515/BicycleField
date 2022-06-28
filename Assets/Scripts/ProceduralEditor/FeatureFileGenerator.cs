@@ -16,8 +16,8 @@ public class FeatureFileGenerator : MonoBehaviour
     public GameObject red_ball;
     const int piece_num_in_chunk = 192;
     public string file_path = "features.f";
-    int x_piece_num;
-    int z_piece_num;
+    int x_patch_num;                                        // write to file
+    int z_patch_num;                                        // write to file
     public bool show_feature_points;
     List<GameObject> terrains = new List<GameObject>();     // Store all chunks of terrains
     List<Vector3> point_cloud_list = new List<Vector3>();
@@ -80,22 +80,40 @@ public class FeatureFileGenerator : MonoBehaviour
 
     void separateGenerateTerrain(float min_x, float min_z, float max_x, float max_z)
     {
-        x_piece_num = Mathf.CeilToInt((max_x - min_x) / PublicOutputInfo.piece_length);
-        z_piece_num = Mathf.CeilToInt((max_z - min_z) / PublicOutputInfo.piece_length);
+        x_patch_num = Mathf.CeilToInt((max_x - min_x) / PublicOutputInfo.patch_length);
+        z_patch_num = Mathf.CeilToInt((max_z - min_z) / PublicOutputInfo.patch_length);
 
         wait_terrain_count = 0;
-        for (int x_index = 0; x_index < x_piece_num; x_index += piece_num_in_chunk)
+        for (int chunk_x_index = 0; chunk_x_index < x_patch_num; chunk_x_index++)
         {
-            for (int z_index = 0; z_index < z_piece_num; z_index += piece_num_in_chunk)
+            for (int chunk_z_index = 0; chunk_z_index < z_patch_num; chunk_z_index++)
             {
-                float chunk_x_min = min_x + x_index * PublicOutputInfo.piece_length;
-                float chunk_z_min = min_z + z_index * PublicOutputInfo.piece_length;
-                int chunk_x_piece_num = Mathf.Min(x_piece_num - x_index, piece_num_in_chunk);
-                int chunk_z_piece_num = Mathf.Min(z_piece_num - z_index, piece_num_in_chunk);
+                float chunk_x_min = min_x + chunk_x_index * PublicOutputInfo.patch_length;
+                float chunk_z_min = min_z + chunk_z_index * PublicOutputInfo.patch_length;
+
+                int chunk_x_piece_num = Mathf.Min(Mathf.CeilToInt((max_x - chunk_x_min) / PublicOutputInfo.editor_chunk_piece_length), piece_num_in_chunk);
+                int chunk_z_piece_num = Mathf.Min(Mathf.CeilToInt((max_z - chunk_z_min) / PublicOutputInfo.editor_chunk_piece_length), piece_num_in_chunk);
                 generateChunkTerrain(chunk_x_min, chunk_z_min, chunk_x_piece_num, chunk_z_piece_num);
                 wait_terrain_count++;
             }
         }
+
+        //x_piece_num = Mathf.CeilToInt((max_x - min_x) / PublicOutputInfo.piece_length);
+        //z_piece_num = Mathf.CeilToInt((max_z - min_z) / PublicOutputInfo.piece_length);
+
+        //wait_terrain_count = 0;
+        //for (int x_index = 0; x_index < x_piece_num; x_index += piece_num_in_chunk)
+        //{
+        //    for (int z_index = 0; z_index < z_piece_num; z_index += piece_num_in_chunk)
+        //    {
+        //        float chunk_x_min = min_x + x_index * PublicOutputInfo.piece_length;
+        //        float chunk_z_min = min_z + z_index * PublicOutputInfo.piece_length;
+        //        int chunk_x_piece_num = Mathf.Min(x_piece_num - x_index, piece_num_in_chunk);
+        //        int chunk_z_piece_num = Mathf.Min(z_piece_num - z_index, piece_num_in_chunk);
+        //        generateChunkTerrain(chunk_x_min, chunk_z_min, chunk_x_piece_num, chunk_z_piece_num);
+        //        wait_terrain_count++;
+        //    }
+        //}
     }
 
     void generateChunkTerrain(float chunk_x_min, float chunk_z_min, int chunk_x_piece_num, int chunk_z_piece_num)
@@ -255,6 +273,11 @@ public class FeatureFileGenerator : MonoBehaviour
         return edges;
     }
 
+    /// <summary>
+    /// all terrains in a feature file
+    /// </summary>
+    /// <param name="file_path"></param>
+    /// <param name="features"></param>
     void writeFeatureFile(string file_path, WVec3[] features)
     {
         KDTree kdtree = new KDTree();
@@ -265,8 +288,8 @@ public class FeatureFileGenerator : MonoBehaviour
         {
             sw.WriteLine(PublicOutputInfo.boundary_min.x + " " + PublicOutputInfo.boundary_min.y);
             sw.WriteLine(PublicOutputInfo.origin_pos.x + " " + PublicOutputInfo.origin_pos.y + " " + PublicOutputInfo.origin_pos.z);
-            sw.WriteLine(x_piece_num + " " + z_piece_num);
-            sw.WriteLine((road_integration.terrain_min_x - PublicOutputInfo.origin_pos.x).ToString() + " " + (-PublicOutputInfo.origin_pos.y).ToString() + " " + (road_integration.terrain_min_z - PublicOutputInfo.origin_pos.z).ToString());
+            sw.WriteLine(x_patch_num + " " + z_patch_num);
+            sw.WriteLine((road_integration.terrain_min_x - PublicOutputInfo.origin_pos.x).ToString() + " " + (-PublicOutputInfo.origin_pos.y).ToString() + " " + (road_integration.terrain_min_z - PublicOutputInfo.origin_pos.z).ToString() + " " + (road_integration.terrain_max_x - PublicOutputInfo.origin_pos.x).ToString() + " " + (-PublicOutputInfo.origin_pos.y).ToString() + " " + (road_integration.terrain_max_z - PublicOutputInfo.origin_pos.z).ToString());
             sw.WriteLine(features.Length);
             for (int point_index = 0; point_index < features.Length; point_index++)
             {

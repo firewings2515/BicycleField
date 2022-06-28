@@ -12,6 +12,9 @@ public class TerrainManager : MonoBehaviour
     Queue<int> queue_generate_patch_x = new Queue<int>();   // Patch Queue
     Queue<int> queue_generate_patch_z = new Queue<int>();   // Patch Queue
     bool loop_begin = false;                                // Begin InvokeRepeating("generateTerrainPatch", 0.0f, 0.01666f)
+    public Material heightmap_mat;
+    public ComputeShader compute_shader;
+    public Texture2D main_tex;
 
     // Start is called before the first frame update
     void Start()
@@ -21,6 +24,9 @@ public class TerrainManager : MonoBehaviour
         TerrainGenerator.terrain_nni_mat = terrain_nni_mat;
         TerrainGenerator.terrain_mode = terrain_mode;
         TerrainGenerator.feature_ball_prefab = feature_ball_prefab;
+        TerrainGenerator.heightmap_mat = heightmap_mat;
+        TerrainGenerator.compute_shader = compute_shader;
+        TerrainGenerator.main_tex = main_tex;
         TerrainGenerator.loadTerrain();
     }
 
@@ -63,9 +69,9 @@ public class TerrainManager : MonoBehaviour
                 {
                     if (Mathf.Abs(i) + Mathf.Abs(j) > TerrainGenerator.vision_patch_num)
                         continue;
-                    int x_index = patch_x_index + i * TerrainGenerator.piece_num;
-                    int z_index = patch_z_index + j * TerrainGenerator.piece_num;
-                    if (x_index < 0 || x_index >= TerrainGenerator.x_index_length || z_index < 0 || z_index >= TerrainGenerator.z_index_length)
+                    int x_index = patch_x_index + i;
+                    int z_index = patch_z_index + j;
+                    if (x_index < 0 || x_index >= TerrainGenerator.x_patch_num || z_index < 0 || z_index >= TerrainGenerator.z_patch_num)
                         continue;
                     queue_generate_patch_x.Enqueue(x_index);
                     queue_generate_patch_z.Enqueue(z_index);
@@ -85,15 +91,19 @@ public class TerrainManager : MonoBehaviour
         {
             int x_index = queue_generate_patch_x.Dequeue();
             int z_index = queue_generate_patch_z.Dequeue();
-            if (!TerrainGenerator.is_generated[x_index * TerrainGenerator.z_index_length + z_index])
+            if (!TerrainGenerator.is_generated[x_index * TerrainGenerator.z_patch_num + z_index])
             {
-                TerrainGenerator.is_generated[x_index * TerrainGenerator.z_index_length + z_index] = true;
+                TerrainGenerator.is_generated[x_index * TerrainGenerator.z_patch_num + z_index] = true;
                 int x_piece_num = TerrainGenerator.piece_num;
                 int z_piece_num = TerrainGenerator.piece_num;
-                if (x_index + TerrainGenerator.piece_num > TerrainGenerator.x_index_length)
-                    x_piece_num = TerrainGenerator.x_index_length - x_index;
-                if (z_index + TerrainGenerator.piece_num > TerrainGenerator.z_index_length)
-                    z_piece_num = TerrainGenerator.z_index_length - z_index;
+                if (x_index == TerrainGenerator.x_patch_num - 1)
+                    x_piece_num = Mathf.FloorToInt((TerrainGenerator.max_x - (TerrainGenerator.min_x + x_index * PublicOutputInfo.patch_length)) / PublicOutputInfo.piece_length);
+                if (z_index == TerrainGenerator.z_patch_num - 1)
+                    z_piece_num = Mathf.FloorToInt((TerrainGenerator.max_z - (TerrainGenerator.min_z + z_index * PublicOutputInfo.patch_length)) / PublicOutputInfo.piece_length);
+                //if (x_index + TerrainGenerator.piece_num > TerrainGenerator.x_patch_num)
+                //    x_piece_num = TerrainGenerator.x_patch_num - x_index;
+                //if (z_index + TerrainGenerator.piece_num > TerrainGenerator.z_patch_num)
+                //    z_piece_num = TerrainGenerator.z_patch_num - z_index;
                 StartCoroutine(TerrainGenerator.generateTerrainPatch(x_index, z_index, x_piece_num, z_piece_num));
                 break;
             }

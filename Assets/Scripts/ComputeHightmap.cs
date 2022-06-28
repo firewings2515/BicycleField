@@ -12,6 +12,7 @@ public class ComputeHightmap : MonoBehaviour
     public bool calc;
     public bool show_feature;
     public bool set_cube_to_height;
+    public bool test_subdivision;
     WVec3[] features;
     public GameObject features_manager;
     public GameObject features_prefab;
@@ -44,6 +45,16 @@ public class ComputeHightmap : MonoBehaviour
             float height = heightmap.GetPixel(384, 384).r * 3000;
             Debug.Log("set test cube's height to " + height.ToString());
             test_cube.transform.position = new Vector3(test_cube.transform.position.x, height, test_cube.transform.position.z);
+        }
+
+        if (test_subdivision)
+        {
+            test_subdivision = false;
+            TerrainGenerator.heightmap_mat = material;
+            TerrainGenerator.compute_shader = compute_shader;
+            TerrainGenerator.main_tex = main_tex;
+            TerrainGenerator.loadTerrain();
+            testSubdivision();
         }
     }
 
@@ -81,9 +92,9 @@ public class ComputeHightmap : MonoBehaviour
         compute_shader.SetInt("features_count", area_features.Length);
         compute_shader.SetVectorArray("constraints", area_constraints.ToArray());
         compute_shader.SetInt("constraints_count", area_constraints.Count);
-        compute_shader.SetFloat("x", -328.0f);
-        compute_shader.SetFloat("z", -328.0f);
-        compute_shader.SetFloat("patch_length", 768.0f);
+        compute_shader.SetFloat("x", -8.0f);
+        compute_shader.SetFloat("z", -8.0f);
+        compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / 768.0f); // patch_length / tex_length
         compute_shader.Dispatch(kernelHandler, 768 / 8, 768 / 8, 1);
 
         heightmap = new Texture2D(768, 768, TextureFormat.RGB24, false);
@@ -93,5 +104,19 @@ public class ComputeHightmap : MonoBehaviour
         heightmap.ReadPixels(rectReadPicture, 0, 0);
         heightmap.Apply();
         RenderTexture.active = null; // added to avoid errors 
+    }
+
+    void testSubdivision()
+    {
+        int x_index = 144;
+        int z_index = 88;
+        if (!TerrainGenerator.is_generated[x_index * TerrainGenerator.z_patch_num + z_index])
+        {
+            TerrainGenerator.is_generated[x_index * TerrainGenerator.z_patch_num + z_index] = true;
+            int x_piece_num = 64;
+            int z_piece_num = 64;
+            PublicOutputInfo.piece_length = 2;
+            StartCoroutine(TerrainGenerator.generateTerrainPatchWithTex(x_index, z_index, x_piece_num, z_piece_num));
+        }
     }
 }

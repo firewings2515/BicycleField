@@ -40,11 +40,9 @@ Shader "Custom/standardHieghtmap"
 
         void vert(inout appdata_full v)
         {
-            //float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
-            //float4 vertex = float4(worldPos.x, tex2Dlod(_HeightmapTex, float4(v.texcoord.xy, 0, 0)).r * 10, worldPos.z, worldPos.w);
-            //v.vertex = mul(unity_WorldToObject, worldPos);
-            float2 reverse_uv = float2(1 - v.texcoord.x, 1 - v.texcoord.y);
-            v.vertex.y = tex2Dlod(_HeightmapTex, float4(reverse_uv.xy, 0, 0)).r * 3000;
+            //float2 reverse_uv = float2(1 - v.texcoord.x, 1 - v.texcoord.y);
+            //v.vertex.y = tex2Dlod(_HeightmapTex, float4(reverse_uv.xy, 0, 0)).r * 3000;
+            v.vertex.y = tex2Dlod(_HeightmapTex, float4(v.texcoord.xy, 0, 0)).r * 3000;
         }
 
         void surf (Input IN, inout SurfaceOutputStandard o)
