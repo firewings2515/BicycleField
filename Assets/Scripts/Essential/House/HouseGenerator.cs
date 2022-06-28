@@ -21,20 +21,34 @@ static public class HouseGenerator
     static Dictionary<int, Dictionary<int, GameObject>> gobj_db = new Dictionary<int, Dictionary<int, GameObject>>();
     static List<int> segment_id_q = new List<int>();
 
+    static public Queue<List<int>> queue_segment_id = new Queue<List<int>>();
+    static public Queue<List<int>> queue_house_id = new Queue<List<int>>();
+    static public Queue<List<string>> queue_info = new Queue<List<string>>();
+
     static public void init() {
         //builder = new bgBuilder(grammar_files_path);
         //gobj_db = new Dictionary<int, Dictionary<int, GameObject>>();
         //segment_id_q = new List<int>();
     }
-    static public IEnumerator generateHouses(List<int> segment_id,List<int> house_id,List<string> info) {
+    static public void generateHouses(List<int> segment_id,List<int> house_id,List<string> info) {
+        queue_segment_id.Enqueue(segment_id);
+        queue_house_id.Enqueue(house_id);
+        queue_info.Enqueue(info);
+
+    }
+
+    static public IEnumerator generateHouse(List<int> segment_id, List<int> house_id, List<string> info)
+    {
         int count = segment_id.Count;
-        for (int i = 0; i < count; i++) {
-            generateHouse(segment_id[i],house_id[i],info[i]);
+        for (int i = 0; i < count; i++)
+        {
+            generateHouse(segment_id[i], house_id[i], info[i]);
             //break;
             yield return new WaitForSeconds(0.3f);
         }
         yield return null;
     }
+
     static public void generateHouse(int segment_id, int house_id, string info)
     {
         //demo code

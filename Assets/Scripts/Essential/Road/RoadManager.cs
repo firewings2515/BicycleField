@@ -19,6 +19,7 @@ public class RoadManager : MonoBehaviour
     public PathCreator path_creator;
     public bool path_loop = false;
     private bool update_mesh = false;
+    private bool check_terrain_loaded = false;
 
     private bool is_started = false;
 
@@ -67,7 +68,15 @@ public class RoadManager : MonoBehaviour
             getAndSetNextSegment();
 
             path_creator.bezierPath = path_creator.bezierPath; //force update
-            update_mesh = true;
+            check_terrain_loaded = true;
+        }
+        else if (check_terrain_loaded)
+        {
+            if (TerrainGenerator.checkTerrainLoaded())
+            {
+                check_terrain_loaded = false;
+                update_mesh = true;
+            }
         }
         else if (update_mesh)
         {
@@ -132,7 +141,7 @@ public class RoadManager : MonoBehaviour
             //GetComponent<HouseManager>().addToBuffer(point_data);
             point_data = reader.ReadLine();
         }
-        StartCoroutine(HouseGenerator.generateHouses(segment_id_list, house_id_list, info_list));
+        HouseGenerator.generateHouses(segment_id_list, house_id_list, info_list);
         return point_data != null;
     }
 

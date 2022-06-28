@@ -54,7 +54,7 @@ public class bgAsset : bgComponent
                 if (location[i] == '.') break;
                 file_extension = location[i] + file_extension;
             }
-            Debug.Log("ex:" + file_extension);
+            //Debug.Log("ex:" + file_extension);
             if (file_extension == "obj")
             {
                 go = new Dummiesman.OBJLoader().Load(location);

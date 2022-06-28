@@ -108,15 +108,21 @@ public class ComputeHightmap : MonoBehaviour
 
     void testSubdivision()
     {
-        int x_index = 144;
-        int z_index = 88;
-        if (!TerrainGenerator.is_generated[x_index * TerrainGenerator.z_patch_num + z_index])
+        int x_index = 13;
+        int z_index = 7;
+        for (int i = -5; i <= 5; i++)
         {
-            TerrainGenerator.is_generated[x_index * TerrainGenerator.z_patch_num + z_index] = true;
-            int x_piece_num = 64;
-            int z_piece_num = 64;
-            PublicOutputInfo.piece_length = 2;
-            StartCoroutine(TerrainGenerator.generateTerrainPatchWithTex(x_index, z_index, x_piece_num, z_piece_num));
+            for (int j = -5; j <= 5; j++)
+            {
+                if (!TerrainGenerator.is_generated[(x_index + i) * TerrainGenerator.z_patch_num + (z_index + j)])
+                {
+                    TerrainGenerator.is_generated[(x_index + i) * TerrainGenerator.z_patch_num + (z_index + j)] = true;
+                    int x_piece_num = 64;
+                    int z_piece_num = 64;
+                    PublicOutputInfo.piece_length = 2;
+                    StartCoroutine(TerrainGenerator.generateTerrainPatchWithTex(x_index + i, z_index + j, x_piece_num, z_piece_num));
+                }
+            }
         }
     }
 }

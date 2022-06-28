@@ -91,9 +91,9 @@ public class TerrainManager : MonoBehaviour
         {
             int x_index = queue_generate_patch_x.Dequeue();
             int z_index = queue_generate_patch_z.Dequeue();
-            if (!TerrainGenerator.is_generated[x_index * TerrainGenerator.z_patch_num + z_index])
+            if (!TerrainGenerator.is_loaded[x_index * TerrainGenerator.z_patch_num + z_index])
             {
-                TerrainGenerator.is_generated[x_index * TerrainGenerator.z_patch_num + z_index] = true;
+                TerrainGenerator.is_loaded[x_index * TerrainGenerator.z_patch_num + z_index] = true;
                 int x_piece_num = TerrainGenerator.piece_num;
                 int z_piece_num = TerrainGenerator.piece_num;
                 if (x_index == TerrainGenerator.x_patch_num - 1)
@@ -104,9 +104,11 @@ public class TerrainManager : MonoBehaviour
                 //    x_piece_num = TerrainGenerator.x_patch_num - x_index;
                 //if (z_index + TerrainGenerator.piece_num > TerrainGenerator.z_patch_num)
                 //    z_piece_num = TerrainGenerator.z_patch_num - z_index;
-                StartCoroutine(TerrainGenerator.generateTerrainPatch(x_index, z_index, x_piece_num, z_piece_num));
+                StartCoroutine(TerrainGenerator.generateTerrainPatchWithTex(x_index, z_index, x_piece_num, z_piece_num));
                 break;
             }
         }
+
+        TerrainGenerator.is_queue_generate_patch_empty = (queue_generate_patch_x.Count == 0);
     }
 }

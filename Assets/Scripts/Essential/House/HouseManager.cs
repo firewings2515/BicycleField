@@ -13,6 +13,9 @@ public class HouseManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (TerrainGenerator.is_initial && TerrainGenerator.checkTerrainLoaded() && HouseGenerator.queue_segment_id.Count > 0)
+        {
+            StartCoroutine(HouseGenerator.generateHouse(HouseGenerator.queue_segment_id.Dequeue(), HouseGenerator.queue_house_id.Dequeue(), HouseGenerator.queue_info.Dequeue()));
+        }
     }
 }

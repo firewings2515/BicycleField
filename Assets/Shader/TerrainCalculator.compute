@@ -41,43 +41,44 @@ float linearWeight(float x, float z)
 {
     float dist_min = 1e6;
     float min_index = 0;
-    for (int i = 0; i < features_count; i++)
+    for (int i = 0; i < constraints_count; i++)
     {
-        float dist = sqrt(pow(features[i].x - x, 2) + pow(features[i].z - z, 2));
-        if (features[i].w > -1 && dist < dist_min)
+        float dist = sqrt(pow(constraints[i].x - x, 2) + pow(constraints[i].z - z, 2));
+        if (dist < dist_min)
         {
             dist_min = dist;
             min_index = i;
         }
     }
-    if (min_index < features_count - 1)
+    
+    if (min_index < constraints_count - 1)
     {
-        float2 AB = float2(features[min_index + 1].x - features[min_index].x, features[min_index + 1].z - features[min_index].z);
-        float2 AC = float2(x - features[min_index].x, z - features[min_index].z);
+        float2 AB = float2(constraints[min_index + 1].x - constraints[min_index].x, constraints[min_index + 1].z - constraints[min_index].z);
+        float2 AC = float2(x - constraints[min_index].x, z - constraints[min_index].z);
         float AB_AC = (AB.x * AC.x + AB.y * AC.y);
         if (AB_AC > 0)
         {
-            float dist_a = sqrt(pow(features[min_index].x - x, 2) + pow(features[min_index].z - z, 2));
-            float dist_b = sqrt(pow(features[min_index + 1].x - x, 2) + pow(features[min_index + 1].z - z, 2));
-            return (features[min_index].y * dist_b + features[min_index + 1].y * dist_a) / (dist_a + dist_b);
+            float dist_a = sqrt(pow(constraints[min_index].x - x, 2) + pow(constraints[min_index].z - z, 2));
+            float dist_b = sqrt(pow(constraints[min_index + 1].x - x, 2) + pow(constraints[min_index + 1].z - z, 2));
+            return (constraints[min_index].y * dist_b + constraints[min_index + 1].y * dist_a) / (dist_a + dist_b);
         }
         else
         {
             if (min_index > 0)
             {
-                float dist_a = sqrt(pow(features[min_index - 1].x - x, 2) + pow(features[min_index - 1].z - z, 2));
-                float dist_b = sqrt(pow(features[min_index].x - x, 2) + pow(features[min_index].z - z, 2));
-                return (features[min_index - 1].y * dist_b + features[min_index].y * dist_a) / (dist_a + dist_b);
+                float dist_a = sqrt(pow(constraints[min_index - 1].x - x, 2) + pow(constraints[min_index - 1].z - z, 2));
+                float dist_b = sqrt(pow(constraints[min_index].x - x, 2) + pow(constraints[min_index].z - z, 2));
+                return (constraints[min_index - 1].y * dist_b + constraints[min_index].y * dist_a) / (dist_a + dist_b);
             }
             else
             {
-                return features[min_index].y;
+                return constraints[min_index].y;
             }
         }
     }
     else
     {
-        return features[min_index].y;
+        return constraints[min_index].y;
     }
 }
 
@@ -85,7 +86,6 @@ float IDW(float x, float z)
 {
     float sum_up = 0.0;
     float sum_down = 0.0;
-    float dist_min = 9.0f;
     for (int i = 0; i < features_count; i++)
     {
         float dist = sqrt(pow(features[i].x - x, 2) + pow(features[i].z - z, 2));
@@ -126,17 +126,17 @@ float roadConstraint(float x, float z)
             distance = abs(x1 * y2 - y1 * x2) / mod;
         }
 
-        if (distance < 16.0)
+        if (distance < 16.0f)
         {
-            return 1.0f;
+            return (i + 1) / 128.0;
         }
     }
     for (int i = 0; i < constraints_count; i++)
     {
         float dist = sqrt(pow(constraints[i].x - x, 2) + pow(constraints[i].z - z, 2));
-        if (dist < 16.0)
+        if (dist < 16.0f)
         {
-            return 1.0f;
+            return (i + 1) / 128.0;
         }
     }
     return 0.0f;
@@ -147,8 +147,13 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 {
     float height = IDW(x + id.x * resolution, z + id.y * resolution);
     float road_constraint = roadConstraint(x + id.x * resolution, z + id.y * resolution);
-    if (road_constraint > 0.5)
+    if (road_constraint > 0)
         height = linearWeight(x + id.x * resolution, z + id.y * resolution);
-    Result[id.xy] = float4(height / 3000, road_constraint, height / 3000, 1.0);
+    /*float height = IDW(x + id.x, z + id.y);
+    float road_constraint = roadConstraint(x + id.x, z + id.y);
+    if (road_constraint > 0)
+        height = linearWeight(x + id.x, z + id.y);*/
+        //height = NNI(x + id.x, z + id.y);
+    Result[id.xy] = float4(height / 900, road_constraint, height / 900, 1.0);
     //Result[id.xy] = float4(id.x / 768.0f, id.x / 768.0f, id.x / 768.0f, 1.0);
 }
