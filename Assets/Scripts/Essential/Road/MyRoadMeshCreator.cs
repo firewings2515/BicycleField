@@ -64,8 +64,6 @@ namespace PathCreation.Examples
             bool usePathNormals = !(path.space == PathSpace.xyz && flattenSurface);
 
             float last_y = TerrainGenerator.getHeightWithBais(path.GetPoint(0).x, path.GetPoint(0).z);
-            if (last_y <= 0)
-                Debug.LogError("warning!");
 
             for (int i = 0; i < path.NumPoints; i++)
             {

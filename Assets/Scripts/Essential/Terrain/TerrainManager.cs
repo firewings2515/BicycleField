@@ -19,6 +19,8 @@ public class TerrainManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        GameObject terrain_manager = new GameObject("TerrainManager");
+        TerrainGenerator.terrain_manager = terrain_manager;
         TerrainGenerator.terrain_mat = terrain_mat;
         TerrainGenerator.terrain_idw_mat = terrain_idw_mat;
         TerrainGenerator.terrain_nni_mat = terrain_nni_mat;
@@ -104,7 +106,7 @@ public class TerrainManager : MonoBehaviour
                 //    x_piece_num = TerrainGenerator.x_patch_num - x_index;
                 //if (z_index + TerrainGenerator.piece_num > TerrainGenerator.z_patch_num)
                 //    z_piece_num = TerrainGenerator.z_patch_num - z_index;
-                StartCoroutine(TerrainGenerator.generateTerrainPatchWithTex(x_index, z_index, x_piece_num, z_piece_num));
+                StartCoroutine(TerrainGenerator.generateTerrainPatchTex(x_index, z_index, x_piece_num, z_piece_num));
                 break;
             }
         }

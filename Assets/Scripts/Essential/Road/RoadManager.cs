@@ -26,10 +26,11 @@ public class RoadManager : MonoBehaviour
     private string last_data = null;
     public GameObject finish_flag;
     private bool finished = false;
+    GameObject trigger_manager;
 
     private void Start()
     {
-        
+        trigger_manager = new GameObject("TriggerManager");
     }
 
     // Update is called once per frame
@@ -167,7 +168,8 @@ public class RoadManager : MonoBehaviour
 
     private void spawnAnchorCheckpoint(Vector3 position)
     {
-        GameObject prefab = new GameObject();
+        GameObject prefab = new GameObject("Trigger");
+        prefab.transform.parent = trigger_manager.transform;
         position.y = TerrainGenerator.getHeightWithBais(position.x, position.z);
         prefab.transform.position = position;
         prefab.AddComponent<SphereCollider>();

@@ -92,7 +92,7 @@ public class FeatureLineReconstruction : MonoBehaviour
             TerrainGenerator.min_z = 0;
             TerrainGenerator.x_patch_num = 256;
             TerrainGenerator.z_patch_num = 256;
-            TerrainGenerator.terrains = new List<GameObject>();
+            TerrainGenerator.terrains = new GameObject[1];
             TerrainGenerator.terrain_mat = terrain_mat;
             showPoint(point_cloud, "Feature", feature_manager.transform, blue_ball, 1.0f);
             Debug.Log(point_cloud.Length);

@@ -7,6 +7,8 @@ public class HouseManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        GameObject house_manager = new GameObject("HouseManager");
+        HouseGenerator.house_manager = house_manager;
         HouseGenerator.init();
     }
 

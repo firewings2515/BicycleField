@@ -12,6 +12,7 @@ int constraints_count;
 float x;
 float z;
 float resolution;
+RWStructuredBuffer<int> progress;
 
 float getWeight(float d, float w)
 {
@@ -156,4 +157,5 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         //height = NNI(x + id.x, z + id.y);
     Result[id.xy] = float4(height / 900, road_constraint, height / 900, 1.0);
     //Result[id.xy] = float4(id.x / 768.0f, id.x / 768.0f, id.x / 768.0f, 1.0);
+    progress[0] = 1;
 }

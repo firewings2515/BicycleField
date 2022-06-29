@@ -25,6 +25,8 @@ static public class HouseGenerator
     static public Queue<List<int>> queue_house_id = new Queue<List<int>>();
     static public Queue<List<string>> queue_info = new Queue<List<string>>();
 
+    static public GameObject house_manager;
+
     static public void init() {
         //builder = new bgBuilder(grammar_files_path);
         //gobj_db = new Dictionary<int, Dictionary<int, GameObject>>();
@@ -98,6 +100,7 @@ static public class HouseGenerator
             segment_id_q.Add(segment_id);
         }
         gobj_db[segment_id].Add(house_id, gobj);
+        gobj.transform.parent = house_manager.transform;
     }
 
     static public void destroyEarliestSegment()
