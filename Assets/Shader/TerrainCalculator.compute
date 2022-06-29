@@ -89,10 +89,12 @@ float IDW(float x, float z)
     float sum_down = 0.0;
     for (int i = 0; i < features_count; i++)
     {
+        if (features[i].w > -1)
+            continue;
         float dist = sqrt(pow(features[i].x - x, 2) + pow(features[i].z - z, 2));
         if (pow(dist, 2) < 1e-6)
             return features[i].y;
-        if (dist < 320.0)
+        if (dist < 320.0 + 1e-6)
         {
             sum_up += getWeight(dist, 2) * features[i].y;
             sum_down += getWeight(dist, 2);
@@ -127,7 +129,7 @@ float roadConstraint(float x, float z)
             distance = abs(x1 * y2 - y1 * x2) / mod;
         }
 
-        if (distance < 16.0f)
+        if (distance < 4.0f)
         {
             return (i + 1) / 128.0;
         }
@@ -135,7 +137,7 @@ float roadConstraint(float x, float z)
     for (int i = 0; i < constraints_count; i++)
     {
         float dist = sqrt(pow(constraints[i].x - x, 2) + pow(constraints[i].z - z, 2));
-        if (dist < 16.0f)
+        if (dist < 4.0f)
         {
             return (i + 1) / 128.0;
         }

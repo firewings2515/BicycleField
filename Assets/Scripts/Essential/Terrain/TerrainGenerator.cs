@@ -40,7 +40,7 @@ static public class TerrainGenerator
     static public KDTree kdtree;                                        // For searching and recording feature points
     static public int terrain_mode = 0;                                 // 0 is DEM, 1 is IDW, 2 is NNI, controled by TerrainManager
     static public int piece_num = 64;                                   // The number of piece in a patch    ver2 = 8 ver3 = 64
-    static public bool show_feature_ball = false;
+    static public bool show_feature_ball = true;
     static public GameObject feature_ball_prefab;
     static public bool is_queue_generate_patch_empty = false;
     static public ComputeBuffer[] progress_buffer;
@@ -104,17 +104,14 @@ static public class TerrainGenerator
             origin_y = float.Parse(inputs[1]);
             origin_z = float.Parse(inputs[2]);
             inputs = sr.ReadLine().Split(' ');
-            x_patch_num = int.Parse(inputs[0]);
-            z_patch_num = int.Parse(inputs[1]);
-            x_patch_num *= 2;                        // infect piece_num and piece_length
-            z_patch_num *= 2;
-            inputs = sr.ReadLine().Split(' ');
             min_x = float.Parse(inputs[0]);
             min_y = float.Parse(inputs[1]);
             min_z = float.Parse(inputs[2]);
             max_x = float.Parse(inputs[3]);
             max_y = float.Parse(inputs[4]);
             max_z = float.Parse(inputs[5]);
+            x_patch_num = Mathf.CeilToInt((max_x - min_x) / PublicOutputInfo.patch_length);
+            z_patch_num = Mathf.CeilToInt((max_z - min_z) / PublicOutputInfo.patch_length);
             int n = int.Parse(sr.ReadLine());
             kdtree = new KDTree();
             kdtree.nodes = new WVec3[n];
@@ -156,8 +153,7 @@ static public class TerrainGenerator
             sw.WriteLine($"{boundary_min_x} {boundary_min_z}");
             origin_y = -min_y;
             sw.WriteLine($"{origin_x} {origin_y} {origin_z}");
-            sw.WriteLine($"{x_patch_num} {z_patch_num}");
-            sw.WriteLine($"{min_x} {min_y} {min_z}");
+            sw.WriteLine($"{min_x} {min_y} {min_z} {max_x} {max_y} {max_z}");
             sw.WriteLine($"{kdtree.nodes.Length}");
             for (int f_i = 0; f_i < kdtree.nodes.Length; f_i++)
             {
@@ -180,10 +176,10 @@ static public class TerrainGenerator
         return area_features;
     }
 
-    static public (Vector4[], Vector4[]) getAreaFeaturesForPatch(float x, float z, int x_piece, int z_piece)
+    static public (Vector4[], Vector4[]) getAreaFeaturesForPatch(float x, float z)
     {
         float expanded_length = vision_patch_num * PublicOutputInfo.piece_length;
-        int[] area_features_index = kdtree.getAreaPoints(x - expanded_length, z - expanded_length, x + x_piece * PublicOutputInfo.patch_length + expanded_length, z + z_piece * PublicOutputInfo.patch_length + expanded_length);
+        int[] area_features_index = kdtree.getAreaPoints(x - expanded_length, z - expanded_length, x + PublicOutputInfo.patch_length + expanded_length, z + PublicOutputInfo.patch_length + expanded_length);
         Vector4[] area_features = new Vector4[area_features_index.Length];
         List<Vector4> area_constraints = new List<Vector4>();
         for (int area_features_index_index = 0; area_features_index_index < area_features_index.Length; area_features_index_index++)
@@ -455,7 +451,7 @@ static public class TerrainGenerator
     {
         for (int point_index = 0; point_index < points.Length; point_index++)
         {
-            GameObject ball = GameObject.Instantiate(ball_prefab, new Vector3(points[point_index].x, points[point_index].y + min_y, points[point_index].z), Quaternion.identity);
+            GameObject ball = GameObject.Instantiate(ball_prefab, new Vector3(points[point_index].x, points[point_index].y, points[point_index].z), Quaternion.identity); // + min_y
             ball.transform.localScale = new Vector3(ball_size, ball_size, ball_size);
             ball.name = tag + "_" + point_index.ToString();
             ball.transform.parent = parent;
@@ -477,11 +473,10 @@ static public class TerrainGenerator
     /// <returns></returns>
     static public IEnumerator generateTerrainPatchTex(int x_index, int z_index, int x_piece_num, int z_piece_num)
     {
-        var area_features_constraints = getAreaFeaturesForPatch(min_x + x_index * PublicOutputInfo.patch_length, min_z + z_index * PublicOutputInfo.patch_length, x_piece_num, z_piece_num);
+        var area_features_constraints = getAreaFeaturesForPatch(min_x + x_index * PublicOutputInfo.patch_length, min_z + z_index * PublicOutputInfo.patch_length);
         Vector4[] area_features = area_features_constraints.Item1;
         Vector4[] area_constraints = area_features_constraints.Item2;
-        int tex_size = 512;
-        RenderTexture tex = new RenderTexture(tex_size, tex_size, 24);
+        RenderTexture tex = new RenderTexture(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, 24);
         tex.enableRandomWrite = true;
         tex.Create();
 
@@ -495,19 +490,20 @@ static public class TerrainGenerator
         compute_shader.SetInt("constraints_count", area_constraints.Length);
         compute_shader.SetFloat("x", min_x + x_index * PublicOutputInfo.patch_length);
         compute_shader.SetFloat("z", min_z + z_index * PublicOutputInfo.patch_length);
-        compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / tex_size); // patch_length / tex_length
+        compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / PublicOutputInfo.tex_size); // patch_length / tex_length
         progress_buffer[x_index * z_patch_num + z_index] = new ComputeBuffer(1, 4);
         int[] progress = new int[] { 0 };
         progress_buffer[x_index * z_patch_num + z_index].SetData(progress);
         compute_shader.SetBuffer(kernelHandler, "progress", progress_buffer[x_index * z_patch_num + z_index]);
-        compute_shader.Dispatch(kernelHandler, tex_size / 8, tex_size / 8, 1);
+        compute_shader.Dispatch(kernelHandler, PublicOutputInfo.tex_size / 8, PublicOutputInfo.tex_size / 8, 1);
         Graphics.WaitOnAsyncGraphicsFence(fence);
 
-        heightmaps[x_index * z_patch_num + z_index] = new Texture2D(tex_size, tex_size, TextureFormat.RGB24, false); // 320 + 128 + 320
-        Rect rectReadPicture = new Rect(0, 0, tex_size, tex_size);
+        heightmaps[x_index * z_patch_num + z_index] = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false); // 320 + 128 + 320
+        Rect rectReadPicture = new Rect(0, 0, PublicOutputInfo.tex_size, PublicOutputInfo.tex_size);
         RenderTexture.active = tex;
         // Read pixels
         heightmaps[x_index * z_patch_num + z_index].ReadPixels(rectReadPicture, 0, 0);
+        heightmaps[x_index * z_patch_num + z_index].wrapMode = TextureWrapMode.Clamp;
         heightmaps[x_index * z_patch_num + z_index].Apply();
         RenderTexture.active = null; // added to avoid errors
 
@@ -554,11 +550,11 @@ static public class TerrainGenerator
         {
             for (int j = 0; j <= z_piece_num; j++)
             {
-                terrain_points[i, j, 0] = min_x + x_index * PublicOutputInfo.patch_length + i * PublicOutputInfo.piece_length;
-                terrain_points[i, j, 2] = min_z + z_index * PublicOutputInfo.patch_length + j * PublicOutputInfo.piece_length;
-                terrain_points[i, j, 1] = getHeightFromComputeShader(terrain_points[i, j, 0], terrain_points[i, j, 2]);
-                vertice[i * (z_piece_num + 1) + j] = new Vector3(terrain_points[i, j, 0] - center.x, terrain_points[i, j, 1] - center.y, terrain_points[i, j, 2] - center.z);
                 uv[i * (z_piece_num + 1) + j] = new Vector2((float)i / x_piece_num, (float)j / z_piece_num);
+                terrain_points[i, j, 0] = min_x + x_index * PublicOutputInfo.patch_length + i * PublicOutputInfo.piece_length;
+                terrain_points[i, j, 1] = getHeightFromTex(x_index, z_index, uv[i * (z_piece_num + 1) + j].x, uv[i * (z_piece_num + 1) + j].y);
+                terrain_points[i, j, 2] = min_z + z_index * PublicOutputInfo.patch_length + j * PublicOutputInfo.piece_length;
+                vertice[i * (z_piece_num + 1) + j] = new Vector3(terrain_points[i, j, 0] - center.x, terrain_points[i, j, 1] - center.y, terrain_points[i, j, 2] - center.z);
             }
         }
 
@@ -595,18 +591,23 @@ static public class TerrainGenerator
         yield return null;
     }
 
+    static float getHeightFromTex(int x_index, int z_index, float u, float v)
+    {
+        return heightmaps[x_index * z_patch_num + z_index].GetPixelBilinear(u, v).r * 900;
+    }
+
     static float getHeightFromComputeShader(float x, float z)
     {
-        int patch_x_index = Mathf.FloorToInt((x - min_x) / PublicOutputInfo.patch_length);
-        int patch_z_index = Mathf.FloorToInt((z - min_z) / PublicOutputInfo.patch_length);
-        if (!is_generated[patch_x_index * z_patch_num + patch_z_index])
+        int x_index = Mathf.FloorToInt((x - min_x) / PublicOutputInfo.patch_length);
+        int z_index = Mathf.FloorToInt((z - min_z) / PublicOutputInfo.patch_length);
+        if (!is_generated[x_index * z_patch_num + z_index])
         {
             //Debug.LogError(patch_x_index.ToString() + ", " + patch_z_index.ToString() + " not be loaded");
             return 0.0f;
         }
-        float u = (x - (min_x + patch_x_index * PublicOutputInfo.patch_length)) / heightmaps[patch_x_index * z_patch_num + patch_z_index].width;
-        float v = (z - (min_z + patch_z_index * PublicOutputInfo.patch_length)) / heightmaps[patch_x_index * z_patch_num + patch_z_index].height;
-        return heightmaps[patch_x_index * z_patch_num + patch_z_index].GetPixelBilinear(u, v).r * 900;
+        float u = (x - (min_x + x_index * PublicOutputInfo.patch_length)) / heightmaps[x_index * z_patch_num + z_index].width;
+        float v = (z - (min_z + z_index * PublicOutputInfo.patch_length)) / heightmaps[x_index * z_patch_num + z_index].height;
+        return heightmaps[x_index * z_patch_num + z_index].GetPixelBilinear(u, v).r * 900;
     }
 
     static public bool checkTerrainLoaded()
