@@ -96,8 +96,8 @@ public class TerrainManager : MonoBehaviour
             if (!TerrainGenerator.is_loaded[x_index * TerrainGenerator.z_patch_num + z_index])
             {
                 TerrainGenerator.is_loaded[x_index * TerrainGenerator.z_patch_num + z_index] = true;
-                int x_piece_num = TerrainGenerator.piece_num;
-                int z_piece_num = TerrainGenerator.piece_num;
+                int x_piece_num = PublicOutputInfo.piece_num;
+                int z_piece_num = PublicOutputInfo.piece_num;
                 if (x_index == TerrainGenerator.x_patch_num - 1)
                     x_piece_num = Mathf.FloorToInt((TerrainGenerator.max_x - (TerrainGenerator.min_x + x_index * PublicOutputInfo.patch_length)) / PublicOutputInfo.piece_length);
                 if (z_index == TerrainGenerator.z_patch_num - 1)

@@ -39,7 +39,6 @@ static public class TerrainGenerator
     static public List<int> generated_z_list;                           // Used to check and remove terrain whether in view or not
     static public KDTree kdtree;                                        // For searching and recording feature points
     static public int terrain_mode = 0;                                 // 0 is DEM, 1 is IDW, 2 is NNI, controled by TerrainManager
-    static public int piece_num = 64;                                   // The number of piece in a patch    ver2 = 8 ver3 = 64
     static public bool show_feature_ball = true;
     static public GameObject feature_ball_prefab;
     static public bool is_queue_generate_patch_empty = false;
@@ -336,7 +335,7 @@ static public class TerrainGenerator
     {
         for (int generated_list_index = 0; generated_list_index < generated_x_list.Count; generated_list_index++)
         {
-            int ddist = Mathf.Abs(generated_x_list[generated_list_index] - patch_x_index) / piece_num + Mathf.Abs(generated_z_list[generated_list_index] - patch_z_index) / piece_num;
+            int ddist = Mathf.Abs(generated_x_list[generated_list_index] - patch_x_index) / PublicOutputInfo.piece_num + Mathf.Abs(generated_z_list[generated_list_index] - patch_z_index) / PublicOutputInfo.piece_num;
             if (ddist > vision_patch_num * 2)
             {
                 is_generated[generated_x_list[generated_list_index] * z_patch_num + generated_z_list[generated_list_index]] = false;
@@ -473,13 +472,16 @@ static public class TerrainGenerator
     /// <returns></returns>
     static public IEnumerator generateTerrainPatchTex(int x_index, int z_index, int x_piece_num, int z_piece_num)
     {
+        // ================================== fetch feature points ===================================================
         var area_features_constraints = getAreaFeaturesForPatch(min_x + x_index * PublicOutputInfo.patch_length, min_z + z_index * PublicOutputInfo.patch_length);
         Vector4[] area_features = area_features_constraints.Item1;
         Vector4[] area_constraints = area_features_constraints.Item2;
+        // ===========================================================================================================
+
+        // ================================= setting compute shader ==================================================
         RenderTexture tex = new RenderTexture(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, 24);
         tex.enableRandomWrite = true;
         tex.Create();
-
         var fence = Graphics.CreateGraphicsFence(UnityEngine.Rendering.GraphicsFenceType.AsyncQueueSynchronisation, UnityEngine.Rendering.SynchronisationStageFlags.ComputeProcessing);
         Graphics.WaitOnAsyncGraphicsFence(fence);
         int kernelHandler = compute_shader.FindKernel("CSMain");
@@ -497,7 +499,9 @@ static public class TerrainGenerator
         compute_shader.SetBuffer(kernelHandler, "progress", progress_buffer[x_index * z_patch_num + z_index]);
         compute_shader.Dispatch(kernelHandler, PublicOutputInfo.tex_size / 8, PublicOutputInfo.tex_size / 8, 1);
         Graphics.WaitOnAsyncGraphicsFence(fence);
+        // ===========================================================================================================
 
+        // ================================= rendering texture2D =====================================================
         heightmaps[x_index * z_patch_num + z_index] = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false); // 320 + 128 + 320
         Rect rectReadPicture = new Rect(0, 0, PublicOutputInfo.tex_size, PublicOutputInfo.tex_size);
         RenderTexture.active = tex;
@@ -506,11 +510,14 @@ static public class TerrainGenerator
         heightmaps[x_index * z_patch_num + z_index].wrapMode = TextureWrapMode.Clamp;
         heightmaps[x_index * z_patch_num + z_index].Apply();
         RenderTexture.active = null; // added to avoid errors
+        // ===========================================================================================================
 
+        // ================================= setting GameObject ======================================================
         terrains[x_index * z_patch_num + z_index] = new GameObject("terrain_peice_" + x_index + "_" + z_index);
         MeshRenderer mr = terrains[x_index * z_patch_num + z_index].AddComponent<MeshRenderer>();
         mr.material = new Material(terrain_mat);
-        mr.material.SetTexture("_MainTex", heightmaps[x_index * z_patch_num + z_index]);
+        //mr.material.SetTexture("_MainTex", heightmaps[x_index * z_patch_num + z_index]);
+        mr.material.SetTexture("_MainTex", main_tex);
         terrains[x_index * z_patch_num + z_index].AddComponent<TerrainView>();
         terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().x_index = x_index;
         terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().z_index = z_index;
@@ -519,6 +526,7 @@ static public class TerrainGenerator
         terrains[x_index * z_patch_num + z_index].transform.parent = terrain_manager.transform;
         generated_x_list.Add(x_index);
         generated_z_list.Add(z_index);
+        // ===========================================================================================================
         yield return null;
     }
 
