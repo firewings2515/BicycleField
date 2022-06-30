@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+using ble_api1;
 public class IndoorBike : MonoBehaviour
 {
     public bool isScanningDevices = false;

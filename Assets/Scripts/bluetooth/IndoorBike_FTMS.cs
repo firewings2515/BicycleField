@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using ble_api1;
+
 public class IndoorBike_FTMS
 {
     public bool want_connect = true;
@@ -39,6 +41,11 @@ public class IndoorBike_FTMS
         yield return mono.StartCoroutine(connect_device());
         if (selectedDeviceId.Length == 0) yield break;
 
+
+        Debug.Log("connecting device finish");
+
+        //BleApi.StopDeviceScan();
+
         yield return mono.StartCoroutine(connect_service());
         if (selectedServiceId.Length == 0) yield break;
 
@@ -52,15 +59,21 @@ public class IndoorBike_FTMS
     IEnumerator connect_device()
     {
         Debug.Log("connecting device...");
+        
         BleApi.StartDeviceScan();
-        BleApi.ScanStatus status;
+        //BleApi.StartAdvertisementScan();
+
+
+        //yield break;
+        BleApi.ScanStatus status = BleApi.ScanStatus.AVAILABLE;
 
 
         BleApi.DeviceUpdate device_res = new BleApi.DeviceUpdate();
+        int count = 0;
         do
         {
-
             status = BleApi.PollDevice(ref device_res, false);
+            //Debug.Log(count++);
             if (status == BleApi.ScanStatus.AVAILABLE)
             {
                 if (!devices.ContainsKey(device_res.id))
@@ -75,6 +88,7 @@ public class IndoorBike_FTMS
                 // consider only devices which have a name and which are connectable
                 if (devices[device_res.id]["name"] == "APXPRO 46080" && devices[device_res.id]["isConnectable"] == "True")
                 {
+                    //BleApi.Connect(device_res.id);
                     selectedDeviceId = device_res.id;
                     break;
                 }
@@ -251,6 +265,65 @@ public class IndoorBike_FTMS
                 }
                 // subcribeText.text = Encoding.ASCII.GetString(res.buf, 0, res.size);
             }
+            //writeInvoke(778.0f);
+
         }
+
+        
+    }
+
+
+
+    public void writeInvoke(float val)
+    {
+        //ble_api2.pcBleApi.Connect(selectedDeviceId);
+
+        //ble_api2.pcBleApi.StartAdvertisementScan();
+
+        BleApi.SubscribeCharacteristic(selectedDeviceId, selectedServiceId, "{00002ad9-0000-1000-8000-00805f9b34fb}", false);
+
+        byte william1 = Convert.ToByte((int)val % 256);
+        byte william2 = Convert.ToByte((int)val / 256);
+        byte[] payload = { 0x11, 0x00, 0x00, william1, william2, 0x00, 0x00 };
+        //Array.Reverse(payload);
+        BleApi.BLEData data = new BleApi.BLEData();
+        data.buf = new byte[512];
+        data.deviceId = selectedDeviceId;
+        data.serviceUuid = selectedServiceId;
+        data.characteristicUuid = "{00002ad9-0000-1000-8000-00805f9b34fb}";
+
+        for (int i = 0; i < payload.Length; i++)
+        {
+            data.buf[i] = payload[i];
+            //data.buf[i] = Reverse(payload[i]);
+        }
+        data.size = (short)payload.Length;
+        BleApi.SendData(in data, false);
+
+
+        //ble_api2.pcBleApi.StopAdvertisementScan();
+
+        //ble_api2.pcBleApi.DisConnect(selectedDeviceId);
+    }
+
+    public static byte Reverse(byte inByte)
+    {
+        byte result = 0x00;
+
+        for (byte mask = 0x80; Convert.ToInt32(mask) > 0; mask >>= 1)
+        {
+            // shift right current result
+            result = (byte)(result >> 1);
+
+            // tempbyte = 1 if there is a 1 in the current position
+            var tempbyte = (byte)(inByte & mask);
+            if (tempbyte != 0x00)
+            {
+                // Insert a 1 in the left
+                result = (byte)(result | 0x80);
+            }
+        }
+
+        return (result);
     }
 }

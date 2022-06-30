@@ -18,6 +18,11 @@ public class FTMS_show : MonoBehaviour
         }
     }
 
+    public void write(float val) {
+        Debug.Log("write");
+        connector.writeInvoke(val);
+    }
+
     // Update is called once per frame
     void Update()
     {
