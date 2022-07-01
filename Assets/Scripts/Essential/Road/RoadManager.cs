@@ -22,6 +22,7 @@ public class RoadManager : MonoBehaviour
     private bool check_terrain_loaded = false;
 
     private bool is_started = false;
+    private bool is_initial = false;
 
     private string last_data = null;
     public GameObject finish_flag;
@@ -36,7 +37,7 @@ public class RoadManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (TerrainGenerator.is_initial && !is_started) 
+        if (TerrainGenerator.is_initial && !is_initial) 
         {
             reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
 
@@ -60,7 +61,12 @@ public class RoadManager : MonoBehaviour
             removeEarliestRoad(false);
 
             path_creator.bezierPath.NotifyPathModified();
-            is_started = true;
+            is_initial = true;
+        }
+        if (is_initial)
+        {
+            if (TerrainGenerator.checkTerrainLoaded())
+                is_started = true;
         }
         if (!is_started) return;
 
@@ -69,7 +75,8 @@ public class RoadManager : MonoBehaviour
             getAndSetNextSegment();
 
             path_creator.bezierPath = path_creator.bezierPath; //force update
-            check_terrain_loaded = true;
+            update_mesh = true;
+            //check_terrain_loaded = true;
         }
         else if (check_terrain_loaded)
         {

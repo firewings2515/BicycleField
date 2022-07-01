@@ -13,6 +13,7 @@ float x;
 float z;
 float resolution;
 RWStructuredBuffer<int> progress;
+RWStructuredBuffer<float> heights;
 
 float getWeight(float d, float w)
 {
@@ -94,7 +95,7 @@ float IDW(float x, float z)
         float dist = sqrt(pow(features[i].x - x, 2) + pow(features[i].z - z, 2));
         if (pow(dist, 2) < 1e-6)
             return features[i].y;
-        if (dist < 320.0 + 1e-6)
+        if (dist < 320.0) // TerrainGenerator.feature_include_length = 320.0f
         {
             sum_up += getWeight(dist, 2) * features[i].y;
             sum_down += getWeight(dist, 2);
@@ -121,17 +122,17 @@ float roadConstraint(float x, float z)
         if (AB_BC < 0 && AB_AC > 0)
         {
             // Finding the perpendicular distance
-            double x1 = AB.x;
-            double y1 = AB.y;
-            double x2 = AC.x;
-            double y2 = AC.y;
-            double mod = sqrt(x1 * x1 + y1 * y1);
+            float x1 = AB.x;
+            float y1 = AB.y;
+            float x2 = AC.x;
+            float y2 = AC.y;
+            float mod = sqrt(x1 * x1 + y1 * y1);
             distance = abs(x1 * y2 - y1 * x2) / mod;
         }
 
         if (distance < 4.0f)
         {
-            return (i + 1) / 128.0;
+            return (i + 1) / 20.0;
         }
     }
     for (int i = 0; i < constraints_count; i++)
@@ -139,7 +140,7 @@ float roadConstraint(float x, float z)
         float dist = sqrt(pow(constraints[i].x - x, 2) + pow(constraints[i].z - z, 2));
         if (dist < 4.0f)
         {
-            return (i + 1) / 128.0;
+            return (i + 1) / 20.0;
         }
     }
     return 0.0f;
@@ -157,7 +158,12 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     if (road_constraint > 0)
         height = linearWeight(x + id.x, z + id.y);*/
         //height = NNI(x + id.x, z + id.y);
-    Result[id.xy] = float4(height / 900, road_constraint, height / 900, 1.0);
+    int height_int = int(height);
+    float height_0 = (height_int / 64) / 64.0;
+    float height_1 = (height_int % 64) / 64.0;
+    float height_2 = height - height_int;
+    Result[id.xy] = float4(road_constraint, height_0, height_1, height_2);
+    //heights[id.x + id.y * 64] = height;
     //Result[id.xy] = float4(id.x / 768.0f, id.x / 768.0f, id.x / 768.0f, 1.0);
     progress[0] = 1;
 }

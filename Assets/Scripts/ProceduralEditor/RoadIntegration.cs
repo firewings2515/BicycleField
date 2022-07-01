@@ -17,7 +17,6 @@ public class RoadIntegration : MonoBehaviour
     public float terrain_max_z;
     public float terrain_min_x;
     public float terrain_min_z;
-    float vision_length = 2048.0f;
     bool is_initial;
 
     [Header("Edit Bicycle Road List")]

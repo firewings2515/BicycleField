@@ -12,5 +12,5 @@ public static class PublicOutputInfo
     public static float editor_chunk_piece_length = 16.0f;
     public static float editor_chunk_patch_length = piece_num_in_chunk * editor_chunk_piece_length;
     public static Vector2 boundary_min;                                                                 // for terrain to getDEMHeight
-    public static int tex_size = 512;
+    public static int tex_size = 512;                                                                   
 }

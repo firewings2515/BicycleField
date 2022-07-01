@@ -26,6 +26,7 @@ static public class TerrainGenerator
     static public Material terrain_nni_mat;                             // Use the material with NNI shader
     static public bool generate;
     static public int vision_patch_num = 20;                            // The number of patches the viewer can see
+    static public float feature_include_length = 320.0f;
     static public GameObject[] terrains;                                // Store all patches of terrains
     static public bool need_update = false;                             // Call TerrainManager to generate new patches
     static public int patch_x_index;                                    // Used to calculate the index for removing checking
@@ -43,6 +44,9 @@ static public class TerrainGenerator
     static public GameObject feature_ball_prefab;
     static public bool is_queue_generate_patch_empty = false;
     static public ComputeBuffer[] progress_buffer;
+    //static public ComputeBuffer[] heights_buffer;
+    //static public float[][] heights;
+    static public WVec3[] constraints;
 
     static public Material heightmap_mat;
     static public ComputeShader compute_shader;
@@ -61,6 +65,8 @@ static public class TerrainGenerator
         heightmaps = new Texture2D[x_patch_num * z_patch_num];
         terrains = new GameObject[x_patch_num * z_patch_num];
         progress_buffer = new ComputeBuffer[x_patch_num * z_patch_num];
+        //heights_buffer = new ComputeBuffer[x_patch_num * z_patch_num];
+        //heights = new float[x_patch_num * z_patch_num][];
         generated_x_list = new List<int>();
         generated_z_list = new List<int>();
         is_initial = true;
@@ -117,6 +123,7 @@ static public class TerrainGenerator
             kdtree.parent = new int[n];
             kdtree.left = new int[n];
             kdtree.right = new int[n];
+            List<WVec3> constraints_list = new List<WVec3>();
             for (int f_i = 0; f_i < n; f_i++)
             {
                 inputs = sr.ReadLine().Split(' ');
@@ -128,6 +135,15 @@ static public class TerrainGenerator
                 kdtree.nodes[f_i].y = y;
                 kdtree.nodes[f_i].z = z;
                 kdtree.nodes[f_i].w = w;
+                if (w > -1)
+                {
+                    WVec3 constraint = new WVec3();
+                    constraint.x = x;
+                    constraint.y = y;
+                    constraint.z = z;
+                    constraint.w = w;
+                    constraints_list.Add(constraint);
+                }
                 int p = int.Parse(inputs[4]);
                 kdtree.parent[f_i] = p;
                 int l = int.Parse(inputs[5]);
@@ -135,6 +151,11 @@ static public class TerrainGenerator
                 int r = int.Parse(inputs[6]);
                 kdtree.right[f_i] = r;
             }
+            constraints_list.Sort(delegate (WVec3 a, WVec3 b)
+            {
+                return a.w.CompareTo(b.w);
+            });
+            constraints = constraints_list.ToArray();
             Debug.Log("Read Feature File " + file_path + " Successfully");
 
             if (show_feature_ball)
@@ -177,7 +198,7 @@ static public class TerrainGenerator
 
     static public (Vector4[], Vector4[]) getAreaFeaturesForPatch(float x, float z)
     {
-        float expanded_length = vision_patch_num * PublicOutputInfo.piece_length;
+        float expanded_length = feature_include_length;
         int[] area_features_index = kdtree.getAreaPoints(x - expanded_length, z - expanded_length, x + PublicOutputInfo.patch_length + expanded_length, z + PublicOutputInfo.patch_length + expanded_length);
         Vector4[] area_features = new Vector4[area_features_index.Length];
         List<Vector4> area_constraints = new List<Vector4>();
@@ -192,6 +213,10 @@ static public class TerrainGenerator
         {
             return a.w.CompareTo(b.w);
         });
+        //for (int area_constraints_index = 0; area_constraints_index < area_constraints.Count - 1; area_constraints_index++)
+        //{
+        //    if (area_constraints[])
+        //}
         return (area_features, area_constraints.ToArray());
     }
 
@@ -497,8 +522,13 @@ static public class TerrainGenerator
         int[] progress = new int[] { 0 };
         progress_buffer[x_index * z_patch_num + z_index].SetData(progress);
         compute_shader.SetBuffer(kernelHandler, "progress", progress_buffer[x_index * z_patch_num + z_index]);
-        compute_shader.Dispatch(kernelHandler, PublicOutputInfo.tex_size / 8, PublicOutputInfo.tex_size / 8, 1);
+        //heights_buffer[x_index * z_patch_num + z_index] = new ComputeBuffer(PublicOutputInfo.tex_size * PublicOutputInfo.tex_size, 4);
+        //heights[x_index * z_patch_num + z_index] = new float[PublicOutputInfo.tex_size * PublicOutputInfo.tex_size];
+        //heights_buffer[x_index * z_patch_num + z_index].SetData(heights[x_index * z_patch_num + z_index]);
+        //compute_shader.SetBuffer(kernelHandler, "heights", heights_buffer[x_index * z_patch_num + z_index]);
+        compute_shader.Dispatch(kernelHandler, Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), 1);
         Graphics.WaitOnAsyncGraphicsFence(fence);
+        //heights_buffer[x_index * z_patch_num + z_index].GetData(heights[x_index * z_patch_num + z_index]);
         // ===========================================================================================================
 
         // ================================= rendering texture2D =====================================================
@@ -516,8 +546,8 @@ static public class TerrainGenerator
         terrains[x_index * z_patch_num + z_index] = new GameObject("terrain_peice_" + x_index + "_" + z_index);
         MeshRenderer mr = terrains[x_index * z_patch_num + z_index].AddComponent<MeshRenderer>();
         mr.material = new Material(terrain_mat);
-        //mr.material.SetTexture("_MainTex", heightmaps[x_index * z_patch_num + z_index]);
-        mr.material.SetTexture("_MainTex", main_tex);
+        mr.material.SetTexture("_MainTex", heightmaps[x_index * z_patch_num + z_index]);
+        //mr.material.SetTexture("_MainTex", main_tex);
         terrains[x_index * z_patch_num + z_index].AddComponent<TerrainView>();
         terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().x_index = x_index;
         terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().z_index = z_index;
@@ -601,7 +631,12 @@ static public class TerrainGenerator
 
     static float getHeightFromTex(int x_index, int z_index, float u, float v)
     {
-        return heightmaps[x_index * z_patch_num + z_index].GetPixelBilinear(u, v).r * 900;
+        Color raw = heightmaps[x_index * z_patch_num + z_index].GetPixelBilinear(u, v);
+        return raw.g * 64 * 64 + raw.b * 64 + raw.a;
+        //int x = Mathf.FloorToInt(u * (PublicOutputInfo.tex_size - 1));
+        //int z = Mathf.FloorToInt(v * (PublicOutputInfo.tex_size - 1));
+        //Debug.Log(x.ToString() + ", " + z.ToString());
+        //return heights[x_index * z_patch_num + z_index][x * PublicOutputInfo.tex_size + z];
     }
 
     static float getHeightFromComputeShader(float x, float z)
