@@ -28,6 +28,8 @@ public class RoadManager : MonoBehaviour
     public GameObject finish_flag;
     private bool finished = false;
     GameObject trigger_manager;
+    int trigger_index = 0;
+    Queue<GameObject> trigger_wait_queue = new Queue<GameObject>();
 
     private void Start()
     {
@@ -39,6 +41,7 @@ public class RoadManager : MonoBehaviour
     {
         if (TerrainGenerator.is_initial && !is_initial) 
         {
+            is_initial = true;
             reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
 
             string end_point_data = reader.ReadLine();
@@ -61,7 +64,7 @@ public class RoadManager : MonoBehaviour
             removeEarliestRoad(false);
 
             path_creator.bezierPath.NotifyPathModified();
-            is_initial = true;
+            check_terrain_loaded = true;
         }
         if (is_initial)
         {
@@ -75,8 +78,7 @@ public class RoadManager : MonoBehaviour
             getAndSetNextSegment();
 
             path_creator.bezierPath = path_creator.bezierPath; //force update
-            update_mesh = true;
-            //check_terrain_loaded = true;
+            check_terrain_loaded = true;
         }
         else if (check_terrain_loaded)
         {
@@ -90,6 +92,14 @@ public class RoadManager : MonoBehaviour
         {
             update_mesh = false;
             GetComponent<PathCreation.Examples.MyRoadMeshCreator>().CreateRoadMesh();
+            while (trigger_wait_queue.Count > 0)
+            {
+                GameObject trigger = trigger_wait_queue.Dequeue();
+                if (trigger)
+                {
+                    trigger.transform.position = new Vector3(trigger.transform.position.x, TerrainGenerator.getHeightWithBais(trigger.transform.position.x, trigger.transform.position.z), trigger.transform.position.z);
+                }
+            }
         }
     }
 
@@ -176,15 +186,15 @@ public class RoadManager : MonoBehaviour
 
     private void spawnAnchorCheckpoint(Vector3 position)
     {
-        GameObject prefab = new GameObject("Trigger");
-        prefab.transform.parent = trigger_manager.transform;
-        position.y = TerrainGenerator.getHeightWithBais(position.x, position.z);
-        prefab.transform.position = position;
-        prefab.AddComponent<SphereCollider>();
-        prefab.GetComponent<SphereCollider>().isTrigger = true;
-        prefab.GetComponent<SphereCollider>().transform.localScale *= Info.CHECKPOINT_SIZE;
-        prefab.AddComponent<AnchorCheckpoint>();
-        prefab.layer = 6; //only collide with cyclist
+        GameObject trigger = new GameObject("Trigger" + (trigger_index++).ToString());
+        trigger.transform.position = position;
+        trigger.transform.parent = trigger_manager.transform;
+        trigger_wait_queue.Enqueue(trigger);
+        trigger.AddComponent<SphereCollider>();
+        trigger.GetComponent<SphereCollider>().isTrigger = true;
+        trigger.GetComponent<SphereCollider>().transform.localScale *= Info.CHECKPOINT_SIZE;
+        trigger.AddComponent<AnchorCheckpoint>();
+        trigger.layer = 6; //only collide with cyclist
     }
 
     public void incrementCurrentSegment()
