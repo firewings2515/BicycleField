@@ -12,25 +12,11 @@ static public class Info
     static public float slope = 0f;
     static public float getOutputSlope()
     {
-        string value = "110000";
-        
-        if (slope > 1) slope = 1; //cap
-        if (slope < 0) return 0;
-        return 778.0f;
-        Debug.Log(slope * 1000.0f);
-        return slope * 1000.0f;
-        //return 778.0f;
-        //int int_value = (int)(slope * 1000);
-        //int mso = int_value / 256;
-        //int lso = int_value % 256;
-
-        //value += Add16(lso / 16);
-        //value += Add16(lso % 16);
-        //value += Add16(mso / 16);
-        //value += Add16(mso % 16);
-
-        //value += "0000";
-        //return value;
+        if (slope > 0.2f) slope = 0.2f; //cap
+        if (slope < -0.2f) return -0.2f;
+        if (slope < 0) return (slope + 0.2f) * 5 * 200;
+        else if (slope == 0) return 200;
+        return (slope * 800 * 5) + 200;
     }
 
     static private string Add16(int num)

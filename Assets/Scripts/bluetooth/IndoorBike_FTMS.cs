@@ -268,7 +268,8 @@ public class IndoorBike_FTMS
                 // subcribeText.text = Encoding.ASCII.GetString(res.buf, 0, res.size);
             }
 
-            if (Time.time - last_write_time > 3.0f) {
+            if (Time.time - last_write_time > 1.0f) {
+                Debug.Log(Info.getOutputSlope());
                 write_resistance(Info.getOutputSlope());
                 last_write_time = Time.time;
             }
