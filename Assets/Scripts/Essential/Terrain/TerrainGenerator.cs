@@ -723,8 +723,8 @@ static public class TerrainGenerator
             //Debug.LogError(patch_x_index.ToString() + ", " + patch_z_index.ToString() + " not be loaded");
             return 0.0f;
         }
-        float u = (x - (min_x + x_index * PublicOutputInfo.patch_length)) / heightmaps[x_index * z_patch_num + z_index].width;
-        float v = (z - (min_z + z_index * PublicOutputInfo.patch_length)) / heightmaps[x_index * z_patch_num + z_index].height;
+        float u = (x - (min_x + x_index * PublicOutputInfo.patch_length)) / PublicOutputInfo.patch_length;
+        float v = (z - (min_z + z_index * PublicOutputInfo.patch_length)) / PublicOutputInfo.patch_length;
         return getHeightFromTex(x_index, z_index, u, v);
     }
 

@@ -178,10 +178,10 @@ float2 renderConstraints(float x, float z)
             //float2 xy = float2(xCoord, yCoord);
             float2 xz = float2(x, z);
             float dist = length(bz - xz);
-            float v = 1 - (dist - 16.0) / 16.0;
-            if (dist < 16.0) // 2 * 8 = road_width * (tex_size / piece_num)
+            float v = 1 - (dist - 8.0) / 8.0;
+            if (dist < 8.0) // 2 * 8 = road_width * (tex_size / piece_num)
                 v = 1;
-            else if (dist > 32.0)
+            else if (dist > 16.0)
                 v = 0;
             if (v_max < v)
             {
