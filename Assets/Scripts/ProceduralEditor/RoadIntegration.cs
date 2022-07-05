@@ -48,6 +48,7 @@ public class RoadIntegration : MonoBehaviour
             osm_reader = GetComponent<OSMEditor>().osm_reader;
 
             PublicOutputInfo.origin_pos = osm_reader.points_lib[GetComponent<OSMEditor>().initial_point].position;
+            PublicOutputInfo.origin_pos.y = 0.0f;
             origin_piece_x = PublicOutputInfo.origin_pos.x - PublicOutputInfo.piece_length / 2;
             origin_piece_z = PublicOutputInfo.origin_pos.z - PublicOutputInfo.piece_length / 2;
             terrain_min_x = origin_piece_x;

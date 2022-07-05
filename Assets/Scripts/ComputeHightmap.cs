@@ -8,6 +8,7 @@ public class ComputeHightmap : MonoBehaviour
     public Material material;
     public ComputeShader compute_shader;
     public RenderTexture tex;
+    public RenderTexture constraints_tex;
     public Texture2D main_tex;
     public bool calc;
     public bool show_feature;
@@ -18,6 +19,7 @@ public class ComputeHightmap : MonoBehaviour
     public GameObject features_prefab;
     public GameObject test_cube;
     Texture2D heightmap;
+    Texture2D constraintsmap;
     // Start is called before the first frame update
     void Start()
     {
@@ -88,21 +90,29 @@ public class ComputeHightmap : MonoBehaviour
         
         int kernelHandler = compute_shader.FindKernel("CSMain");
         compute_shader.SetTexture(kernelHandler, "Result", tex);
+        compute_shader.SetTexture(kernelHandler, "Constraintsmap", constraints_tex);
         compute_shader.SetVectorArray("features", area_features);
         compute_shader.SetInt("features_count", area_features.Length);
         compute_shader.SetVectorArray("constraints", area_constraints.ToArray());
         compute_shader.SetInt("constraints_count", area_constraints.Count);
         compute_shader.SetFloat("x", -8.0f);
         compute_shader.SetFloat("z", -8.0f);
-        compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / 768.0f); // patch_length / tex_length
-        compute_shader.Dispatch(kernelHandler, 768 / 8, 768 / 8, 1);
+        compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / PublicOutputInfo.tex_size); // patch_length / tex_length
+        compute_shader.Dispatch(kernelHandler, PublicOutputInfo.tex_size / 8, PublicOutputInfo.tex_size / 8, 1);
 
-        heightmap = new Texture2D(768, 768, TextureFormat.RGB24, false);
-        Rect rectReadPicture = new Rect(0, 0, 768, 768);
+        heightmap = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false);
+        Rect rectReadPicture = new Rect(0, 0, PublicOutputInfo.tex_size, PublicOutputInfo.tex_size);
         RenderTexture.active = tex;
         // Read pixels
         heightmap.ReadPixels(rectReadPicture, 0, 0);
         heightmap.Apply();
+        RenderTexture.active = null; // added to avoid errors 
+
+        constraintsmap = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false);
+        RenderTexture.active = constraints_tex;
+        // Read pixels
+        constraintsmap.ReadPixels(rectReadPicture, 0, 0);
+        constraintsmap.Apply();
         RenderTexture.active = null; // added to avoid errors 
     }
 

@@ -283,6 +283,7 @@ public class FeatureFileGenerator : MonoBehaviour
         Debug.Log("Writing " + file_path);
         using (StreamWriter sw = new StreamWriter(file_path))
         {
+            PublicOutputInfo.boundary_min = osm_editor.osm_reader.boundary_min;
             sw.WriteLine(PublicOutputInfo.boundary_min.x + " " + PublicOutputInfo.boundary_min.y);
             sw.WriteLine(PublicOutputInfo.origin_pos.x + " " + PublicOutputInfo.origin_pos.y + " " + PublicOutputInfo.origin_pos.z);
             sw.WriteLine((road_integration.terrain_min_x - PublicOutputInfo.origin_pos.x).ToString() + " " + (-PublicOutputInfo.origin_pos.y).ToString() + " " + (road_integration.terrain_min_z - PublicOutputInfo.origin_pos.z).ToString() + " " + (road_integration.terrain_max_x - PublicOutputInfo.origin_pos.x).ToString() + " " + (-PublicOutputInfo.origin_pos.y).ToString() + " " + (road_integration.terrain_max_z - PublicOutputInfo.origin_pos.z).ToString());

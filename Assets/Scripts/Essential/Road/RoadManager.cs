@@ -100,6 +100,7 @@ public class RoadManager : MonoBehaviour
             Vector3 vec3_point = Functions.StrToVec3(str_point);
             vec3_point.y = 0.0f;
 
+            //queue_checkpoint_vec3.Enqueue(vec3_point);
             spawnAnchorCheckpoint(vec3_point);
 
             generateRoad(vec3_point);
