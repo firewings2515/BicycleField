@@ -10,24 +10,27 @@ static public class Info
     static public Vector3 end_point = new Vector3( 0, 0, 0 );
     static public float mapview_height = 20.0f;
     static public float slope = 0f;
-    static public string getOutputSlope()
+    static public float getOutputSlope()
     {
         string value = "110000";
-        if (slope > 0) value += "0A03";
-        else value += "0000";
-        /*
+        
         if (slope > 1) slope = 1; //cap
-        int int_value = (int)(slope * 1000);
-        int mso = int_value / 256;
-        int lso = int_value % 256;
+        if (slope < 0) return 0;
+        return 778.0f;
+        Debug.Log(slope * 1000.0f);
+        return slope * 1000.0f;
+        //return 778.0f;
+        //int int_value = (int)(slope * 1000);
+        //int mso = int_value / 256;
+        //int lso = int_value % 256;
 
-        value += Add16(lso / 16);
-        value += Add16(lso % 16);
-        value += Add16(mso / 16);
-        value += Add16(mso % 16);
-        */
-        value += "0000";
-        return value;
+        //value += Add16(lso / 16);
+        //value += Add16(lso % 16);
+        //value += Add16(mso / 16);
+        //value += Add16(mso % 16);
+
+        //value += "0000";
+        //return value;
     }
 
     static private string Add16(int num)

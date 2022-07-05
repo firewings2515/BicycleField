@@ -5,8 +5,6 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-
-using ble_api1;
 public class IndoorBike : MonoBehaviour
 {
     public bool isScanningDevices = false;
@@ -287,7 +285,7 @@ public class IndoorBike : MonoBehaviour
     public void Subscribe()
     {
         // no error code available in non-blocking mode
-        BleApi.SubscribeCharacteristic(selectedDeviceId, selectedServiceId, selectedCharacteristicId, false);
+        BleApi.SubscribeCharacteristic_Read(selectedDeviceId, selectedServiceId, selectedCharacteristicId, false);
         isSubscribed = true;
     }
 
