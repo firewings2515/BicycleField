@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class FTMS_show : MonoBehaviour
 {
     // Start is called before the first frame update
-    public bool connect = false;
+    public bool connect = true;
     public IndoorBike_FTMS connector;
     Text text;
     void Start()

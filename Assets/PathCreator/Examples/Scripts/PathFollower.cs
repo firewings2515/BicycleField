@@ -55,6 +55,7 @@ namespace PathCreation.Examples
                 Vector3 there = pathCreator.path.GetPointAtDistance(distanceTravelled + 1f, endOfPathInstruction);
                 there.y = TerrainGenerator.getHeightWithBais(there.x, there.z);
                 float slope = (there.y - here.y) / (Mathf.Sqrt(Mathf.Pow(there.x - here.x, 2) + Mathf.Pow(there.z - here.z, 2)));
+                Info.slope = slope;
                 //slope_display.GetComponent<Text>().text = "Slope: " + slope.ToString();
                 if (speed < 0) speed = 0;
 

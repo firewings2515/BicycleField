@@ -26,6 +26,8 @@ public class IndoorBike_FTMS
     public float average_power; public bool has_average_power = false;
     public float expended_energy; public bool has_expended_energy = false;
 
+    string lastError;
+
     MonoBehaviour mono;
     public IndoorBike_FTMS(MonoBehaviour _mono) {
         mono = _mono;
@@ -147,7 +149,7 @@ public class IndoorBike_FTMS
             status = BleApi.PollCharacteristic(out characteristics_res, false);
             if (status == BleApi.ScanStatus.AVAILABLE)
             {
-                if (characteristics_res.uuid == "{00002ad2-0000-1000-8000-00805f9b34fb}")
+                if (characteristics_res.uuid == "{00002ad9-0000-1000-8000-00805f9b34fb}")
                 {
                     selectedCharacteristicId = characteristics_res.uuid;
                     break;
@@ -157,7 +159,7 @@ public class IndoorBike_FTMS
             {
                 if (selectedCharacteristicId.Length == 0)
                 {
-                    Debug.LogError("characteristic {00002ad2-0000-1000-8000-00805f9b34fb} not found!");
+                    Debug.LogError("characteristic {00002ad9-0000-1000-8000-00805f9b34fb} not found!");
                 }
             }
             yield return 0;
@@ -169,6 +171,7 @@ public class IndoorBike_FTMS
         Debug.Log("Subscribe...");
         BleApi.SubscribeCharacteristic(selectedDeviceId, selectedServiceId, selectedCharacteristicId, false);
         isSubscribed = true;
+        Write("00"); // gain write control
     }
 
 
@@ -185,6 +188,7 @@ public class IndoorBike_FTMS
 
         if (isSubscribed)
         {
+            /*
             BleApi.BLEData res = new BleApi.BLEData();
             while (BleApi.PollData(out res, false))
             {
@@ -266,15 +270,50 @@ public class IndoorBike_FTMS
                 // subcribeText.text = Encoding.ASCII.GetString(res.buf, 0, res.size);
             }
             //writeInvoke(778.0f);
-
+            */
+            Write(Info.getOutputSlope());
+            // log potential errors
+            BleApi.ErrorMessage res = new BleApi.ErrorMessage();
+            BleApi.GetError(out res);
+            if (lastError != res.msg)
+            {
+                Debug.LogError(res.msg);
+                lastError = res.msg;
+            }
         }
 
         
     }
 
+    private byte[] Convert16(string strText)
+    {
+        strText = strText.Replace(" ", "");
+        byte[] bText = new byte[strText.Length / 2];
+        for (int i = 0; i < strText.Length / 2; i++)
+        {
+            bText[i] = Convert.ToByte(Convert.ToInt32(strText.Substring(i * 2, 2), 16));
+        }
+        return bText;
+    }
 
-
-    public void writeInvoke(float val)
+    public void Write(string msg)
+    {
+        //Debug.Log("Write: " + msg);
+        byte[] payload22 = Convert16(msg);
+        BleApi.BLEData data = new BleApi.BLEData();
+        data.buf = new byte[512];
+        data.size = (short)payload22.Length;
+        data.deviceId = selectedDeviceId;
+        data.serviceUuid = selectedServiceId;
+        data.characteristicUuid = selectedCharacteristicId;
+        for (int i = 0; i < payload22.Length; i++)
+        {
+            data.buf[i] = payload22[i];
+        }
+        BleApi.SendData(in data, false);
+        //Debug.Log("Write Complete!");
+    }
+public void writeInvoke(float val)
     {
         //ble_api2.pcBleApi.Connect(selectedDeviceId);
 
