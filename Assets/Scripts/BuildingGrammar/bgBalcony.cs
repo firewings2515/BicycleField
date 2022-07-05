@@ -10,6 +10,9 @@ public class bgBalcony : bgComponent
     public int pillar_count = 10;
     public float floor_thickness = 0.5f;
     public float railing_thickness = 0.3f;
+
+    float pillar_width = 0.15f;
+    public float pillar_interval = 0.4f;
     public bgBalcony(List<string> _input_parameter, List<string> _component_parameter, List<string> _commands, List<List<string>> _commands_parameter) : base(_input_parameter, _component_parameter, _commands, _commands_parameter)
     {
 
@@ -25,7 +28,7 @@ public class bgBalcony : bgComponent
         List<Vector3> vertices = new List<Vector3>();
         List<int> triangles = new List<int>();
         create_floor(ref vertices, ref triangles);
-        create_pillar(ref vertices, ref triangles,new Vector3(1,0,1));
+        create_pillars(ref vertices, ref triangles);
         create_railings(ref vertices, ref triangles);
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
@@ -63,9 +66,39 @@ public class bgBalcony : bgComponent
         triangles.AddRange(tri_back);
     }
 
+    public void create_pillars(ref List<Vector3> vertices, ref List<int> triangles) {
+        float hpillar_width = pillar_width / 2.0f;
+        float hwidth = width / 2.0f - hpillar_width - 0.01f;   
+        int base_index = vertices.Count;
+        //create_pillar(ref vertices, ref triangles, new Vector3(-hwidth, 0, -hpillar_width));
+        //create_pillar(ref vertices, ref triangles, new Vector3(hwidth, 0, -hpillar_width));
+        //create_pillar(ref vertices, ref triangles, new Vector3(hwidth, 0, -extrude));
+        //create_pillar(ref vertices, ref triangles, new Vector3(-hwidth, 0, -extrude));
+
+        int pillar_count = Mathf.FloorToInt(extrude / pillar_interval);
+        float real_pillar_interval = extrude / pillar_count;
+
+
+        float pos = hpillar_width;
+        for (int i = 0; i < pillar_count; i++) {
+            create_pillar(ref vertices, ref triangles, new Vector3(-hwidth, 0, -pos));
+            create_pillar(ref vertices, ref triangles, new Vector3(hwidth, 0, -pos));
+            pos += real_pillar_interval;
+        }
+
+
+        pillar_count = Mathf.FloorToInt(width / pillar_interval);
+        real_pillar_interval = width / pillar_count;
+        pos = hpillar_width + real_pillar_interval / 2.0f;
+        for (int i = 0; i < pillar_count - 1; i++){
+            create_pillar(ref vertices, ref triangles, new Vector3(-hwidth + pos, 0, -extrude + hpillar_width + 0.01f));
+            pos += real_pillar_interval;
+        }
+    }
+
     public void create_pillar(ref List<Vector3> vertices, ref List<int> triangles,Vector3 center)
     {
-        float hwidth = 0.1f;
+        float hwidth = pillar_width / 2.0f;
         int base_index = vertices.Count;
         //down
         vertices.Add(new Vector3(center.x- hwidth, center.y, center.z + hwidth));
