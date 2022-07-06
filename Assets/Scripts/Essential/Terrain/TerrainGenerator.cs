@@ -565,23 +565,16 @@ static public class TerrainGenerator
         // ===========================================================================================================
 
         // ================================= setting compute shader ==================================================
-        RenderTexture tex = new RenderTexture(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, 24);
-        tex.enableRandomWrite = true;
-        tex.Create();
-        RenderTexture constraints_tex = new RenderTexture(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, 24);
-        constraints_tex.enableRandomWrite = true;
-        constraints_tex.Create();
+        RenderTexture result_tex = new RenderTexture(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, 24);
+        result_tex.enableRandomWrite = true;
+        result_tex.Create();
+        
         var fence = Graphics.CreateGraphicsFence(UnityEngine.Rendering.GraphicsFenceType.AsyncQueueSynchronisation, UnityEngine.Rendering.SynchronisationStageFlags.ComputeProcessing);
         Graphics.WaitOnAsyncGraphicsFence(fence);
-        int kernelHandler = compute_shader.FindKernel("CSMain");
-        compute_shader.SetTexture(kernelHandler, "Result", tex);
-        compute_shader.SetTexture(kernelHandler, "Constraintsmap", constraints_tex);
+        int IDW_kernel_handler = compute_shader.FindKernel("IDWTerrain");
+        compute_shader.SetTexture(IDW_kernel_handler, "Result", result_tex);
         compute_shader.SetVectorArray("features", area_features);
         compute_shader.SetInt("features_count", area_features.Length);
-        compute_shader.SetVectorArray("road_constraints", area_road_constraints);
-        compute_shader.SetInt("road_constraints_count", area_road_constraints.Length);
-        //compute_shader.SetVectorArray("building_constraints", area_constraints);
-        //compute_shader.SetInt("building_constraints_count", area_constraints.Length);
         compute_shader.SetFloat("x", min_x + x_index * PublicOutputInfo.patch_length);
         compute_shader.SetFloat("bias_y", min_y);
         compute_shader.SetFloat("z", min_z + z_index * PublicOutputInfo.patch_length);
@@ -591,19 +584,67 @@ static public class TerrainGenerator
         progress_buffer[x_index * z_patch_num + z_index] = new ComputeBuffer(1, 4);
         int[] progress = new int[] { 0 };
         progress_buffer[x_index * z_patch_num + z_index].SetData(progress);
-        compute_shader.SetBuffer(kernelHandler, "progress", progress_buffer[x_index * z_patch_num + z_index]);
-        compute_shader.Dispatch(kernelHandler, Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), 1);
+        compute_shader.SetBuffer(IDW_kernel_handler, "progress", progress_buffer[x_index * z_patch_num + z_index]);
+        compute_shader.Dispatch(IDW_kernel_handler, Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), 1);
         Graphics.WaitOnAsyncGraphicsFence(fence);
         // ===========================================================================================================
 
         // ================================= rendering texture2D =====================================================
         Rect rectReadPicture = new Rect(0, 0, PublicOutputInfo.tex_size, PublicOutputInfo.tex_size);
         Texture2D heightmap_origin = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false); // 320 + 128 + 320
-        RenderTexture.active = tex;
+        RenderTexture.active = result_tex;
         // Read pixels
         heightmap_origin.ReadPixels(rectReadPicture, 0, 0);
         heightmap_origin.wrapMode = TextureWrapMode.Clamp;
         heightmap_origin.Apply();
+        RenderTexture.active = null; // added to avoid errors
+        // ===========================================================================================================
+
+        // =================================== Gaussian Filter =======================================================
+        int gaussianfilter_kernel_handler = compute_shader.FindKernel("GaussianFilter");
+        compute_shader.SetTexture(gaussianfilter_kernel_handler, "input", heightmap_origin);
+        compute_shader.SetTexture(gaussianfilter_kernel_handler, "Result", result_tex);
+        compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / PublicOutputInfo.tex_size); // patch_length / tex_length
+        compute_shader.Dispatch(gaussianfilter_kernel_handler, Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), 1);
+        Graphics.WaitOnAsyncGraphicsFence(fence);
+        // ===========================================================================================================
+
+        // ================================= rendering texture2D =====================================================
+        Texture2D heightmap_gaussian = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false); // 320 + 128 + 320
+        RenderTexture.active = result_tex;
+        // Read pixels
+        heightmap_gaussian.ReadPixels(rectReadPicture, 0, 0);
+        heightmap_gaussian.wrapMode = TextureWrapMode.Clamp;
+        heightmap_gaussian.Apply();
+        RenderTexture.active = null; // added to avoid errors
+        // ===========================================================================================================
+
+        // ===================================== Constraints =========================================================
+        RenderTexture constraints_tex = new RenderTexture(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, 24);
+        constraints_tex.enableRandomWrite = true;
+        constraints_tex.Create();
+        int constraints_kernel_handler = compute_shader.FindKernel("Constraints");
+        compute_shader.SetTexture(constraints_kernel_handler, "input", heightmap_gaussian);
+        compute_shader.SetTexture(constraints_kernel_handler, "Result", result_tex);
+        compute_shader.SetTexture(constraints_kernel_handler, "Constraintsmap", constraints_tex);
+        compute_shader.SetFloat("x", min_x + x_index * PublicOutputInfo.patch_length);
+        compute_shader.SetFloat("z", min_z + z_index * PublicOutputInfo.patch_length);
+        compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / PublicOutputInfo.tex_size); // patch_length / tex_length
+        compute_shader.SetVectorArray("road_constraints", area_road_constraints);
+        compute_shader.SetInt("road_constraints_count", area_road_constraints.Length);
+        //compute_shader.SetVectorArray("building_constraints", area_constraints);
+        //compute_shader.SetInt("building_constraints_count", area_constraints.Length);
+        compute_shader.Dispatch(constraints_kernel_handler, Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), 1);
+        Graphics.WaitOnAsyncGraphicsFence(fence);
+        // ===========================================================================================================
+
+        // ================================= rendering texture2D =====================================================
+        heightmaps[x_index * z_patch_num + z_index] = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false); // 320 + 128 + 320
+        RenderTexture.active = result_tex;
+        // Read pixels
+        heightmaps[x_index * z_patch_num + z_index].ReadPixels(rectReadPicture, 0, 0);
+        heightmaps[x_index * z_patch_num + z_index].wrapMode = TextureWrapMode.Clamp;
+        heightmaps[x_index * z_patch_num + z_index].Apply();
         RenderTexture.active = null; // added to avoid errors
         constraintsmap[x_index * z_patch_num + z_index] = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false); // 320 + 128 + 320
         RenderTexture.active = constraints_tex;
@@ -611,25 +652,6 @@ static public class TerrainGenerator
         constraintsmap[x_index * z_patch_num + z_index].ReadPixels(rectReadPicture, 0, 0);
         constraintsmap[x_index * z_patch_num + z_index].wrapMode = TextureWrapMode.Clamp;
         constraintsmap[x_index * z_patch_num + z_index].Apply();
-        RenderTexture.active = null; // added to avoid errors
-        // ===========================================================================================================
-
-        // =================================== Gaussian Filter =======================================================
-        int kernelHandler2 = compute_shader.FindKernel("GaussianFilter");
-        compute_shader.SetTexture(kernelHandler2, "input", heightmap_origin);
-        compute_shader.SetTexture(kernelHandler2, "Result", tex);
-        compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / PublicOutputInfo.tex_size); // patch_length / tex_length
-        compute_shader.Dispatch(kernelHandler2, Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), 1);
-        Graphics.WaitOnAsyncGraphicsFence(fence);
-        // ===========================================================================================================
-
-        // ================================= rendering texture2D =====================================================
-        heightmaps[x_index * z_patch_num + z_index] = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false); // 320 + 128 + 320
-        RenderTexture.active = tex;
-        // Read pixels
-        heightmaps[x_index * z_patch_num + z_index].ReadPixels(rectReadPicture, 0, 0);
-        heightmaps[x_index * z_patch_num + z_index].wrapMode = TextureWrapMode.Clamp;
-        heightmaps[x_index * z_patch_num + z_index].Apply();
         RenderTexture.active = null; // added to avoid errors
         // ===========================================================================================================
 

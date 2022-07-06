@@ -1,0 +1,102 @@
+// compute shader code
+
+float NNI(float x, float z)
+{
+    float dist_min = 1e6;
+    float min_index = 0;
+    for (int i = 0; i < features_count; i++)
+    {
+        float dist = sqrt(pow(features[i].x - x, 2) + pow(features[i].z - z, 2));
+        if (features[i].w > -1 && dist < dist_min)
+        {
+            dist_min = dist;
+            min_index = i;
+        }
+    }
+    return features[min_index].y;
+}
+
+float linearWeight(float x, float z)
+{
+    float dist_min = 1e6;
+    float min_index = 0;
+    for (int i = 0; i < road_constraints_count; i++)
+    {
+        float dist = sqrt(pow(road_constraints[i].x - x, 2) + pow(road_constraints[i].z - z, 2));
+        if (dist < dist_min)
+        {
+            dist_min = dist;
+            min_index = i;
+        }
+    }
+    
+    if (min_index < road_constraints_count - 1)
+    {
+        float2 AB = float2(road_constraints[min_index + 1].x - road_constraints[min_index].x, road_constraints[min_index + 1].z - road_constraints[min_index].z);
+        float2 AC = float2(x - road_constraints[min_index].x, z - road_constraints[min_index].z);
+        float AB_AC = (AB.x * AC.x + AB.y * AC.y);
+        if (AB_AC > 0)
+        {
+            float dist_a = sqrt(pow(road_constraints[min_index].x - x, 2) + pow(road_constraints[min_index].z - z, 2));
+            float dist_b = sqrt(pow(road_constraints[min_index + 1].x - x, 2) + pow(road_constraints[min_index + 1].z - z, 2));
+            return (road_constraints[min_index].y * dist_b + road_constraints[min_index + 1].y * dist_a) / (dist_a + dist_b);
+        }
+        else
+        {
+            if (min_index > 0)
+            {
+                float dist_a = sqrt(pow(road_constraints[min_index - 1].x - x, 2) + pow(road_constraints[min_index - 1].z - z, 2));
+                float dist_b = sqrt(pow(road_constraints[min_index].x - x, 2) + pow(road_constraints[min_index].z - z, 2));
+                return (road_constraints[min_index - 1].y * dist_b + road_constraints[min_index].y * dist_a) / (dist_a + dist_b);
+            }
+            else
+            {
+                return road_constraints[min_index].y;
+            }
+        }
+    }
+    else
+    {
+        return road_constraints[min_index].y;
+    }
+}
+
+float roadConstraint(float x, float z)
+{
+    for (int i = 0; i < road_constraints_count - 1; i++)
+    {
+        float2 AB = float2(road_constraints[i + 1].x - road_constraints[i].x, road_constraints[i + 1].z - road_constraints[i].z);
+        float2 AC = float2(x - road_constraints[i].x, z - road_constraints[i].z);
+        float2 BC = float2(x - road_constraints[i + 1].x, z - road_constraints[i + 1].z);
+
+        float AB_BC = (AB.x * BC.x + AB.y * BC.y);
+        float AB_AC = (AB.x * AC.x + AB.y * AC.y);
+
+        float distance = 1e6;
+
+        if (AB_BC < 0 && AB_AC > 0)
+        {
+            // Finding the perpendicular distance
+            float x1 = AB.x;
+            float y1 = AB.y;
+            float x2 = AC.x;
+            float y2 = AC.y;
+            float mod = sqrt(x1 * x1 + y1 * y1);
+            distance = abs(x1 * y2 - y1 * x2) / mod;
+        }
+
+        if (distance < 4.0f)
+        {
+            return (i + 1) / 20.0;
+        }
+    }
+    for (int i = 0; i < road_constraints_count; i++)
+    {
+        float dist = sqrt(pow(road_constraints[i].x - x, 2) + pow(road_constraints[i].z - z, 2));
+        if (dist < 4.0f)
+        {
+            return (i + 1) / 20.0;
+        }
+    }
+    return 0.0f;
+}

@@ -1,18 +1,14 @@
 // Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CSMain
+#pragma kernel IDWTerrain
 #pragma kernel GaussianFilter
+#pragma kernel Constraints
 
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
+Texture2D<float4> input;
 RWTexture2D<float4> Result;
-RWTexture2D<float4> Constraintsmap;
 float4 features[512];
 int features_count;
-float4 road_constraints[512];
-int road_constraints_count;
-//float4 building_constraints[512];
-//int building_constraints_count;
-//int building_constraints_points_count[128];
 float x;
 float z;
 float resolution;
@@ -27,67 +23,6 @@ float getWeight(float d, float w)
     if (f < 0.000001)
         return 0.000001;
     return 1 / f;
-}
-
-float NNI(float x, float z)
-{
-    float dist_min = 1e6;
-    float min_index = 0;
-    for (int i = 0; i < features_count; i++)
-    {
-        float dist = sqrt(pow(features[i].x - x, 2) + pow(features[i].z - z, 2));
-        if (features[i].w > -1 && dist < dist_min)
-        {
-            dist_min = dist;
-            min_index = i;
-        }
-    }
-    return features[min_index].y;
-}
-
-float linearWeight(float x, float z)
-{
-    float dist_min = 1e6;
-    float min_index = 0;
-    for (int i = 0; i < road_constraints_count; i++)
-    {
-        float dist = sqrt(pow(road_constraints[i].x - x, 2) + pow(road_constraints[i].z - z, 2));
-        if (dist < dist_min)
-        {
-            dist_min = dist;
-            min_index = i;
-        }
-    }
-    
-    if (min_index < road_constraints_count - 1)
-    {
-        float2 AB = float2(road_constraints[min_index + 1].x - road_constraints[min_index].x, road_constraints[min_index + 1].z - road_constraints[min_index].z);
-        float2 AC = float2(x - road_constraints[min_index].x, z - road_constraints[min_index].z);
-        float AB_AC = (AB.x * AC.x + AB.y * AC.y);
-        if (AB_AC > 0)
-        {
-            float dist_a = sqrt(pow(road_constraints[min_index].x - x, 2) + pow(road_constraints[min_index].z - z, 2));
-            float dist_b = sqrt(pow(road_constraints[min_index + 1].x - x, 2) + pow(road_constraints[min_index + 1].z - z, 2));
-            return (road_constraints[min_index].y * dist_b + road_constraints[min_index + 1].y * dist_a) / (dist_a + dist_b);
-        }
-        else
-        {
-            if (min_index > 0)
-            {
-                float dist_a = sqrt(pow(road_constraints[min_index - 1].x - x, 2) + pow(road_constraints[min_index - 1].z - z, 2));
-                float dist_b = sqrt(pow(road_constraints[min_index].x - x, 2) + pow(road_constraints[min_index].z - z, 2));
-                return (road_constraints[min_index - 1].y * dist_b + road_constraints[min_index].y * dist_a) / (dist_a + dist_b);
-            }
-            else
-            {
-                return road_constraints[min_index].y;
-            }
-        }
-    }
-    else
-    {
-        return road_constraints[min_index].y;
-    }
 }
 
 float IDW(float x, float z)
@@ -116,115 +51,33 @@ float IDW(float x, float z)
     return sum_up / sum_down;
 }
 
-float roadConstraint(float x, float z)
+float4 toHeightmap(float height)
 {
-    for (int i = 0; i < road_constraints_count - 1; i++)
-    {
-        float2 AB = float2(road_constraints[i + 1].x - road_constraints[i].x, road_constraints[i + 1].z - road_constraints[i].z);
-        float2 AC = float2(x - road_constraints[i].x, z - road_constraints[i].z);
-        float2 BC = float2(x - road_constraints[i + 1].x, z - road_constraints[i + 1].z);
-
-        float AB_BC = (AB.x * BC.x + AB.y * BC.y);
-        float AB_AC = (AB.x * AC.x + AB.y * AC.y);
-
-        float distance = 1e6;
-
-        if (AB_BC < 0 && AB_AC > 0)
-        {
-            // Finding the perpendicular distance
-            float x1 = AB.x;
-            float y1 = AB.y;
-            float x2 = AC.x;
-            float y2 = AC.y;
-            float mod = sqrt(x1 * x1 + y1 * y1);
-            distance = abs(x1 * y2 - y1 * x2) / mod;
-        }
-
-        if (distance < 4.0f)
-        {
-            return (i + 1) / 20.0;
-        }
-    }
-    for (int i = 0; i < road_constraints_count; i++)
-    {
-        float dist = sqrt(pow(road_constraints[i].x - x, 2) + pow(road_constraints[i].z - z, 2));
-        if (dist < 4.0f)
-        {
-            return (i + 1) / 20.0;
-        }
-    }
-    return 0.0f;
-}
-
-float2 renderConstraints(float x, float z)
-{
-    if (road_constraints_count < 4)
-        return float2(0, 0);
-
-    float v_max = 0;
-    float h = 0;
-    float dist_min = 1000;
-    float4x4 m_matrix = { -0.5,    1, -0.5,   0,
-                           1.5, -2.5,    0,   1,
-                          -1.5,    2,  0.5,   0,
-                           0.5, -0.5,    0,   0 };
-    for (int constraints_index = 0; constraints_index < road_constraints_count - 3; constraints_index++)
-    {
-        for (int i = 0; i < 10; i++)
-        {
-            float t = i / 10.0;
-            float4 t_vector = float4(t * t * t, t * t, t, 1);
-            float4x4 g_matrix = { road_constraints[constraints_index].x, road_constraints[constraints_index + 1].x, road_constraints[constraints_index + 2].x, road_constraints[constraints_index + 3].x,
-                                  road_constraints[constraints_index].y, road_constraints[constraints_index + 1].y, road_constraints[constraints_index + 2].y, road_constraints[constraints_index + 3].y,
-                                  road_constraints[constraints_index].z, road_constraints[constraints_index + 1].z, road_constraints[constraints_index + 2].z, road_constraints[constraints_index + 3].z,
-                                                                 1,                                    1,                                    1,                                    1 };
-            float4 loc = mul(g_matrix, mul(m_matrix, t_vector));
-            float2 bz = float2(loc.x, loc.z);
-            float2 xz = float2(x, z);
-            float dist = length(bz - xz);
-            float v = 1 - (dist - 8.0) / 8.0;
-            if (dist < 8.0) // 2 * 8 = road_width * (tex_size / piece_num)
-                v = 1;
-            else if (dist > 16.0)
-                v = 0;
-            if (v_max < v)
-            {
-                v_max = v;
-            }
-            if (dist_min > dist)
-            {
-                dist_min = dist;
-                h = loc.y;
-            }
-        }
-    }
-
-    /*if (building_constraints_count > 0)
-    {
-
-    }*/
-    return float2(v_max, h);
-}
-
-[numthreads(8,8,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
-{
-    //float height = IDW(x + id.x * resolution, z + id.y * resolution) + bias_y; // no-need-passing gaussian filter
-    float height = IDW(x + id.x - bound_x, z + id.y - bound_z) + bias_y;
-    float2 road_constraint = renderConstraints(x + id.x * resolution, z + id.y * resolution); // x is dist, y is DEM height
-    //float road_constraint = roadConstraint(x + id.x * resolution, z + id.y * resolution);
-    //height = (road_constraint.x) * road_constraint.y + (1 - road_constraint.x) * height;
-    
     int height_int = int(height);
     float height_0 = (height_int / 64) / 64.0;
     float height_1 = (height_int % 64) / 64.0;
     float height_2 = height - height_int;
-    Result[id.xy] = float4(road_constraint.x, height_0, height_1, height_2);
-    Constraintsmap[id.xy] = float4(road_constraint.x, 0, 0, 1);
-    progress[0] = 1;
+    return float4(0, height_0, height_1, height_2);
 }
 
-Texture2D<float4> input;
+float decodeHeight(float4 raw)
+{
+    return raw.g * 64.0 * 64.0 + raw.b * 64.0 + raw.a;
+}
+
+[numthreads(8,8,1)]
+void IDWTerrain(uint3 id : SV_DispatchThreadID)
+{
+    //float height = IDW(x + id.x * resolution, z + id.y * resolution) + bias_y; // no-need-passing gaussian filter
+    float height = IDW(x + id.x - bound_x, z + id.y - bound_z) + bias_y;
+    //float2 road_constraint = renderConstraints(x + id.x * resolution, z + id.y * resolution); // x is dist, y is DEM height
+    //float road_constraint = roadConstraint(x + id.x * resolution, z + id.y * resolution);
+    //height = (road_constraint.x) * road_constraint.y + (1 - road_constraint.x) * height;
+    
+    Result[id.xy] = toHeightmap(height);
+    //Constraintsmap[id.xy] = float4(road_constraint.x, 0, 0, 1);
+    progress[0] = 1;
+}
 
 static const int M = 16;
 static const int N = 33; // 2 * M + 1
@@ -275,13 +128,77 @@ void GaussianFilter(uint3 id : SV_DispatchThreadID)
         for (int j = 0; j < N; j++)
         {
             float2 tc = new_coord + float2(i - M, j - M);
-            float height = input[tc].g * 64 * 64 + input[tc].b * 64 + input[tc].a;
+            float height = decodeHeight(input[tc]);
             sum += coeffs[i] * coeffs[j] * height;
         }
     }
-    int height_int = int(sum);
-    float height_0 = (height_int / 64) / 64.0;
-    float height_1 = (height_int % 64) / 64.0;
-    float height_2 = sum - height_int;
-    Result[id.xy] = float4(input[new_coord].r, height_0, height_1, height_2);
+    Result[id.xy] = toHeightmap(sum); //input[new_coord].r
+}
+
+RWTexture2D<float4> Constraintsmap;
+
+float4 road_constraints[512];
+int road_constraints_count;
+//float4 building_constraints[512];
+//int building_constraints_count;
+//int building_constraints_points_count[128];
+
+float2 renderConstraints(float2 xz)
+{
+    if (road_constraints_count < 4)
+        return float2(0, 0);
+
+    float v_max = 0;
+    float h = 0;
+    float dist_min = 1000;
+    float4x4 m_matrix = { -0.5,    1, -0.5,   0,
+                           1.5, -2.5,    0,   1,
+                          -1.5,    2,  0.5,   0,
+                           0.5, -0.5,    0,   0 };
+    for (int constraints_index = 0; constraints_index < road_constraints_count - 3; constraints_index++)
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            float t = i / 10.0;
+            float4 t_vector = float4(t * t * t, t * t, t, 1);
+            float4x4 g_matrix = { road_constraints[constraints_index].x, road_constraints[constraints_index + 1].x, road_constraints[constraints_index + 2].x, road_constraints[constraints_index + 3].x,
+                                  road_constraints[constraints_index].y, road_constraints[constraints_index + 1].y, road_constraints[constraints_index + 2].y, road_constraints[constraints_index + 3].y,
+                                  road_constraints[constraints_index].z, road_constraints[constraints_index + 1].z, road_constraints[constraints_index + 2].z, road_constraints[constraints_index + 3].z,
+                                                                 1,                                    1,                                    1,                                    1 };
+            float4 loc = mul(g_matrix, mul(m_matrix, t_vector));
+            float2 bz = float2(loc.x, loc.z);
+            float dist = length(bz - xz);
+            float v = 1 - (dist - 8.0) / 8.0;
+            if (dist < 8.0) // 2 * 8 = road_width * (tex_size / piece_num)
+                v = 1;
+            else if (dist > 16.0)
+                v = 0;
+            if (v_max < v)
+            {
+                v_max = v;
+            }
+            if (dist_min > dist)
+            {
+                dist_min = dist;
+                h = loc.y;
+            }
+        }
+    }
+
+    /*if (building_constraints_count > 0)
+    {
+
+    }*/
+    return float2(v_max, h);
+}
+
+[numthreads(8, 8, 1)]
+void Constraints(uint3 id : SV_DispatchThreadID)
+{
+    float2 coord = float2(x + id.x * resolution, z + id.y * resolution);
+    float2 road_constraint = renderConstraints(coord); // x is dist, y is DEM height
+    float height = decodeHeight(input[id.xy]);
+    height = (road_constraint.x) * road_constraint.y + (1 - road_constraint.x) * height;
+    Constraintsmap[id.xy] = float4(road_constraint.x, 0, 0, 1);
+    Result[id.xy] = toHeightmap(height);
 }
