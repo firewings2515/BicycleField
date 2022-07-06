@@ -93,6 +93,7 @@ public class TerrainManager : MonoBehaviour
         {
             int x_index = queue_generate_patch_x.Dequeue();
             int z_index = queue_generate_patch_z.Dequeue();
+            TerrainGenerator.trigger_num_in_view[x_index * TerrainGenerator.z_patch_num + z_index]++;
             if (!TerrainGenerator.is_loaded[x_index * TerrainGenerator.z_patch_num + z_index])
             {
                 TerrainGenerator.is_loaded[x_index * TerrainGenerator.z_patch_num + z_index] = true;

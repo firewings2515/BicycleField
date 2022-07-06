@@ -12,9 +12,8 @@ int features_count;
 float x;
 float z;
 float resolution;
-float bias_y;
-float bound_x;
-float bound_z;
+int gaussian_m;
+int result_tex_size;
 RWStructuredBuffer<int> progress;
 
 float getWeight(float d, float w)
@@ -37,7 +36,7 @@ float IDW(float x, float z)
         //dist /= 640;
         if (pow(dist, 2) < 1e-6)
             return features[i].y;
-        if (dist < 320.0) // TerrainGenerator.feature_include_length = 320.0f
+        if (dist <= 320.0) // TerrainGenerator.feature_include_length = 320.0f
         {
             /*dist = 320 - dist + 1;
             sum_up += dist * features[i].y*5;
@@ -51,13 +50,13 @@ float IDW(float x, float z)
     return sum_up / sum_down;
 }
 
-float4 toHeightmap(float height)
+float4 toHeightmap(float height, float anchor)
 {
     int height_int = int(height);
     float height_0 = (height_int / 64) / 64.0;
     float height_1 = (height_int % 64) / 64.0;
     float height_2 = height - height_int;
-    return float4(0, height_0, height_1, height_2);
+    return float4(anchor, height_0, height_1, height_2);
 }
 
 float decodeHeight(float4 raw)
@@ -65,22 +64,6 @@ float decodeHeight(float4 raw)
     return raw.g * 64.0 * 64.0 + raw.b * 64.0 + raw.a;
 }
 
-[numthreads(8,8,1)]
-void IDWTerrain(uint3 id : SV_DispatchThreadID)
-{
-    //float height = IDW(x + id.x * resolution, z + id.y * resolution) + bias_y; // no-need-passing gaussian filter
-    float height = IDW(x + id.x - bound_x, z + id.y - bound_z) + bias_y;
-    //float2 road_constraint = renderConstraints(x + id.x * resolution, z + id.y * resolution); // x is dist, y is DEM height
-    //float road_constraint = roadConstraint(x + id.x * resolution, z + id.y * resolution);
-    //height = (road_constraint.x) * road_constraint.y + (1 - road_constraint.x) * height;
-    
-    Result[id.xy] = toHeightmap(height);
-    //Constraintsmap[id.xy] = float4(road_constraint.x, 0, 0, 1);
-    progress[0] = 1;
-}
-
-static const int M = 16;
-static const int N = 33; // 2 * M + 1
 // sigma = 10
 static const float coeffs[] = {
     0.012318109844189502,
@@ -117,23 +100,6 @@ static const float coeffs[] = {
     0.014381474814203989,
     0.012318109844189502
 };
-
-[numthreads(8, 8, 1)]
-void GaussianFilter(uint3 id : SV_DispatchThreadID)
-{
-    float sum = 0.0;
-    float2 new_coord = id.xy / 512.0 * 128.0 + float2(192.0, 192.0);
-    for (int i = 0; i < N; i++)
-    {
-        for (int j = 0; j < N; j++)
-        {
-            float2 tc = new_coord + float2(i - M, j - M);
-            float height = decodeHeight(input[tc]);
-            sum += coeffs[i] * coeffs[j] * height;
-        }
-    }
-    Result[id.xy] = toHeightmap(sum); //input[new_coord].r
-}
 
 RWTexture2D<float4> Constraintsmap;
 
@@ -193,6 +159,37 @@ float2 renderConstraints(float2 xz)
 }
 
 [numthreads(8, 8, 1)]
+void IDWTerrain(uint3 id : SV_DispatchThreadID)
+{
+    //float height = IDW(x + id.x * resolution, z + id.y * resolution) + bias_y; // no-need-passing gaussian filter
+    float height = IDW(x + id.x - gaussian_m, z + id.y - gaussian_m);
+    float2 road_constraint = renderConstraints(float2(x + id.x - gaussian_m, z + id.y - gaussian_m)); // x is dist, y is DEM height
+    //float road_constraint = roadConstraint(x + id.x * resolution, z + id.y * resolution);
+    //height = (road_constraint.x) * road_constraint.y + (1 - road_constraint.x) * height;
+
+    Result[id.xy] = toHeightmap(height, road_constraint.x);
+    //Constraintsmap[id.xy] = float4(road_constraint.x, 0, 0, 1);
+    progress[0] = 1;
+}
+
+[numthreads(8, 8, 1)]
+void GaussianFilter(uint3 id : SV_DispatchThreadID)
+{
+    float sum = 0.0;
+    float2 new_coord = id.xy / float(result_tex_size) * 128 + float2(gaussian_m, gaussian_m);
+    int N = 2 * gaussian_m + 1;
+    for (int i = 0; i < N; i++)
+    {
+        for (int j = 0; j < N; j++)
+        {
+            float2 tc = new_coord + float2(i - gaussian_m, j - gaussian_m);
+            sum += coeffs[i] * coeffs[j] * decodeHeight(input[tc]);
+        }
+    }
+    Result[id.xy] = toHeightmap(sum, input[new_coord].x); //input[new_coord].r
+}
+
+[numthreads(8, 8, 1)]
 void Constraints(uint3 id : SV_DispatchThreadID)
 {
     float2 coord = float2(x + id.x * resolution, z + id.y * resolution);
@@ -200,5 +197,6 @@ void Constraints(uint3 id : SV_DispatchThreadID)
     float height = decodeHeight(input[id.xy]);
     height = (road_constraint.x) * road_constraint.y + (1 - road_constraint.x) * height;
     Constraintsmap[id.xy] = float4(road_constraint.x, 0, 0, 1);
-    Result[id.xy] = toHeightmap(height);
+    Result[id.xy] = toHeightmap(height, road_constraint.x);
+    //Result[id.xy] = input[id.xy];
 }

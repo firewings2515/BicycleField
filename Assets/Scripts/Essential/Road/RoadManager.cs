@@ -180,6 +180,8 @@ public class RoadManager : MonoBehaviour
     private void removeEarliestRoad(bool destroy = true)
     {
         if (destroy) HouseGenerator.destroySegment(last_segment++);
+        Vector3 remove_pos = path_creator.bezierPath.GetPoint(0);
+        StartCoroutine(TerrainGenerator.removeAreaTerrain(remove_pos.x, remove_pos.z));
         path_creator.bezierPath.DeleteSegment(0);
         current_segment--;
     }

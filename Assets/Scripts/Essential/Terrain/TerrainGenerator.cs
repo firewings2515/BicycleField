@@ -26,7 +26,7 @@ static public class TerrainGenerator
     static public Material terrain_nni_mat;                             // Use the material with NNI shader
     static public bool generate;
     static public int vision_patch_num = 5;                             // The number of patches the viewer can see
-    static public float feature_include_length = 320.0f;
+    static public float feature_include_length = 320.0f + 16.0f;        // 16 for gaussian M
     static public GameObject[] terrains;                                // Store all patches of terrains
     static public bool need_update = false;                             // Call TerrainManager to generate new patches
     static public int patch_x_index;                                    // Used to calculate the index for removing checking
@@ -36,8 +36,7 @@ static public class TerrainGenerator
     static public Queue<int> queue_patch_z_index = new Queue<int>();    // Coordinate info Queue
     static public bool[] is_loaded;                                     // Check the terrain is called to generate or not
     static public bool[] is_generated;                                  // Check the terrain is generated or not
-    static public List<int> generated_x_list;                           // Used to check and remove terrain whether in view or not
-    static public List<int> generated_z_list;                           // Used to check and remove terrain whether in view or not
+    static public int[] trigger_num_in_view;                            // Number of triggers of road, destroy when 0
     static public KDTree kdtree;                                        // For searching and recording feature points
     static public int terrain_mode = 0;                                 // 0 is DEM, 1 is IDW, 2 is NNI, controled by TerrainManager
     static public bool show_feature_ball = true;
@@ -61,14 +60,13 @@ static public class TerrainGenerator
         readFeatureFile(Application.streamingAssetsPath + "//" + file_path);
         is_loaded = new bool[x_patch_num * z_patch_num];
         is_generated = new bool[x_patch_num * z_patch_num];
+        trigger_num_in_view = new int[x_patch_num * z_patch_num];
         heightmaps = new Texture2D[x_patch_num * z_patch_num];
         constraintsmap = new Texture2D[x_patch_num * z_patch_num];
         terrains = new GameObject[x_patch_num * z_patch_num];
         progress_buffer = new ComputeBuffer[x_patch_num * z_patch_num];
         //heights_buffer = new ComputeBuffer[x_patch_num * z_patch_num];
         //heights = new float[x_patch_num * z_patch_num][];
-        generated_x_list = new List<int>();
-        generated_z_list = new List<int>();
         is_initial = true;
     }
 
@@ -87,14 +85,15 @@ static public class TerrainGenerator
         {
             getAreaTerrainInfo(position.x, position.z);
 
-            removeAreaTerrain(position.x, position.z);
         }
     }
 
-    static public void removeTerrain(Vector3 position)
-    {
-        removeAreaTerrain(position.x, position.z);
-    }
+    //static public void removeTerrain(Vector3 position)
+    //{
+        
+    //    if (trigger_num_in_view[x_index * z_patch_num + z_index] <= 0)
+    //        removeAreaTerrain(position.x, position.z);
+    //}
 
     // Read feature points file
     static public void readFeatureFile(string file_path)
@@ -395,8 +394,6 @@ static public class TerrainGenerator
         }
         terrain.transform.position = center;
         terrains[x_index * z_patch_num + z_index] = terrain;
-        generated_x_list.Add(x_index);
-        generated_z_list.Add(z_index);
         //Debug.Log("Success: " + x_small_min + "_" + z_small_min);
 
         terrain.AddComponent<TerrainView>();
@@ -415,21 +412,30 @@ static public class TerrainGenerator
     /// <summary>
     /// Remove terrains not near the position
     /// </summary>
-    static void removeAreaTerrain(float x, float z)
+    static public IEnumerator removeAreaTerrain(float x, float z)
     {
-        for (int generated_list_index = 0; generated_list_index < generated_x_list.Count; generated_list_index++)
+        int center_x_index = Mathf.FloorToInt((x - min_x) / PublicOutputInfo.patch_length);
+        int center_z_index = Mathf.FloorToInt((z - min_z) / PublicOutputInfo.patch_length);
+        for (int i = -vision_patch_num; i <= vision_patch_num; i++)
         {
-            int ddist = Mathf.Abs(generated_x_list[generated_list_index] - patch_x_index) + Mathf.Abs(generated_z_list[generated_list_index] - patch_z_index);
-            if (ddist > vision_patch_num * 50) // TO DO
+            for (int j = -vision_patch_num; j <= vision_patch_num; j++)
             {
-                is_generated[generated_x_list[generated_list_index] * z_patch_num + generated_z_list[generated_list_index]] = false;
-                GameObject.Destroy(terrains[generated_list_index]);
-                terrains[generated_x_list[generated_list_index] * z_patch_num + generated_z_list[generated_list_index]] = null;
-                generated_x_list.RemoveAt(generated_list_index);
-                generated_z_list.RemoveAt(generated_list_index);
-                generated_list_index--;
+                if (Mathf.Abs(i) + Mathf.Abs(j) > TerrainGenerator.vision_patch_num)
+                    continue;
+                int x_index = center_x_index + i;
+                int z_index = center_z_index + j;
+                if (x_index < 0 || x_index >= x_patch_num || z_index < 0 || z_index >= z_patch_num)
+                    continue;
+                trigger_num_in_view[x_index * z_patch_num + z_index]--;
+                if (trigger_num_in_view[x_index * z_patch_num + z_index] == 0)
+                {
+                    is_generated[x_index * z_patch_num + z_index] = false;
+                    GameObject.Destroy(terrains[x_index * z_patch_num + z_index]);
+                    terrains[x_index * z_patch_num + z_index] = null;
+                }
             }
         }
+        yield return null;
     }
 
     static public float getHeightWithBais(float x, float z)
@@ -565,55 +571,60 @@ static public class TerrainGenerator
         // ===========================================================================================================
 
         // ================================= setting compute shader ==================================================
-        RenderTexture result_tex = new RenderTexture(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, 24);
-        result_tex.enableRandomWrite = true;
-        result_tex.Create();
-        
+        RenderTexture pregaussian_tex = new RenderTexture(PublicOutputInfo.pregaussian_tex_size, PublicOutputInfo.pregaussian_tex_size, 24);
+        pregaussian_tex.enableRandomWrite = true;
+        pregaussian_tex.Create();
         var fence = Graphics.CreateGraphicsFence(UnityEngine.Rendering.GraphicsFenceType.AsyncQueueSynchronisation, UnityEngine.Rendering.SynchronisationStageFlags.ComputeProcessing);
-        Graphics.WaitOnAsyncGraphicsFence(fence);
         int IDW_kernel_handler = compute_shader.FindKernel("IDWTerrain");
-        compute_shader.SetTexture(IDW_kernel_handler, "Result", result_tex);
+        compute_shader.SetTexture(IDW_kernel_handler, "Result", pregaussian_tex);
         compute_shader.SetVectorArray("features", area_features);
         compute_shader.SetInt("features_count", area_features.Length);
+        compute_shader.SetVectorArray("road_constraints", area_road_constraints);
+        compute_shader.SetInt("road_constraints_count", area_road_constraints.Length);
         compute_shader.SetFloat("x", min_x + x_index * PublicOutputInfo.patch_length);
-        compute_shader.SetFloat("bias_y", min_y);
         compute_shader.SetFloat("z", min_z + z_index * PublicOutputInfo.patch_length);
-        compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / PublicOutputInfo.tex_size); // patch_length / tex_length
-        compute_shader.SetFloat("bound_x", 192.0f);
-        compute_shader.SetFloat("bound_z", 192.0f);
+        compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / PublicOutputInfo.pregaussian_tex_size); // patch_length / tex_length
+        compute_shader.SetInt("gaussian_m", PublicOutputInfo.gaussian_m); // gaussian filter M
+        compute_shader.SetInt("result_tex_size", PublicOutputInfo.pregaussian_tex_size);
         progress_buffer[x_index * z_patch_num + z_index] = new ComputeBuffer(1, 4);
         int[] progress = new int[] { 0 };
         progress_buffer[x_index * z_patch_num + z_index].SetData(progress);
         compute_shader.SetBuffer(IDW_kernel_handler, "progress", progress_buffer[x_index * z_patch_num + z_index]);
-        compute_shader.Dispatch(IDW_kernel_handler, Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), 1);
+        compute_shader.Dispatch(IDW_kernel_handler, Mathf.CeilToInt(PublicOutputInfo.pregaussian_tex_size / 8), Mathf.CeilToInt(PublicOutputInfo.pregaussian_tex_size / 8), 1);
         Graphics.WaitOnAsyncGraphicsFence(fence);
         // ===========================================================================================================
 
         // ================================= rendering texture2D =====================================================
-        Rect rectReadPicture = new Rect(0, 0, PublicOutputInfo.tex_size, PublicOutputInfo.tex_size);
-        Texture2D heightmap_origin = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false); // 320 + 128 + 320
-        RenderTexture.active = result_tex;
+        Rect rect_pregaussian = new Rect(0, 0, PublicOutputInfo.pregaussian_tex_size, PublicOutputInfo.pregaussian_tex_size);
+        Texture2D heightmap_pregaussian = new Texture2D(PublicOutputInfo.pregaussian_tex_size, PublicOutputInfo.pregaussian_tex_size, TextureFormat.RGB24, false); // 320 + 128 + 320
+        RenderTexture.active = pregaussian_tex;
         // Read pixels
-        heightmap_origin.ReadPixels(rectReadPicture, 0, 0);
-        heightmap_origin.wrapMode = TextureWrapMode.Clamp;
-        heightmap_origin.Apply();
+        heightmap_pregaussian.ReadPixels(rect_pregaussian, 0, 0);
+        heightmap_pregaussian.wrapMode = TextureWrapMode.Clamp;
+        heightmap_pregaussian.Apply();
         RenderTexture.active = null; // added to avoid errors
         // ===========================================================================================================
 
         // =================================== Gaussian Filter =======================================================
+        RenderTexture result_tex = new RenderTexture(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, 24);
+        result_tex.enableRandomWrite = true;
+        result_tex.Create();
         int gaussianfilter_kernel_handler = compute_shader.FindKernel("GaussianFilter");
-        compute_shader.SetTexture(gaussianfilter_kernel_handler, "input", heightmap_origin);
+        compute_shader.SetTexture(gaussianfilter_kernel_handler, "input", heightmap_pregaussian);
         compute_shader.SetTexture(gaussianfilter_kernel_handler, "Result", result_tex);
-        compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / PublicOutputInfo.tex_size); // patch_length / tex_length
+        //compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / PublicOutputInfo.tex_size); // patch_length / tex_length
+        compute_shader.SetInt("gaussian_m", PublicOutputInfo.gaussian_m); // gaussian filter M
+        compute_shader.SetInt("result_tex_size", PublicOutputInfo.tex_size);
         compute_shader.Dispatch(gaussianfilter_kernel_handler, Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), 1);
         Graphics.WaitOnAsyncGraphicsFence(fence);
         // ===========================================================================================================
 
         // ================================= rendering texture2D =====================================================
+        Rect rect_result = new Rect(0, 0, PublicOutputInfo.tex_size, PublicOutputInfo.tex_size);
         Texture2D heightmap_gaussian = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false); // 320 + 128 + 320
         RenderTexture.active = result_tex;
         // Read pixels
-        heightmap_gaussian.ReadPixels(rectReadPicture, 0, 0);
+        heightmap_gaussian.ReadPixels(rect_result, 0, 0);
         heightmap_gaussian.wrapMode = TextureWrapMode.Clamp;
         heightmap_gaussian.Apply();
         RenderTexture.active = null; // added to avoid errors
@@ -642,14 +653,14 @@ static public class TerrainGenerator
         heightmaps[x_index * z_patch_num + z_index] = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false); // 320 + 128 + 320
         RenderTexture.active = result_tex;
         // Read pixels
-        heightmaps[x_index * z_patch_num + z_index].ReadPixels(rectReadPicture, 0, 0);
+        heightmaps[x_index * z_patch_num + z_index].ReadPixels(rect_result, 0, 0);
         heightmaps[x_index * z_patch_num + z_index].wrapMode = TextureWrapMode.Clamp;
         heightmaps[x_index * z_patch_num + z_index].Apply();
         RenderTexture.active = null; // added to avoid errors
         constraintsmap[x_index * z_patch_num + z_index] = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false); // 320 + 128 + 320
         RenderTexture.active = constraints_tex;
         // Read pixels
-        constraintsmap[x_index * z_patch_num + z_index].ReadPixels(rectReadPicture, 0, 0);
+        constraintsmap[x_index * z_patch_num + z_index].ReadPixels(rect_result, 0, 0);
         constraintsmap[x_index * z_patch_num + z_index].wrapMode = TextureWrapMode.Clamp;
         constraintsmap[x_index * z_patch_num + z_index].Apply();
         RenderTexture.active = null; // added to avoid errors
@@ -660,6 +671,8 @@ static public class TerrainGenerator
         MeshRenderer mr = terrains[x_index * z_patch_num + z_index].AddComponent<MeshRenderer>();
         //mr.material = new Material(terrain_mat);
         //mr.material.SetTexture("_MainTex", heightmaps[x_index * z_patch_num + z_index]);
+        //mr.material.SetTexture("_MainTex", heightmap_pregaussian);
+        //mr.material.SetTexture("_MainTex", heightmap_gaussian);
         mr.material.SetTexture("_MainTex", constraintsmap[x_index * z_patch_num + z_index]);
         //mr.material.SetTexture("_MainTex", main_tex);
         terrains[x_index * z_patch_num + z_index].AddComponent<TerrainView>();
@@ -668,8 +681,6 @@ static public class TerrainGenerator
         terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().x_piece_num = x_piece_num;
         terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().z_piece_num = z_piece_num;
         terrains[x_index * z_patch_num + z_index].transform.parent = terrain_manager.transform;
-        generated_x_list.Add(x_index);
-        generated_z_list.Add(z_index);
         // ===========================================================================================================
         yield return null;
     }
@@ -704,7 +715,8 @@ static public class TerrainGenerator
             {
                 uv[i * (z_piece_num + 1) + j] = new Vector2((float)i / x_piece_num, (float)j / z_piece_num);
                 terrain_points[i, j, 0] = min_x + x_index * PublicOutputInfo.patch_length + i * PublicOutputInfo.piece_length;
-                terrain_points[i, j, 1] = getHeightFromTex(x_index, z_index, uv[i * (z_piece_num + 1) + j].x, uv[i * (z_piece_num + 1) + j].y);
+                terrain_points[i, j, 1] = getHeightFromTexBilinear(x_index, z_index, uv[i * (z_piece_num + 1) + j].x, uv[i * (z_piece_num + 1) + j].y);
+                //terrain_points[i, j, 1] = getHeightFromTex(x_index, z_index, i, j);
                 terrain_points[i, j, 2] = min_z + z_index * PublicOutputInfo.patch_length + j * PublicOutputInfo.piece_length;
                 vertice[i * (z_piece_num + 1) + j] = new Vector3(terrain_points[i, j, 0] - center.x, terrain_points[i, j, 1] - center.y, terrain_points[i, j, 2] - center.z);
             }
@@ -743,7 +755,17 @@ static public class TerrainGenerator
         yield return null;
     }
 
-    static float getHeightFromTex(int x_index, int z_index, float u, float v)
+    static float getHeightFromTex(int x_index, int z_index, int peice_x_index, int peice_z_index)
+    {
+        Color raw = heightmaps[x_index * z_patch_num + z_index].GetPixel(peice_x_index * 8, peice_z_index * 8);
+        return raw.g * 64 * 64 + raw.b * 64 + raw.a;
+        //int x = Mathf.FloorToInt(u * (PublicOutputInfo.tex_size - 1));
+        //int z = Mathf.FloorToInt(v * (PublicOutputInfo.tex_size - 1));
+        //Debug.Log(x.ToString() + ", " + z.ToString());
+        //return heights[x_index * z_patch_num + z_index][x * PublicOutputInfo.tex_size + z];
+    }
+
+    static float getHeightFromTexBilinear(int x_index, int z_index, float u, float v)
     {
         Color raw = heightmaps[x_index * z_patch_num + z_index].GetPixelBilinear(u, v);
         return raw.g * 64 * 64 + raw.b * 64 + raw.a;
@@ -764,7 +786,7 @@ static public class TerrainGenerator
         }
         float u = (x - (min_x + x_index * PublicOutputInfo.patch_length)) / PublicOutputInfo.patch_length;
         float v = (z - (min_z + z_index * PublicOutputInfo.patch_length)) / PublicOutputInfo.patch_length;
-        return getHeightFromTex(x_index, z_index, u, v);
+        return getHeightFromTexBilinear(x_index, z_index, u, v);
     }
 
     static public bool checkTerrainLoaded()
