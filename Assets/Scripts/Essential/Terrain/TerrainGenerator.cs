@@ -25,7 +25,7 @@ static public class TerrainGenerator
     static public Material terrain_idw_mat;                             // Use the material with IDW shader
     static public Material terrain_nni_mat;                             // Use the material with NNI shader
     static public bool generate;
-    static public int vision_patch_num = 20;                            // The number of patches the viewer can see
+    static public int vision_patch_num = 5;                             // The number of patches the viewer can see
     static public float feature_include_length = 320.0f;
     static public GameObject[] terrains;                                // Store all patches of terrains
     static public bool need_update = false;                             // Call TerrainManager to generate new patches
@@ -44,8 +44,6 @@ static public class TerrainGenerator
     static public GameObject feature_ball_prefab;
     static public bool is_queue_generate_patch_empty = false;
     static public ComputeBuffer[] progress_buffer;
-    //static public ComputeBuffer[] heights_buffer;
-    //static public float[][] heights;
     static public WVec3[] constraints;
 
     static public Material heightmap_mat;
@@ -203,15 +201,15 @@ static public class TerrainGenerator
         float expanded_length = feature_include_length;
         int[] area_features_index = kdtree.getAreaPoints(x - expanded_length, z - expanded_length, x + PublicOutputInfo.patch_length + expanded_length, z + PublicOutputInfo.patch_length + expanded_length);
         Vector4[] area_features = new Vector4[area_features_index.Length];
-        List<Vector4> area_constraints = new List<Vector4>();
+        List<Vector4> area_road_constraints = new List<Vector4>();
         for (int area_features_index_index = 0; area_features_index_index < area_features_index.Length; area_features_index_index++)
         {
             WVec3 feature = kdtree.nodes[area_features_index[area_features_index_index]];
             area_features[area_features_index_index] = new Vector4(feature.x, feature.y, feature.z, feature.w);
             if (feature.w > -1)
-                area_constraints.Add(area_features[area_features_index_index]);
+                area_road_constraints.Add(area_features[area_features_index_index]);
         }
-        area_constraints.Sort(delegate (Vector4 a, Vector4 b)
+        area_road_constraints.Sort(delegate (Vector4 a, Vector4 b)
         {
             return a.w.CompareTo(b.w);
         });
@@ -221,45 +219,45 @@ static public class TerrainGenerator
         //    origin += area_constraints[area_constraints_index].w + " ";
         //}
         //Debug.Log(origin);
-        if (area_constraints.Count > 0)
+        if (area_road_constraints.Count > 0)
         {
-            if (Mathf.Abs(area_constraints[0].w) < 1e-6)
+            if (Mathf.Abs(area_road_constraints[0].w) < 1e-6)
             {
-                if (area_constraints.Count >= 2)
+                if (area_road_constraints.Count >= 2)
                 {
-                    Vector4 head_v = (area_constraints[0] - area_constraints[1]).normalized;
-                    area_constraints.Insert(0, area_constraints[0] + head_v);
+                    Vector4 head_v = (area_road_constraints[0] - area_road_constraints[1]).normalized;
+                    area_road_constraints.Insert(0, area_road_constraints[0] + head_v);
                 }
             }
             else // first_w >= 1
             {
-                int first_w = Mathf.FloorToInt(area_constraints[0].w + 0.000001f);
+                int first_w = Mathf.FloorToInt(area_road_constraints[0].w + 0.000001f);
                 Vector4 sup_constraint = new Vector4(constraints[first_w - 1].x, constraints[first_w - 1].y, constraints[first_w - 1].z, constraints[first_w - 1].w);
-                area_constraints.Insert(0, sup_constraint);
+                area_road_constraints.Insert(0, sup_constraint);
             }
-            for (int area_constraints_index = 0; area_constraints_index < area_constraints.Count - 1; area_constraints_index++)
+            for (int area_constraints_index = 0; area_constraints_index < area_road_constraints.Count - 1; area_constraints_index++)
             {
-                int diff_w = Mathf.FloorToInt(Mathf.Abs(area_constraints[area_constraints_index].w - area_constraints[area_constraints_index + 1].w) + 0.000003f);
+                int diff_w = Mathf.FloorToInt(Mathf.Abs(area_road_constraints[area_constraints_index].w - area_road_constraints[area_constraints_index + 1].w) + 0.000003f);
                 if (diff_w > 1)
                 {
-                    WVec3 constraint = constraints[Mathf.FloorToInt(area_constraints[area_constraints_index].w + 1.000001f)];
+                    WVec3 constraint = constraints[Mathf.FloorToInt(area_road_constraints[area_constraints_index].w + 1.000001f)];
                     Vector4 sup_constraint = new Vector4(constraint.x, constraint.y, constraint.z, constraint.w);
-                    area_constraints.Insert(area_constraints_index + 1, sup_constraint);
+                    area_road_constraints.Insert(area_constraints_index + 1, sup_constraint);
                 }
                 if (diff_w > 2)
                 {
                     area_constraints_index++;
-                    WVec3 constraint = constraints[Mathf.FloorToInt(area_constraints[area_constraints_index + 1].w - 1.000001f)];
+                    WVec3 constraint = constraints[Mathf.FloorToInt(area_road_constraints[area_constraints_index + 1].w - 1.000001f)];
                     Vector4 sup_constraint = new Vector4(constraint.x, constraint.y, constraint.z, constraint.w);
-                    area_constraints.Insert(area_constraints_index + 1, sup_constraint);
+                    area_road_constraints.Insert(area_constraints_index + 1, sup_constraint);
                 }
             }
-            int last_w = Mathf.FloorToInt(area_constraints[area_constraints.Count - 1].w + 0.000001f);
+            int last_w = Mathf.FloorToInt(area_road_constraints[area_road_constraints.Count - 1].w + 0.000001f);
             if (last_w + 1 < constraints.Length)
             {
                 WVec3 constraint = constraints[last_w + 1];
                 Vector4 sup_constraint = new Vector4(constraint.x, constraint.y, constraint.z, constraint.w);
-                area_constraints.Add(sup_constraint);
+                area_road_constraints.Add(sup_constraint);
             }
             else
             {
@@ -268,7 +266,7 @@ static public class TerrainGenerator
                 Vector4 sup_constraint_0 = new Vector4(constraint_0.x, constraint_0.y, constraint_0.z, constraint_0.w);
                 Vector4 sup_constraint_1 = new Vector4(constraint_1.x, constraint_1.y, constraint_1.z, constraint_1.w);
                 Vector4 tail_v = (sup_constraint_0 - sup_constraint_1).normalized;
-                area_constraints.Add(sup_constraint_0 + tail_v);
+                area_road_constraints.Add(sup_constraint_0 + tail_v);
             }
         }
         
@@ -278,7 +276,7 @@ static public class TerrainGenerator
         //    aftersup += area_constraints[area_constraints_index].w + " ";
         //}
         //Debug.Log(aftersup);
-        return (area_features, area_constraints.ToArray());
+        return (area_features, area_road_constraints.ToArray());
     }
 
     static public Vector4[] getVertexFeatures(float x, float z)
@@ -421,8 +419,8 @@ static public class TerrainGenerator
     {
         for (int generated_list_index = 0; generated_list_index < generated_x_list.Count; generated_list_index++)
         {
-            int ddist = Mathf.Abs(generated_x_list[generated_list_index] - patch_x_index) / PublicOutputInfo.piece_num + Mathf.Abs(generated_z_list[generated_list_index] - patch_z_index) / PublicOutputInfo.piece_num;
-            if (ddist > vision_patch_num * 2)
+            int ddist = Mathf.Abs(generated_x_list[generated_list_index] - patch_x_index) + Mathf.Abs(generated_z_list[generated_list_index] - patch_z_index);
+            if (ddist > vision_patch_num * 50) // TO DO
             {
                 is_generated[generated_x_list[generated_list_index] * z_patch_num + generated_z_list[generated_list_index]] = false;
                 GameObject.Destroy(terrains[generated_list_index]);
@@ -563,7 +561,7 @@ static public class TerrainGenerator
         // ================================== fetch feature points ===================================================
         var area_features_constraints = getAreaFeaturesForPatch(min_x + x_index * PublicOutputInfo.patch_length, min_z + z_index * PublicOutputInfo.patch_length);
         Vector4[] area_features = area_features_constraints.Item1;
-        Vector4[] area_constraints = area_features_constraints.Item2;
+        Vector4[] area_road_constraints = area_features_constraints.Item2;
         // ===========================================================================================================
 
         // ================================= setting compute shader ==================================================
@@ -580,33 +578,32 @@ static public class TerrainGenerator
         compute_shader.SetTexture(kernelHandler, "Constraintsmap", constraints_tex);
         compute_shader.SetVectorArray("features", area_features);
         compute_shader.SetInt("features_count", area_features.Length);
-        compute_shader.SetVectorArray("constraints", area_constraints);
-        compute_shader.SetInt("constraints_count", area_constraints.Length);
+        compute_shader.SetVectorArray("road_constraints", area_road_constraints);
+        compute_shader.SetInt("road_constraints_count", area_road_constraints.Length);
+        //compute_shader.SetVectorArray("building_constraints", area_constraints);
+        //compute_shader.SetInt("building_constraints_count", area_constraints.Length);
         compute_shader.SetFloat("x", min_x + x_index * PublicOutputInfo.patch_length);
         compute_shader.SetFloat("bias_y", min_y);
         compute_shader.SetFloat("z", min_z + z_index * PublicOutputInfo.patch_length);
         compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / PublicOutputInfo.tex_size); // patch_length / tex_length
+        compute_shader.SetFloat("bound_x", 192.0f);
+        compute_shader.SetFloat("bound_z", 192.0f);
         progress_buffer[x_index * z_patch_num + z_index] = new ComputeBuffer(1, 4);
         int[] progress = new int[] { 0 };
         progress_buffer[x_index * z_patch_num + z_index].SetData(progress);
         compute_shader.SetBuffer(kernelHandler, "progress", progress_buffer[x_index * z_patch_num + z_index]);
-        //heights_buffer[x_index * z_patch_num + z_index] = new ComputeBuffer(PublicOutputInfo.tex_size * PublicOutputInfo.tex_size, 4);
-        //heights[x_index * z_patch_num + z_index] = new float[PublicOutputInfo.tex_size * PublicOutputInfo.tex_size];
-        //heights_buffer[x_index * z_patch_num + z_index].SetData(heights[x_index * z_patch_num + z_index]);
-        //compute_shader.SetBuffer(kernelHandler, "heights", heights_buffer[x_index * z_patch_num + z_index]);
         compute_shader.Dispatch(kernelHandler, Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), 1);
         Graphics.WaitOnAsyncGraphicsFence(fence);
-        //heights_buffer[x_index * z_patch_num + z_index].GetData(heights[x_index * z_patch_num + z_index]);
         // ===========================================================================================================
 
         // ================================= rendering texture2D =====================================================
-        heightmaps[x_index * z_patch_num + z_index] = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false); // 320 + 128 + 320
         Rect rectReadPicture = new Rect(0, 0, PublicOutputInfo.tex_size, PublicOutputInfo.tex_size);
+        Texture2D heightmap_origin = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false); // 320 + 128 + 320
         RenderTexture.active = tex;
         // Read pixels
-        heightmaps[x_index * z_patch_num + z_index].ReadPixels(rectReadPicture, 0, 0);
-        heightmaps[x_index * z_patch_num + z_index].wrapMode = TextureWrapMode.Clamp;
-        heightmaps[x_index * z_patch_num + z_index].Apply();
+        heightmap_origin.ReadPixels(rectReadPicture, 0, 0);
+        heightmap_origin.wrapMode = TextureWrapMode.Clamp;
+        heightmap_origin.Apply();
         RenderTexture.active = null; // added to avoid errors
         constraintsmap[x_index * z_patch_num + z_index] = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false); // 320 + 128 + 320
         RenderTexture.active = constraints_tex;
@@ -617,10 +614,30 @@ static public class TerrainGenerator
         RenderTexture.active = null; // added to avoid errors
         // ===========================================================================================================
 
+        // =================================== Gaussian Filter =======================================================
+        int kernelHandler2 = compute_shader.FindKernel("GaussianFilter");
+        compute_shader.SetTexture(kernelHandler2, "input", heightmap_origin);
+        compute_shader.SetTexture(kernelHandler2, "Result", tex);
+        compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / PublicOutputInfo.tex_size); // patch_length / tex_length
+        compute_shader.Dispatch(kernelHandler2, Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), Mathf.CeilToInt(PublicOutputInfo.tex_size / 8), 1);
+        Graphics.WaitOnAsyncGraphicsFence(fence);
+        // ===========================================================================================================
+
+        // ================================= rendering texture2D =====================================================
+        heightmaps[x_index * z_patch_num + z_index] = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false); // 320 + 128 + 320
+        RenderTexture.active = tex;
+        // Read pixels
+        heightmaps[x_index * z_patch_num + z_index].ReadPixels(rectReadPicture, 0, 0);
+        heightmaps[x_index * z_patch_num + z_index].wrapMode = TextureWrapMode.Clamp;
+        heightmaps[x_index * z_patch_num + z_index].Apply();
+        RenderTexture.active = null; // added to avoid errors
+        // ===========================================================================================================
+
         // ================================= setting GameObject ======================================================
         terrains[x_index * z_patch_num + z_index] = new GameObject("terrain_peice_" + x_index + "_" + z_index);
         MeshRenderer mr = terrains[x_index * z_patch_num + z_index].AddComponent<MeshRenderer>();
-        mr.material = new Material(terrain_mat);
+        //mr.material = new Material(terrain_mat);
+        //mr.material.SetTexture("_MainTex", heightmaps[x_index * z_patch_num + z_index]);
         mr.material.SetTexture("_MainTex", constraintsmap[x_index * z_patch_num + z_index]);
         //mr.material.SetTexture("_MainTex", main_tex);
         terrains[x_index * z_patch_num + z_index].AddComponent<TerrainView>();

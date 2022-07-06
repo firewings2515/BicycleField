@@ -1,5 +1,6 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
+#pragma kernel GaussianFilter
 
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
@@ -7,15 +8,18 @@ RWTexture2D<float4> Result;
 RWTexture2D<float4> Constraintsmap;
 float4 features[512];
 int features_count;
-float4 constraints[512];
-int constraints_count;
-//float height_base;
+float4 road_constraints[512];
+int road_constraints_count;
+//float4 building_constraints[512];
+//int building_constraints_count;
+//int building_constraints_points_count[128];
 float x;
 float z;
 float resolution;
 float bias_y;
+float bound_x;
+float bound_z;
 RWStructuredBuffer<int> progress;
-//RWStructuredBuffer<float> heights;
 
 float getWeight(float d, float w)
 {
@@ -45,9 +49,9 @@ float linearWeight(float x, float z)
 {
     float dist_min = 1e6;
     float min_index = 0;
-    for (int i = 0; i < constraints_count; i++)
+    for (int i = 0; i < road_constraints_count; i++)
     {
-        float dist = sqrt(pow(constraints[i].x - x, 2) + pow(constraints[i].z - z, 2));
+        float dist = sqrt(pow(road_constraints[i].x - x, 2) + pow(road_constraints[i].z - z, 2));
         if (dist < dist_min)
         {
             dist_min = dist;
@@ -55,34 +59,34 @@ float linearWeight(float x, float z)
         }
     }
     
-    if (min_index < constraints_count - 1)
+    if (min_index < road_constraints_count - 1)
     {
-        float2 AB = float2(constraints[min_index + 1].x - constraints[min_index].x, constraints[min_index + 1].z - constraints[min_index].z);
-        float2 AC = float2(x - constraints[min_index].x, z - constraints[min_index].z);
+        float2 AB = float2(road_constraints[min_index + 1].x - road_constraints[min_index].x, road_constraints[min_index + 1].z - road_constraints[min_index].z);
+        float2 AC = float2(x - road_constraints[min_index].x, z - road_constraints[min_index].z);
         float AB_AC = (AB.x * AC.x + AB.y * AC.y);
         if (AB_AC > 0)
         {
-            float dist_a = sqrt(pow(constraints[min_index].x - x, 2) + pow(constraints[min_index].z - z, 2));
-            float dist_b = sqrt(pow(constraints[min_index + 1].x - x, 2) + pow(constraints[min_index + 1].z - z, 2));
-            return (constraints[min_index].y * dist_b + constraints[min_index + 1].y * dist_a) / (dist_a + dist_b);
+            float dist_a = sqrt(pow(road_constraints[min_index].x - x, 2) + pow(road_constraints[min_index].z - z, 2));
+            float dist_b = sqrt(pow(road_constraints[min_index + 1].x - x, 2) + pow(road_constraints[min_index + 1].z - z, 2));
+            return (road_constraints[min_index].y * dist_b + road_constraints[min_index + 1].y * dist_a) / (dist_a + dist_b);
         }
         else
         {
             if (min_index > 0)
             {
-                float dist_a = sqrt(pow(constraints[min_index - 1].x - x, 2) + pow(constraints[min_index - 1].z - z, 2));
-                float dist_b = sqrt(pow(constraints[min_index].x - x, 2) + pow(constraints[min_index].z - z, 2));
-                return (constraints[min_index - 1].y * dist_b + constraints[min_index].y * dist_a) / (dist_a + dist_b);
+                float dist_a = sqrt(pow(road_constraints[min_index - 1].x - x, 2) + pow(road_constraints[min_index - 1].z - z, 2));
+                float dist_b = sqrt(pow(road_constraints[min_index].x - x, 2) + pow(road_constraints[min_index].z - z, 2));
+                return (road_constraints[min_index - 1].y * dist_b + road_constraints[min_index].y * dist_a) / (dist_a + dist_b);
             }
             else
             {
-                return constraints[min_index].y;
+                return road_constraints[min_index].y;
             }
         }
     }
     else
     {
-        return constraints[min_index].y;
+        return road_constraints[min_index].y;
     }
 }
 
@@ -92,15 +96,19 @@ float IDW(float x, float z)
     float sum_down = 0.0;
     for (int i = 0; i < features_count; i++)
     {
-        if (features[i].w > -1)
-            continue;
+        //if (features[i].w > -1)
+        //    continue;
         float dist = sqrt(pow(features[i].x - x, 2) + pow(features[i].z - z, 2));
+        //dist /= 640;
         if (pow(dist, 2) < 1e-6)
             return features[i].y;
         if (dist < 320.0) // TerrainGenerator.feature_include_length = 320.0f
         {
-            sum_up += getWeight(dist, 2) * features[i].y;
-            sum_down += getWeight(dist, 2);
+            /*dist = 320 - dist + 1;
+            sum_up += dist * features[i].y*5;
+            sum_down += dist*5;*/
+            sum_up += getWeight(dist, 3) * features[i].y;
+            sum_down += getWeight(dist, 3);
         }
     }
     if (sum_down < 1e-6)
@@ -110,11 +118,11 @@ float IDW(float x, float z)
 
 float roadConstraint(float x, float z)
 {
-    for (int i = 0; i < constraints_count - 1; i++)
+    for (int i = 0; i < road_constraints_count - 1; i++)
     {
-        float2 AB = float2(constraints[i + 1].x - constraints[i].x, constraints[i + 1].z - constraints[i].z);
-        float2 AC = float2(x - constraints[i].x, z - constraints[i].z);
-        float2 BC = float2(x - constraints[i + 1].x, z - constraints[i + 1].z);
+        float2 AB = float2(road_constraints[i + 1].x - road_constraints[i].x, road_constraints[i + 1].z - road_constraints[i].z);
+        float2 AC = float2(x - road_constraints[i].x, z - road_constraints[i].z);
+        float2 BC = float2(x - road_constraints[i + 1].x, z - road_constraints[i + 1].z);
 
         float AB_BC = (AB.x * BC.x + AB.y * BC.y);
         float AB_AC = (AB.x * AC.x + AB.y * AC.y);
@@ -137,9 +145,9 @@ float roadConstraint(float x, float z)
             return (i + 1) / 20.0;
         }
     }
-    for (int i = 0; i < constraints_count; i++)
+    for (int i = 0; i < road_constraints_count; i++)
     {
-        float dist = sqrt(pow(constraints[i].x - x, 2) + pow(constraints[i].z - z, 2));
+        float dist = sqrt(pow(road_constraints[i].x - x, 2) + pow(road_constraints[i].z - z, 2));
         if (dist < 4.0f)
         {
             return (i + 1) / 20.0;
@@ -150,10 +158,7 @@ float roadConstraint(float x, float z)
 
 float2 renderConstraints(float x, float z)
 {
-    // float xCoord = x / width;
-    //float yCoord = z / height;
-
-    if (constraints_count < 4)
+    if (road_constraints_count < 4)
         return float2(0, 0);
 
     float v_max = 0;
@@ -163,19 +168,18 @@ float2 renderConstraints(float x, float z)
                            1.5, -2.5,    0,   1,
                           -1.5,    2,  0.5,   0,
                            0.5, -0.5,    0,   0 };
-    for (int constraints_index = 0; constraints_index < constraints_count - 3; constraints_index++) // constraints_count - 3
+    for (int constraints_index = 0; constraints_index < road_constraints_count - 3; constraints_index++)
     {
         for (int i = 0; i < 10; i++)
         {
             float t = i / 10.0;
             float4 t_vector = float4(t * t * t, t * t, t, 1);
-            float4x4 g_matrix = { constraints[constraints_index].x, constraints[constraints_index + 1].x, constraints[constraints_index + 2].x, constraints[constraints_index + 3].x,
-                                  constraints[constraints_index].y, constraints[constraints_index + 1].y, constraints[constraints_index + 2].y, constraints[constraints_index + 3].y, 
-                                  constraints[constraints_index].z, constraints[constraints_index + 1].z, constraints[constraints_index + 2].z, constraints[constraints_index + 3].z, 
+            float4x4 g_matrix = { road_constraints[constraints_index].x, road_constraints[constraints_index + 1].x, road_constraints[constraints_index + 2].x, road_constraints[constraints_index + 3].x,
+                                  road_constraints[constraints_index].y, road_constraints[constraints_index + 1].y, road_constraints[constraints_index + 2].y, road_constraints[constraints_index + 3].y,
+                                  road_constraints[constraints_index].z, road_constraints[constraints_index + 1].z, road_constraints[constraints_index + 2].z, road_constraints[constraints_index + 3].z,
                                                                  1,                                    1,                                    1,                                    1 };
             float4 loc = mul(g_matrix, mul(m_matrix, t_vector));
             float2 bz = float2(loc.x, loc.z);
-            //float2 xy = float2(xCoord, yCoord);
             float2 xz = float2(x, z);
             float dist = length(bz - xz);
             float v = 1 - (dist - 8.0) / 8.0;
@@ -194,18 +198,22 @@ float2 renderConstraints(float x, float z)
             }
         }
     }
+
+    /*if (building_constraints_count > 0)
+    {
+
+    }*/
     return float2(v_max, h);
 }
 
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    float height = IDW(x + id.x * resolution, z + id.y * resolution) + bias_y;
+    //float height = IDW(x + id.x * resolution, z + id.y * resolution) + bias_y; // no-need-passing gaussian filter
+    float height = IDW(x + id.x - bound_x, z + id.y - bound_z) + bias_y;
     float2 road_constraint = renderConstraints(x + id.x * resolution, z + id.y * resolution); // x is dist, y is DEM height
     //float road_constraint = roadConstraint(x + id.x * resolution, z + id.y * resolution);
-    //if (road_constraint.x > 0)
-    height = (road_constraint.x) * road_constraint.y + (1 - road_constraint.x) * height;
-    //    height = linearWeight(x + id.x * resolution, z + id.y * resolution);
+    //height = (road_constraint.x) * road_constraint.y + (1 - road_constraint.x) * height;
     
     int height_int = int(height);
     float height_0 = (height_int / 64) / 64.0;
@@ -213,7 +221,67 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float height_2 = height - height_int;
     Result[id.xy] = float4(road_constraint.x, height_0, height_1, height_2);
     Constraintsmap[id.xy] = float4(road_constraint.x, 0, 0, 1);
-    //heights[id.x + id.y * 64] = height;
-    //Result[id.xy] = float4(id.x / 768.0f, id.x / 768.0f, id.x / 768.0f, 1.0);
     progress[0] = 1;
+}
+
+Texture2D<float4> input;
+
+static const int M = 16;
+static const int N = 33; // 2 * M + 1
+// sigma = 10
+static const float coeffs[] = {
+    0.012318109844189502,
+    0.014381474814203989,
+    0.016623532195728208,
+    0.019024086115486723,
+    0.02155484948872149,
+    0.02417948052890078,
+    0.02685404941667096,
+    0.0295279624870386,
+    0.03214534135442581,
+    0.03464682117793548,
+    0.0369716985390341,
+    0.039060328279673276,
+    0.040856643282313365,
+    0.04231065439216247,
+    0.043380781642569775,
+    0.044035873841196206,
+    0.04425662519949865,
+    0.044035873841196206,
+    0.043380781642569775,
+    0.04231065439216247,
+    0.040856643282313365,
+    0.039060328279673276,
+    0.0369716985390341,
+    0.03464682117793548,
+    0.03214534135442581,
+    0.0295279624870386,
+    0.02685404941667096,
+    0.02417948052890078,
+    0.02155484948872149,
+    0.019024086115486723,
+    0.016623532195728208,
+    0.014381474814203989,
+    0.012318109844189502
+};
+
+[numthreads(8, 8, 1)]
+void GaussianFilter(uint3 id : SV_DispatchThreadID)
+{
+    float sum = 0.0;
+    float2 new_coord = id.xy / 512.0 * 128.0 + float2(192.0, 192.0);
+    for (int i = 0; i < N; i++)
+    {
+        for (int j = 0; j < N; j++)
+        {
+            float2 tc = new_coord + float2(i - M, j - M);
+            float height = input[tc].g * 64 * 64 + input[tc].b * 64 + input[tc].a;
+            sum += coeffs[i] * coeffs[j] * height;
+        }
+    }
+    int height_int = int(sum);
+    float height_0 = (height_int / 64) / 64.0;
+    float height_1 = (height_int % 64) / 64.0;
+    float height_2 = sum - height_int;
+    Result[id.xy] = float4(input[new_coord].r, height_0, height_1, height_2);
 }

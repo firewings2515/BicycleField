@@ -47,7 +47,7 @@ public class RoadManager : MonoBehaviour
             string end_point_data = reader.ReadLine();
             Info.end_point = Functions.StrToVec3(end_point_data);
 
-            reader.ReadLine(); // throw away terrain anchor point
+            reader.ReadLine(); // throw away terrain anchor point (0, 0, 0)
 
             //remove first default segment
             removeEarliestRoad(false);
