@@ -84,4 +84,24 @@ static public class HouseIntegration
 
         return house_polygons_object_dists.Count;
     }
+
+    static public (List<Vector3>, List<int>) buildingPointsListToVec3()
+    {
+        List<Vector3> building_points_list = new List<Vector3>();
+        List<int> building_point_count_list = new List<int>();
+        for (int bicycle_points_list_index = 0; bicycle_points_list_index < house_polygons_object_index.Count; bicycle_points_list_index++)
+        {
+            List<string> house_polygon_ids = house_polygons_object_index[bicycle_points_list_index];
+            for (int house_polygon_ids_index = 0; house_polygon_ids_index < house_polygon_ids.Count; house_polygon_ids_index++)
+            {
+                Vector3[] vertices = house_polygons_view_instances[house_polygon_ids[house_polygon_ids_index]].points;
+                building_point_count_list.Add(vertices.Length);
+                for (int vertices_index = 0; vertices_index < vertices.Length; vertices_index++)
+                {
+                    building_points_list.Add(vertices[vertices_index]);
+                }
+            }
+        }
+        return (building_points_list, building_point_count_list);
+    }
 }

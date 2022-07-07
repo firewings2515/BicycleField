@@ -17,7 +17,6 @@ public class RoadIntegration : MonoBehaviour
     public float terrain_max_z;
     public float terrain_min_x;
     public float terrain_min_z;
-    float vision_length = 2048.0f;
     bool is_initial;
 
     [Header("Edit Bicycle Road List")]
@@ -49,6 +48,7 @@ public class RoadIntegration : MonoBehaviour
             osm_reader = GetComponent<OSMEditor>().osm_reader;
 
             PublicOutputInfo.origin_pos = osm_reader.points_lib[GetComponent<OSMEditor>().initial_point].position;
+            PublicOutputInfo.origin_pos.y = 0.0f;
             origin_piece_x = PublicOutputInfo.origin_pos.x - PublicOutputInfo.piece_length / 2;
             origin_piece_z = PublicOutputInfo.origin_pos.z - PublicOutputInfo.piece_length / 2;
             terrain_min_x = origin_piece_x;
@@ -174,6 +174,7 @@ public class RoadIntegration : MonoBehaviour
     void writeBPF(string file_path)
     {
         Debug.Log("Writing " + file_path);
+        string[] bicycle_points_array = bicycle_points_list.ToArray();
         using (StreamWriter sw = new StreamWriter(file_path))
         {
             // move first point to origin because of pathCreator
@@ -182,11 +183,13 @@ public class RoadIntegration : MonoBehaviour
             //double begin_ele = PublicOutputInfo.origin_pos.y;
             //double begin_lat = MercatorProjection.yToLat(osm_reader.points_lib[bicycle_points_list[0]].position.z + osm_reader.boundary_min.y);
             //sw.WriteLine($"{begin_lon} {begin_ele} {begin_lat}");
-            for (int bicycle_points_list_index = 0; bicycle_points_list_index < bicycle_points_list.Count; bicycle_points_list_index++)
+            Vector3 end_pos = osm_reader.points_lib[bicycle_points_array[bicycle_points_array.Length - 1]].position - PublicOutputInfo.origin_pos;
+            sw.WriteLine($"{end_pos.x} {end_pos.y} {end_pos.z}");
+            for (int bicycle_points_list_index = 0; bicycle_points_list_index < bicycle_points_array.Length; bicycle_points_list_index++)
             {
-                Vector3 pos = osm_reader.points_lib[bicycle_points_list[bicycle_points_list_index]].position - PublicOutputInfo.origin_pos;
+                Vector3 pos = osm_reader.points_lib[bicycle_points_array[bicycle_points_list_index]].position - PublicOutputInfo.origin_pos;
                 sw.WriteLine($"{pos.x} {pos.y} {pos.z}");
-                if (bicycle_points_list_index + 1 == bicycle_points_list.Count)
+                if (bicycle_points_list_index + 1 == bicycle_points_array.Length)
                     break;
                 List<string> house_polygon_ids = HouseIntegration.house_polygons_object_index[bicycle_points_list_index];
                 for (int house_polygon_ids_index = 0; house_polygon_ids_index < house_polygon_ids.Count; house_polygon_ids_index++)

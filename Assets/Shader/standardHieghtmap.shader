@@ -40,19 +40,19 @@ Shader "Custom/standardHieghtmap"
 
         void vert(inout appdata_full v)
         {
-            //float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
-            //float4 vertex = float4(worldPos.x, tex2Dlod(_HeightmapTex, float4(v.texcoord.xy, 0, 0)).r * 10, worldPos.z, worldPos.w);
-            //v.vertex = mul(unity_WorldToObject, worldPos);
-            float2 reverse_uv = float2(1 - v.texcoord.x, 1 - v.texcoord.y);
-            v.vertex.y = tex2Dlod(_HeightmapTex, float4(reverse_uv.xy, 0, 0)).r * 3000;
+            /*float2 reverse_uv = float2(1 - v.texcoord.x, 1 - v.texcoord.y);
+            v.vertex.y = tex2Dlod(_HeightmapTex, float4(reverse_uv.xy, 0, 0)).r * 900;*/
+            v.vertex.y = tex2Dlod(_HeightmapTex, float4(v.texcoord.xy, 0, 0)).r * 900; // for multiple
         }
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
             // Albedo comes from a texture tinted by color
-            float2 reverse_uv = float2(1 - IN.uv_MainTex.x, 1 - IN.uv_MainTex.y);
+            /*float2 reverse_uv = float2(1 - IN.uv_MainTex.x, 1 - IN.uv_MainTex.y);
             fixed4 c = tex2D(_MainTex, reverse_uv) * _Color;
-            fixed4 constraint = tex2D(_HeightmapTex, reverse_uv).g * fixed4(1, 0, 0, 1) + (1 - tex2D(_HeightmapTex, reverse_uv).g) * c;
+            fixed4 constraint = tex2D(_HeightmapTex, reverse_uv).g * fixed4(1, 0, 0, 1) + (1 - tex2D(_HeightmapTex, reverse_uv).g) * c;*/
+            fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * _Color;
+            fixed4 constraint = tex2D(_HeightmapTex, IN.uv_MainTex).g * fixed4(1, 0, 0, 1) + (1 - tex2D(_HeightmapTex, IN.uv_MainTex).g) * c;
             o.Albedo = constraint.rgb;
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;

@@ -19,29 +19,35 @@ public class RoadManager : MonoBehaviour
     public PathCreator path_creator;
     public bool path_loop = false;
     private bool update_mesh = false;
+    private bool check_terrain_loaded = false;
 
     private bool is_started = false;
+    private bool is_initial = false;
 
     private string last_data = null;
     public GameObject finish_flag;
     private bool finished = false;
+    GameObject trigger_manager;
+    int trigger_index = 0;
+    Queue<GameObject> trigger_wait_queue = new Queue<GameObject>();
 
     private void Start()
     {
-        
+        trigger_manager = new GameObject("TriggerManager");
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (TerrainGenerator.is_initial && !is_started) 
+        if (TerrainGenerator.is_initial && !is_initial) 
         {
+            is_initial = true;
             reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
 
             string end_point_data = reader.ReadLine();
             Info.end_point = Functions.StrToVec3(end_point_data);
 
-            reader.ReadLine(); // throw away terrain anchor point
+            reader.ReadLine(); // throw away terrain anchor point (0, 0, 0)
 
             //remove first default segment
             removeEarliestRoad(false);
@@ -58,7 +64,12 @@ public class RoadManager : MonoBehaviour
             removeEarliestRoad(false);
 
             path_creator.bezierPath.NotifyPathModified();
-            is_started = true;
+            check_terrain_loaded = true;
+        }
+        if (is_initial)
+        {
+            if (TerrainGenerator.checkTerrainLoaded())
+                is_started = true;
         }
         if (!is_started) return;
 
@@ -67,12 +78,28 @@ public class RoadManager : MonoBehaviour
             getAndSetNextSegment();
 
             path_creator.bezierPath = path_creator.bezierPath; //force update
-            update_mesh = true;
+            check_terrain_loaded = true;
+        }
+        else if (check_terrain_loaded)
+        {
+            if (TerrainGenerator.checkTerrainLoaded())
+            {
+                check_terrain_loaded = false;
+                update_mesh = true;
+            }
         }
         else if (update_mesh)
         {
             update_mesh = false;
             GetComponent<PathCreation.Examples.MyRoadMeshCreator>().CreateRoadMesh();
+            while (trigger_wait_queue.Count > 0)
+            {
+                GameObject trigger = trigger_wait_queue.Dequeue();
+                if (trigger)
+                {
+                    trigger.transform.position = new Vector3(trigger.transform.position.x, TerrainGenerator.getHeightWithBais(trigger.transform.position.x, trigger.transform.position.z), trigger.transform.position.z);
+                }
+            }
         }
     }
 
@@ -83,6 +110,7 @@ public class RoadManager : MonoBehaviour
             Vector3 vec3_point = Functions.StrToVec3(str_point);
             vec3_point.y = 0.0f;
 
+            //queue_checkpoint_vec3.Enqueue(vec3_point);
             spawnAnchorCheckpoint(vec3_point);
 
             generateRoad(vec3_point);
@@ -132,7 +160,7 @@ public class RoadManager : MonoBehaviour
             //GetComponent<HouseManager>().addToBuffer(point_data);
             point_data = reader.ReadLine();
         }
-        StartCoroutine(HouseGenerator.generateHouses(segment_id_list, house_id_list, info_list));
+        HouseGenerator.generateHouses(segment_id_list, house_id_list, info_list);
         return point_data != null;
     }
 
@@ -152,20 +180,23 @@ public class RoadManager : MonoBehaviour
     private void removeEarliestRoad(bool destroy = true)
     {
         if (destroy) HouseGenerator.destroySegment(last_segment++);
+        Vector3 remove_pos = path_creator.bezierPath.GetPoint(0);
+        StartCoroutine(TerrainGenerator.removeAreaTerrain(remove_pos.x, remove_pos.z));
         path_creator.bezierPath.DeleteSegment(0);
         current_segment--;
     }
 
     private void spawnAnchorCheckpoint(Vector3 position)
     {
-        GameObject prefab = new GameObject();
-        position.y = TerrainGenerator.getHeightWithBais(position.x, position.z);
-        prefab.transform.position = position;
-        prefab.AddComponent<SphereCollider>();
-        prefab.GetComponent<SphereCollider>().isTrigger = true;
-        prefab.GetComponent<SphereCollider>().transform.localScale *= Info.CHECKPOINT_SIZE;
-        prefab.AddComponent<AnchorCheckpoint>();
-        prefab.layer = 6; //only collide with cyclist
+        GameObject trigger = new GameObject("Trigger" + (trigger_index++).ToString());
+        trigger.transform.position = position;
+        trigger.transform.parent = trigger_manager.transform;
+        trigger_wait_queue.Enqueue(trigger);
+        trigger.AddComponent<SphereCollider>();
+        trigger.GetComponent<SphereCollider>().isTrigger = true;
+        trigger.GetComponent<SphereCollider>().transform.localScale *= Info.CHECKPOINT_SIZE;
+        trigger.AddComponent<AnchorCheckpoint>();
+        trigger.layer = 6; //only collide with cyclist
     }
 
     public void incrementCurrentSegment()

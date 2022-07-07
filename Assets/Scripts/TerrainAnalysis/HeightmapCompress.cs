@@ -207,6 +207,11 @@ public class HeightmapCompress : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// featurefile for a small terrain
+    /// </summary>
+    /// <param name="file_path"></param>
+    /// <param name="features"></param>
     void writeFeatureFile(string file_path, WVec3[] features)
     {
         KDTree kdtree = new KDTree();
