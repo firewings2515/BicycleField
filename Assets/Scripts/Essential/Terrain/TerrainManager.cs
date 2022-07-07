@@ -12,7 +12,7 @@ public class TerrainManager : MonoBehaviour
     Queue<int> queue_generate_patch_x = new Queue<int>();   // Patch Queue
     Queue<int> queue_generate_patch_z = new Queue<int>();   // Patch Queue
     bool loop_begin = false;                                // Begin InvokeRepeating("generateTerrainPatch", 0.0f, 0.01666f)
-    public Material heightmap_mat;
+    //public Material heightmap_mat;
     public ComputeShader compute_shader;
     public Texture2D main_tex;
 
@@ -26,7 +26,7 @@ public class TerrainManager : MonoBehaviour
         TerrainGenerator.terrain_nni_mat = terrain_nni_mat;
         TerrainGenerator.terrain_mode = terrain_mode;
         TerrainGenerator.feature_ball_prefab = feature_ball_prefab;
-        TerrainGenerator.heightmap_mat = heightmap_mat;
+        //TerrainGenerator.heightmap_mat = heightmap_mat;
         TerrainGenerator.compute_shader = compute_shader;
         TerrainGenerator.main_tex = main_tex;
         TerrainGenerator.loadTerrain();

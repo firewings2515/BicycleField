@@ -48,7 +48,7 @@ static public class TerrainGenerator
     static public int[] building_constraints_points_count;
     static public int[] building_constraints_accumulate_index;
 
-    static public Material heightmap_mat;
+    //static public Material heightmap_mat;
     static public ComputeShader compute_shader;
     static public Texture2D main_tex;
     static public Texture2D[] heightmaps;

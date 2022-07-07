@@ -52,7 +52,7 @@ public class ComputeHightmap : MonoBehaviour
         if (test_subdivision)
         {
             test_subdivision = false;
-            TerrainGenerator.heightmap_mat = material;
+            //TerrainGenerator.heightmap_mat = material;
             TerrainGenerator.compute_shader = compute_shader;
             TerrainGenerator.main_tex = main_tex;
             TerrainGenerator.loadTerrain();
