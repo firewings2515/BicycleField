@@ -6,7 +6,7 @@ public class bgBalcony : bgComponent
 {
     public float height = 2.0f;
     public float width = 3.0f;
-    public float extrude = 3.0f;
+    public float extrude = 1.5f;
     public int pillar_count = 10;
     public float floor_thickness = 0.5f;
     public float railing_thickness = 0.3f;

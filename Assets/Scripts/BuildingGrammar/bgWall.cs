@@ -83,9 +83,19 @@ public class bgWall : bgComponent
             }
             else
             {
+                GameObject obj;
                 bgAsset asset = builder.get_asset(commands[i]);
-                //if(builder.get_balcony())
-                GameObject obj = asset.build();
+                if (asset != null)
+                {
+                    obj = asset.build();
+                }
+                else
+                {
+                    bgBalcony balcony = builder.get_balcony(commands[i]);
+                    balcony.width = (width / 2.0f) - 0.2f;
+                    //balcony.height = height - 0.2f;
+                    obj = balcony.build();
+                }
                 obj.transform.parent = go.transform;
                 obj.transform.localPosition = pos;
             }

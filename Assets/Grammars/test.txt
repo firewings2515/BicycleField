@@ -90,8 +90,8 @@ hello_wall():Wall(vertical,const,4.0){
 
 hello_wall2():Wall(vertical,const,4.0){
 	background()
-	pos(0.25,0.5)
-	window()
+	pos(0.25,0)
+	balc()
 	pos(0.75,0.5)
 	window3()
 }
@@ -206,7 +206,7 @@ roof_facade():Facade(horizontal){
 	roof_wall()
 }
 
-floors_base():Base(){
+floors_base():Base(null,test_roof){
 	vertex(0,0,0)
 	hello_facade()
 	hello_facade()
@@ -334,7 +334,7 @@ arcade_house():Building(){
 }
 
 
-test_roof():Roof(1,1.5,Flat){
+test_roof():Roof(1,1.5,Hipped){
 	pos(0,1,0)
 	air_conditioner()
 	pos(3,1,0)
