@@ -7,13 +7,12 @@
 // with cs.SetTexture
 Texture2D<float4> input;
 RWTexture2D<float4> Result;
-float4 features[512];
+float4 features[1024];
 int features_count;
 float x;
 float z;
 float resolution;
 int gaussian_m;
-int result_tex_size;
 RWStructuredBuffer<int> progress;
 
 float getWeight(float d, float w)
@@ -24,7 +23,7 @@ float getWeight(float d, float w)
     return 1 / f;
 }
 
-float IDW(float x, float z)
+float IDW(float2 xz)
 {
     float sum_up = 0.0;
     float sum_down = 0.0;
@@ -32,7 +31,7 @@ float IDW(float x, float z)
     {
         //if (features[i].w > -1)
         //    continue;
-        float dist = sqrt(pow(features[i].x - x, 2) + pow(features[i].z - z, 2));
+        float dist = length(features[i].xz - xz);
         //dist /= 640;
         if (pow(dist, 2) < 1e-6)
             return features[i].y;
@@ -105,7 +104,7 @@ RWTexture2D<float4> Constraintsmap;
 
 float4 road_constraints[512];
 int road_constraints_count;
-//float4 building_constraints[512];
+//float4 building_constraints[1024];
 //int building_constraints_count;
 //int building_constraints_points_count[128];
 
@@ -130,7 +129,7 @@ float2 renderConstraints(float2 xz)
             float4x4 g_matrix = { road_constraints[constraints_index].x, road_constraints[constraints_index + 1].x, road_constraints[constraints_index + 2].x, road_constraints[constraints_index + 3].x,
                                   road_constraints[constraints_index].y, road_constraints[constraints_index + 1].y, road_constraints[constraints_index + 2].y, road_constraints[constraints_index + 3].y,
                                   road_constraints[constraints_index].z, road_constraints[constraints_index + 1].z, road_constraints[constraints_index + 2].z, road_constraints[constraints_index + 3].z,
-                                                                 1,                                    1,                                    1,                                    1 };
+                                                                      1,                                         1,                                         1,                                         1 };
             float4 loc = mul(g_matrix, mul(m_matrix, t_vector));
             float2 bz = float2(loc.x, loc.z);
             float dist = length(bz - xz);
@@ -151,10 +150,33 @@ float2 renderConstraints(float2 xz)
         }
     }
 
-    /*if (building_constraints_count > 0)
-    {
-
-    }*/
+    //if (building_constraints_count > 0)
+    //{
+    //    int constraints_index = 0;
+    //    for (int building_index = 0; building_index < 0; building_index++)
+    //    {
+    //        /*float2 loc = building_constraints[constraints_index].xz;
+    //        float dist = length(loc - xz);
+    //        if (dist < 8.0)
+    //        {
+    //            v_max = 1;
+    //        }*/
+    //        for (int constraints_points_count_index = 0; constraints_points_count_index < building_constraints_points_count[building_index]; constraints_index++, constraints_points_count_index++)
+    //        {
+    //            float2 loc = building_constraints[constraints_index].xz;
+    //            float dist = length(loc - xz);
+    //            if (dist < 8.0)
+    //            {
+    //                v_max = 1;
+    //                if (dist_min > dist)
+    //                {
+    //                    dist_min = dist;
+    //                    h = loc.y;
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
     return float2(v_max, h);
 }
 
@@ -162,21 +184,20 @@ float2 renderConstraints(float2 xz)
 void IDWTerrain(uint3 id : SV_DispatchThreadID)
 {
     //float height = IDW(x + id.x * resolution, z + id.y * resolution) + bias_y; // no-need-passing gaussian filter
-    float height = IDW(x + id.x - gaussian_m, z + id.y - gaussian_m);
-    float2 road_constraint = renderConstraints(float2(x + id.x - gaussian_m, z + id.y - gaussian_m)); // x is dist, y is DEM height
+    float2 coord = float2(x + id.x * resolution - 16, z + id.y * resolution - 16);
+    float height = IDW(coord);
+    float2 road_constraint = renderConstraints(coord); // output: x is dist, y is DEM height
     //float road_constraint = roadConstraint(x + id.x * resolution, z + id.y * resolution);
     //height = (road_constraint.x) * road_constraint.y + (1 - road_constraint.x) * height;
-
     Result[id.xy] = toHeightmap(height, road_constraint.x);
     //Constraintsmap[id.xy] = float4(road_constraint.x, 0, 0, 1);
-    progress[0] = 1;
 }
 
 [numthreads(8, 8, 1)]
 void GaussianFilter(uint3 id : SV_DispatchThreadID)
 {
     float sum = 0.0;
-    float2 new_coord = id.xy / float(result_tex_size) * 128 + float2(gaussian_m, gaussian_m);
+    float2 new_coord = id.xy * resolution + float2(gaussian_m, gaussian_m);
     int N = 2 * gaussian_m + 1;
     for (int i = 0; i < N; i++)
     {
@@ -197,6 +218,7 @@ void Constraints(uint3 id : SV_DispatchThreadID)
     float height = decodeHeight(input[id.xy]);
     height = (road_constraint.x) * road_constraint.y + (1 - road_constraint.x) * height;
     Constraintsmap[id.xy] = float4(road_constraint.x, 0, 0, 1);
-    Result[id.xy] = toHeightmap(height, road_constraint.x);
-    //Result[id.xy] = input[id.xy];
+    //Result[id.xy] = toHeightmap(height, road_constraint.x);
+    Result[id.xy] = input[id.xy];
+    progress[0] = 1;
 }

@@ -61,24 +61,52 @@ public class FeatureFileGenerator : MonoBehaviour
             if (wait_terrain_count == 0)
             {
                 wait_terrain_count = -1;
-                List<Vector3> point_list = new List<Vector3>(point_cloud_list);
+                List<Vector3> point_list = new List<Vector3>(point_cloud_list.Distinct());
+                int road_constrain_index_begin = point_list.Count;
+                int road_constrain_index = 0;
                 List<Vector3> bicycle_points_list = road_integration.bicyclePointsListToVec3();
                 point_list.AddRange(bicycle_points_list);
-                int bicycle_constrain_reverse_count = bicycle_points_list.Count;
-                int bicycle_constrain_reverse_index = 0;
-                Vector3[] points = point_list.Distinct().ToArray();
+                int building_constrain_index_begin = point_list.Count;
+                int building_constrain_index = 0;
+                var building_list = HouseIntegration.buildingPointsListToVec3();
+                List<Vector3> building_points_list = building_list.Item1;
+                List<int> building_point_count_list = building_list.Item2;
+                int[] building_point_count = building_point_count_list.ToArray();
+                point_list.AddRange(building_points_list);
+                //Vector3[] points = point_list.Distinct().ToArray();
+                Vector3[] points = point_list.ToArray();
                 WVec3[] features = new WVec3[points.Length];
                 for (int i = 0; i < points.Length; i++)
                 {
-                    features[i].x = points[i].x;
-                    features[i].y = points[i].y;
-                    features[i].z = points[i].z;
-                    if (i < points.Length - bicycle_constrain_reverse_count)
-                        features[i].w = -1;
+                    if (i < building_constrain_index_begin)
+                    {
+                        features[i].x = points[i].x;
+                        features[i].y = points[i].y;
+                        features[i].z = points[i].z;
+                        if (i < road_constrain_index_begin)
+                            features[i].w = -1;
+                        else
+                            features[i].w = road_constrain_index++;
+                    }
                     else
-                        features[i].w = bicycle_constrain_reverse_index++;
+                    {
+                        float building_height_min = 4096.0f;
+                        for (int j = 0; j < building_point_count[building_constrain_index]; j++)
+                        {
+                            building_height_min = Mathf.Min(building_height_min, points[i + j].y);
+                        }
+                        for (int j = 0; j < building_point_count[building_constrain_index]; i++, j++)
+                        {
+                            features[i].x = points[i].x;
+                            features[i].y = building_height_min;
+                            features[i].z = points[i].z;
+                            features[i].w = (1000 + building_constrain_index) * 100 + j; // 10xxoo
+                        }
+                        i--;
+                        building_constrain_index++;
+                    }
                 }
-                writeFeatureFile(Application.streamingAssetsPath + "//" + file_path, features);
+                writeFeatureFile(Application.streamingAssetsPath + "//" + file_path, features, building_point_count);
             }
         }
     }
@@ -275,7 +303,7 @@ public class FeatureFileGenerator : MonoBehaviour
     /// </summary>
     /// <param name="file_path"></param>
     /// <param name="features"></param>
-    void writeFeatureFile(string file_path, WVec3[] features)
+    void writeFeatureFile(string file_path, WVec3[] features, int[] building_point_count)
     {
         KDTree kdtree = new KDTree();
         kdtree.buildKDTree(features);
@@ -292,6 +320,11 @@ public class FeatureFileGenerator : MonoBehaviour
             {
                 Vector3 feature_out = new Vector3(kdtree.nodes[point_index].x - PublicOutputInfo.origin_pos.x, kdtree.nodes[point_index].y, kdtree.nodes[point_index].z - PublicOutputInfo.origin_pos.z);
                 sw.WriteLine(feature_out.x + " " + feature_out.y + " " + feature_out.z + " " + kdtree.nodes[point_index].w + " " + kdtree.parent[point_index] + " " + kdtree.left[point_index] + " " + kdtree.right[point_index]);
+            }
+            sw.WriteLine(building_point_count.Length);
+            for (int building_point_index = 0; building_point_index < building_point_count.Length; building_point_index++)
+            {
+                sw.WriteLine(building_point_count[building_point_index]);
             }
         }
         Debug.Log("Write " + file_path + " Successfully!");
