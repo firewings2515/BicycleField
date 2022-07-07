@@ -21,20 +21,36 @@ static public class HouseGenerator
     static Dictionary<int, Dictionary<int, GameObject>> gobj_db = new Dictionary<int, Dictionary<int, GameObject>>();
     static List<int> segment_id_q = new List<int>();
 
+    static public Queue<List<int>> queue_segment_id = new Queue<List<int>>();
+    static public Queue<List<int>> queue_house_id = new Queue<List<int>>();
+    static public Queue<List<string>> queue_info = new Queue<List<string>>();
+
+    static public GameObject house_manager;
+
     static public void init() {
         //builder = new bgBuilder(grammar_files_path);
         //gobj_db = new Dictionary<int, Dictionary<int, GameObject>>();
         //segment_id_q = new List<int>();
     }
-    static public IEnumerator generateHouses(List<int> segment_id,List<int> house_id,List<string> info) {
+    static public void generateHouses(List<int> segment_id,List<int> house_id,List<string> info) {
+        queue_segment_id.Enqueue(segment_id);
+        queue_house_id.Enqueue(house_id);
+        queue_info.Enqueue(info);
+
+    }
+
+    static public IEnumerator generateHouse(List<int> segment_id, List<int> house_id, List<string> info)
+    {
         int count = segment_id.Count;
-        for (int i = 0; i < count; i++) {
-            generateHouse(segment_id[i],house_id[i],info[i]);
+        for (int i = 0; i < count; i++)
+        {
+            generateHouse(segment_id[i], house_id[i], info[i]);
             //break;
             yield return new WaitForSeconds(0.3f);
         }
         yield return null;
     }
+
     static public void generateHouse(int segment_id, int house_id, string info)
     {
         //demo code
@@ -45,16 +61,16 @@ static public class HouseGenerator
         float min_y = float.MaxValue;
         Vector3 single_point = new Vector3(float.Parse(house_infos[coord_index]), float.Parse(house_infos[coord_index + 1]), float.Parse(house_infos[coord_index + 2]));
         Vector3 total = new Vector3();
-        if (TerrainGenerator.is_initial)
-        {
-            single_point.y = TerrainGenerator.getHeightWithBais(single_point.x, single_point.z);
-        }
+        //if (TerrainGenerator.is_initial)
+        //{
+        single_point.y = TerrainGenerator.getHeightWithBais(single_point.x, single_point.z);
+        //}
         for (int i = 0; i < polygon_count; i++) {
             Vector3 point = new Vector3(float.Parse(house_infos[coord_index]),0, float.Parse(house_infos[coord_index + 2]));
-            if (TerrainGenerator.is_initial)
-            {
-                point.y = TerrainGenerator.getHeightWithBais(point.x, point.z);
-            }
+            //if (TerrainGenerator.is_initial)
+            //{
+            point.y = TerrainGenerator.getHeightWithBais(point.x, point.z);
+            //}
             if (point.y < min_y) min_y = point.y;
             points.Add(point);
             coord_index += 3;
@@ -84,6 +100,7 @@ static public class HouseGenerator
             segment_id_q.Add(segment_id);
         }
         gobj_db[segment_id].Add(house_id, gobj);
+        gobj.transform.parent = house_manager.transform;
     }
 
     static public void destroyEarliestSegment()

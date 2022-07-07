@@ -8,15 +8,18 @@ public class ComputeHightmap : MonoBehaviour
     public Material material;
     public ComputeShader compute_shader;
     public RenderTexture tex;
+    public RenderTexture constraints_tex;
     public Texture2D main_tex;
     public bool calc;
     public bool show_feature;
     public bool set_cube_to_height;
+    public bool test_subdivision;
     WVec3[] features;
     public GameObject features_manager;
     public GameObject features_prefab;
     public GameObject test_cube;
     Texture2D heightmap;
+    Texture2D constraintsmap;
     // Start is called before the first frame update
     void Start()
     {
@@ -44,6 +47,16 @@ public class ComputeHightmap : MonoBehaviour
             float height = heightmap.GetPixel(384, 384).r * 3000;
             Debug.Log("set test cube's height to " + height.ToString());
             test_cube.transform.position = new Vector3(test_cube.transform.position.x, height, test_cube.transform.position.z);
+        }
+
+        if (test_subdivision)
+        {
+            test_subdivision = false;
+            TerrainGenerator.heightmap_mat = material;
+            TerrainGenerator.compute_shader = compute_shader;
+            TerrainGenerator.main_tex = main_tex;
+            TerrainGenerator.loadTerrain();
+            testSubdivision();
         }
     }
 
@@ -77,21 +90,49 @@ public class ComputeHightmap : MonoBehaviour
         
         int kernelHandler = compute_shader.FindKernel("CSMain");
         compute_shader.SetTexture(kernelHandler, "Result", tex);
+        compute_shader.SetTexture(kernelHandler, "Constraintsmap", constraints_tex);
         compute_shader.SetVectorArray("features", area_features);
         compute_shader.SetInt("features_count", area_features.Length);
         compute_shader.SetVectorArray("constraints", area_constraints.ToArray());
         compute_shader.SetInt("constraints_count", area_constraints.Count);
-        compute_shader.SetFloat("x", -328.0f);
-        compute_shader.SetFloat("z", -328.0f);
-        compute_shader.SetFloat("patch_length", 768.0f);
-        compute_shader.Dispatch(kernelHandler, 768 / 8, 768 / 8, 1);
+        compute_shader.SetFloat("x", -8.0f);
+        compute_shader.SetFloat("z", -8.0f);
+        compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / PublicOutputInfo.tex_size); // patch_length / tex_length
+        compute_shader.Dispatch(kernelHandler, PublicOutputInfo.tex_size / 8, PublicOutputInfo.tex_size / 8, 1);
 
-        heightmap = new Texture2D(768, 768, TextureFormat.RGB24, false);
-        Rect rectReadPicture = new Rect(0, 0, 768, 768);
+        heightmap = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false);
+        Rect rectReadPicture = new Rect(0, 0, PublicOutputInfo.tex_size, PublicOutputInfo.tex_size);
         RenderTexture.active = tex;
         // Read pixels
         heightmap.ReadPixels(rectReadPicture, 0, 0);
         heightmap.Apply();
         RenderTexture.active = null; // added to avoid errors 
+
+        constraintsmap = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false);
+        RenderTexture.active = constraints_tex;
+        // Read pixels
+        constraintsmap.ReadPixels(rectReadPicture, 0, 0);
+        constraintsmap.Apply();
+        RenderTexture.active = null; // added to avoid errors 
+    }
+
+    void testSubdivision()
+    {
+        int x_index = 13;
+        int z_index = 7;
+        for (int i = -5; i <= 5; i++)
+        {
+            for (int j = -5; j <= 5; j++)
+            {
+                if (!TerrainGenerator.is_generated[(x_index + i) * TerrainGenerator.z_patch_num + (z_index + j)])
+                {
+                    TerrainGenerator.is_generated[(x_index + i) * TerrainGenerator.z_patch_num + (z_index + j)] = true;
+                    int x_piece_num = 64;
+                    int z_piece_num = 64;
+                    PublicOutputInfo.piece_length = 2;
+                    StartCoroutine(TerrainGenerator.generateTerrainPatchWithTex(x_index + i, z_index + j, x_piece_num, z_piece_num));
+                }
+            }
+        }
     }
 }

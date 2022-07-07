@@ -7,6 +7,11 @@ public class TerrainView : MonoBehaviour
     //public GameObject cam;
     //float radius = 16 * 2 * 32;
     // Start is called before the first frame update
+    bool is_update_mesh = false;
+    public int x_index;
+    public int z_index;
+    public int x_piece_num;
+    public int z_piece_num;
     void Start()
     {
         
@@ -25,6 +30,20 @@ public class TerrainView : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!is_update_mesh)
+        {
+            int[] progress = new int[1];
+            TerrainGenerator.progress_buffer[x_index * TerrainGenerator.z_patch_num + z_index].GetData(progress);
+            if (progress[0] == 1)
+            {
+                is_update_mesh = true;
+                StartCoroutine(TerrainGenerator.generateTerrainPatchWithTex(x_index, z_index, x_piece_num, z_piece_num));
+            }
+            else
+            {
+                Debug.LogError("Fence not working");
+            }
+        }
         //if (GetComponent<MeshRenderer>().isVisible)
         //{
         //    GetComponent<MeshRenderer>().enabled = true;
