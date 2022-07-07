@@ -27,6 +27,7 @@ public class IndoorBike_FTMS
     string lastError;
 
     float last_write_time = 0.0f;
+    int sended_resistance = 0;
 
     MonoBehaviour mono;
     public IndoorBike_FTMS(MonoBehaviour _mono)
@@ -266,16 +267,16 @@ public class IndoorBike_FTMS
                     index += 2;
                 }
                 // subcribeText.text = Encoding.ASCII.GetString(res.buf, 0, res.size);
+
+                output += "Resistance: " + sended_resistance + "\n";
             }
 
             if (Time.time - last_write_time > 1.0f) {
-                Debug.Log(Info.getOutputSlope());
-                write_resistance(Info.getOutputSlope());
+                sended_resistance = Mathf.FloorToInt(Info.getOutputSlope());
+                write_resistance(sended_resistance);
                 last_write_time = Time.time;
             }
-            //Write(Info.getOutputSlope());
-
-
+            
 
             // log potential errors
             BleApi.ErrorMessage res_err = new BleApi.ErrorMessage();
@@ -317,20 +318,24 @@ public class IndoorBike_FTMS
         }
         BleApi.SendData(in data, false);
     }
+
     public void write_resistance(float val)
+    {
+        write_resistance(Mathf.FloorToInt(val));
+    }
+    public void write_resistance(int val)
     {
         BleApi.SubscribeCharacteristic_Write(selectedDeviceId, selectedServiceId, "{00002ad9-0000-1000-8000-00805f9b34fb}", false);
         Write("00");
-        byte william1 = Convert.ToByte((int)val % 256);
-        byte william2 = Convert.ToByte((int)val / 256);
-        byte[] payload = { 0x11, 0x00, 0x00, william1, william2, 0x00, 0x00 };
+        byte resistance1 = Convert.ToByte(val % 256);
+        byte resistance2 = Convert.ToByte(val / 256);
+        byte[] payload = { 0x11, 0x00, 0x00, resistance1, resistance2, 0x00, 0x00 };
         BleApi.BLEData data = new BleApi.BLEData();
         data.buf = new byte[512];
         data.deviceId = selectedDeviceId;
         data.serviceUuid = selectedServiceId;
         data.characteristicUuid = "{00002ad9-0000-1000-8000-00805f9b34fb}";
-        for (int i = 0; i < payload.Length; i++)
-        {
+        for (int i = 0; i < payload.Length; i++){
             data.buf[i] = payload[i];
         }
         data.size = (short)payload.Length;

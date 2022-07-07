@@ -84,6 +84,7 @@ public class bgWall : bgComponent
             else
             {
                 bgAsset asset = builder.get_asset(commands[i]);
+                //if(builder.get_balcony())
                 GameObject obj = asset.build();
                 obj.transform.parent = go.transform;
                 obj.transform.localPosition = pos;
