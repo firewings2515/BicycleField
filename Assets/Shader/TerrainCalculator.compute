@@ -104,9 +104,9 @@ RWTexture2D<float4> Constraintsmap;
 
 float4 road_constraints[512];
 int road_constraints_count;
-//float4 building_constraints[1024];
-//int building_constraints_count;
-//int building_constraints_points_count[128];
+float4 building_constraints[1024];
+int building_constraints_count;
+int building_constraints_points_count[128];
 
 float2 renderConstraints(float2 xz)
 {
@@ -153,7 +153,7 @@ float2 renderConstraints(float2 xz)
     //if (building_constraints_count > 0)
     //{
     //    int constraints_index = 0;
-    //    for (int building_index = 0; building_index < 0; building_index++)
+    //    for (int building_index = 0; building_index < building_constraints_count; building_index++)
     //    {
     //        /*float2 loc = building_constraints[constraints_index].xz;
     //        float dist = length(loc - xz);
@@ -186,10 +186,10 @@ void IDWTerrain(uint3 id : SV_DispatchThreadID)
     //float height = IDW(x + id.x * resolution, z + id.y * resolution) + bias_y; // no-need-passing gaussian filter
     float2 coord = float2(x + id.x * resolution - 16, z + id.y * resolution - 16);
     float height = IDW(coord);
-    float2 road_constraint = renderConstraints(coord); // output: x is dist, y is DEM height
+    //float2 road_constraint = renderConstraints(coord); // output: x is dist, y is DEM height
     //float road_constraint = roadConstraint(x + id.x * resolution, z + id.y * resolution);
     //height = (road_constraint.x) * road_constraint.y + (1 - road_constraint.x) * height;
-    Result[id.xy] = toHeightmap(height, road_constraint.x);
+    Result[id.xy] = toHeightmap(height, 0);
     //Constraintsmap[id.xy] = float4(road_constraint.x, 0, 0, 1);
 }
 
@@ -218,7 +218,6 @@ void Constraints(uint3 id : SV_DispatchThreadID)
     float height = decodeHeight(input[id.xy]);
     height = (road_constraint.x) * road_constraint.y + (1 - road_constraint.x) * height;
     Constraintsmap[id.xy] = float4(road_constraint.x, 0, 0, 1);
-    //Result[id.xy] = toHeightmap(height, road_constraint.x);
-    Result[id.xy] = input[id.xy];
+    Result[id.xy] = toHeightmap(height, road_constraint.x);
     progress[0] = 1;
 }

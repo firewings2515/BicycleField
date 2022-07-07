@@ -719,9 +719,9 @@ static public class TerrainGenerator
         compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / (PublicOutputInfo.tex_size - 1)); // patch_length / tex_length
         compute_shader.SetVectorArray("road_constraints", area_road_constraints);
         compute_shader.SetInt("road_constraints_count", area_road_constraints.Length);
-        //compute_shader.SetVectorArray("building_constraints", area_building_constraints);
-        //compute_shader.SetInts("building_constraints_points_count", area_building_constraints_points_count);
-        //compute_shader.SetInt("building_constraints_count", area_building_constraints_points_count.Length);
+        compute_shader.SetVectorArray("building_constraints", area_building_constraints);
+        compute_shader.SetInts("building_constraints_points_count", area_building_constraints_points_count);
+        compute_shader.SetInt("building_constraints_count", area_building_constraints_points_count.Length);
         progress_buffer[x_index * z_patch_num + z_index] = new ComputeBuffer(1, 4);
         int[] progress = new int[] { 0 };
         progress_buffer[x_index * z_patch_num + z_index].SetData(progress);
@@ -752,11 +752,11 @@ static public class TerrainGenerator
         terrains[x_index * z_patch_num + z_index] = new GameObject("terrain_peice_" + x_index + "_" + z_index);
         MeshRenderer mr = terrains[x_index * z_patch_num + z_index].AddComponent<MeshRenderer>();
         //mr.material = new Material(terrain_mat);
-        mr.material.SetTexture("_MainTex", heightmaps[x_index * z_patch_num + z_index]);
+        //mr.material.SetTexture("_MainTex", heightmaps[x_index * z_patch_num + z_index]);
         //mr.material.SetTexture("_MainTex", heightmap_pregaussian);
         //mr.material.SetTexture("_MainTex", heightmap_gaussian);
         //mr.material.SetTexture("_MainTex", constraintsmap[x_index * z_patch_num + z_index]);
-        //mr.material.SetTexture("_MainTex", main_tex);
+        mr.material.SetTexture("_MainTex", main_tex);
         terrains[x_index * z_patch_num + z_index].AddComponent<TerrainView>();
         terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().x_index = x_index;
         terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().z_index = z_index;
