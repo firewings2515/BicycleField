@@ -86,7 +86,7 @@ namespace PathCreation.Examples
                     }
 
                     transform.position = new_pos;
-                    transform.rotation = Quaternion.Lerp(transform.rotation, pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction), 0.02f);
+                    transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(((there - here).magnitude < 0.000001f) ? Vector3.forward : there - here, pathCreator.path.up) * Quaternion.AngleAxis(-90, Vector3.forward), 0.2f);//Quaternion.Lerp(transform.rotation, pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction), 0.02f);
                 }
 
                 manageSlopeDisplay();

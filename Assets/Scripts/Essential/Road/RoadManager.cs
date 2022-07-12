@@ -160,7 +160,7 @@ public class RoadManager : MonoBehaviour
             //GetComponent<HouseManager>().addToBuffer(point_data);
             point_data = reader.ReadLine();
         }
-        HouseGenerator.generateHouses(segment_id_list, house_id_list, info_list);
+        //HouseGenerator.generateHouses(segment_id_list, house_id_list, info_list);
         return point_data != null;
     }
 
@@ -179,7 +179,9 @@ public class RoadManager : MonoBehaviour
 
     private void removeEarliestRoad(bool destroy = true)
     {
-        if (destroy) HouseGenerator.destroySegment(last_segment++);
+        //if (destroy) HouseGenerator.destroySegment(last_segment++);
+        if (destroy) last_segment++;
+
         Vector3 remove_pos = path_creator.bezierPath.GetPoint(0);
         StartCoroutine(TerrainGenerator.removeAreaTerrain(remove_pos.x, remove_pos.z));
         path_creator.bezierPath.DeleteSegment(0);
