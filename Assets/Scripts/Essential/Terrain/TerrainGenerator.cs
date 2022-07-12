@@ -38,7 +38,7 @@ static public class TerrainGenerator
     static public bool[] is_generated;                                  // Check the terrain is generated or not
     static public int[] trigger_num_in_view;                            // Number of triggers of road, destroy when 0
     static public KDTree kdtree;                                        // For searching and recording feature points
-    static public int terrain_mode = 0;                                 // 0 is DEM, 1 is IDW, 2 is NNI, controled by TerrainManager
+    static public int terrain_mode = 0;                                 // 0 is IDW, 1 is DEM, 2 is NNI, controled by TerrainManager
     static public bool show_feature_ball = true;
     static public GameObject feature_ball_prefab;
     static public bool is_queue_generate_patch_empty = false;
@@ -376,7 +376,7 @@ static public class TerrainGenerator
         float center_x = min_x + (2 * x_index + x_piece_num) * PublicOutputInfo.piece_length / 2;
         float center_z = min_z + (2 * z_index + z_piece_num) * PublicOutputInfo.piece_length / 2;
         float center_y = 0.0f;
-        if (terrain_mode == 1)
+        if (terrain_mode == 0)
             center_y = min_y + getIDWHeight(center_x, center_z);
         //float center_y = min_y + IDW.inverseDistanceWeighting(getVertexFeatures(center_x, center_z), center_x, center_z); // -15
         Vector4[] area_features = getAreaFeatures(min_x + x_index * PublicOutputInfo.piece_length, min_z + z_index * PublicOutputInfo.piece_length, x_piece_num, z_piece_num);
@@ -387,7 +387,7 @@ static public class TerrainGenerator
             {
                 terrain_points[i, j, 0] = min_x + (x_index + i) * PublicOutputInfo.piece_length;
                 terrain_points[i, j, 2] = min_z + (z_index + j) * PublicOutputInfo.piece_length;
-                if (terrain_mode == 0)
+                if (terrain_mode == 1)
                     terrain_points[i, j, 1] = min_y + getDEMHeight(terrain_points[i, j, 0], terrain_points[i, j, 2]); // min_y is a bias
                 else
                     terrain_points[i, j, 1] = center_y;
@@ -428,11 +428,11 @@ static public class TerrainGenerator
         MeshFilter mf = terrain.AddComponent<MeshFilter>();
         MeshRenderer mr = terrain.AddComponent<MeshRenderer>();
         mf.mesh = mesh;
-        if (terrain_mode == 0)
+        if (terrain_mode == 1)
         {
             mr.material = new Material(terrain_mat);
         }
-        else if (terrain_mode == 1)
+        else if (terrain_mode == 0)
         {
             mr.material = new Material(terrain_idw_mat);
             mr.material.SetVectorArray("features", area_features);
@@ -497,10 +497,10 @@ static public class TerrainGenerator
     {
         // in constraint-tex
         // out constraint-tex
-        return getHeightFromComputeShader(x, z) + min_y;
-        //if (terrain_mode == 0)
-        //    return getDEMHeight(x, z, true) + min_y;
-        //else if (terrain_mode == 1)
+        if (terrain_mode == 1)
+            return getDEMHeight(x, z, true) + min_y;
+        else
+            return getHeightFromComputeShader(x, z) + min_y;
         //    return getIDWHeight(x, z) + min_y;
         //else
         //    return getNNIHeight(x, z) + min_y;
@@ -785,10 +785,9 @@ static public class TerrainGenerator
         int indices_index = 0;
         float center_x = min_x + (2 * x_index + 1) * PublicOutputInfo.patch_length / 2;
         float center_z = min_z + (2 * z_index + 1) * PublicOutputInfo.patch_length / 2;
-        float center_y = getHeightFromComputeShader(center_x, center_z);
-        //Debug.Log(center_y);
-        //if (terrain_mode == 1)
-        //    center_y = min_y + getIDWHeight(center_x, center_z);
+        float center_y = min_y + getDEMHeight(center_x, center_z, true);
+        if (terrain_mode == 0)
+            center_y = min_y + getHeightFromComputeShader(center_x, center_z);
 
         Vector3 center = new Vector3(center_x, center_y, center_z);
         for (int i = 0; i <= x_piece_num; i++)
@@ -797,9 +796,11 @@ static public class TerrainGenerator
             {
                 uv[i * (z_piece_num + 1) + j] = new Vector2((float)i / x_piece_num, (float)j / z_piece_num);
                 terrain_points[i, j, 0] = min_x + x_index * PublicOutputInfo.patch_length + i * PublicOutputInfo.piece_length;
-                terrain_points[i, j, 1] = getHeightFromTexBilinear(x_index, z_index, uv[i * (z_piece_num + 1) + j].x, uv[i * (z_piece_num + 1) + j].y);
-                //terrain_points[i, j, 1] = getHeightFromTex(x_index, z_index, i, j);
                 terrain_points[i, j, 2] = min_z + z_index * PublicOutputInfo.patch_length + j * PublicOutputInfo.piece_length;
+                if (terrain_mode == 1)
+                    terrain_points[i, j, 1] = min_y + getDEMHeight(terrain_points[i, j, 0], terrain_points[i, j, 2], true);
+                else
+                    terrain_points[i, j, 1] = min_y + getHeightFromTexBilinear(x_index, z_index, uv[i * (z_piece_num + 1) + j].x, uv[i * (z_piece_num + 1) + j].y);
                 vertice[i * (z_piece_num + 1) + j] = new Vector3(terrain_points[i, j, 0] - center.x, terrain_points[i, j, 1] - center.y, terrain_points[i, j, 2] - center.z);
             }
         }
@@ -841,6 +842,7 @@ static public class TerrainGenerator
     {
         Color raw = heightmaps[x_index * z_patch_num + z_index].GetPixel(peice_x_index * 8, peice_z_index * 8);
         return raw.g * 64 * 64 + raw.b * 64 + raw.a;
+        //return raw.g;
         //int x = Mathf.FloorToInt(u * (PublicOutputInfo.tex_size - 1));
         //int z = Mathf.FloorToInt(v * (PublicOutputInfo.tex_size - 1));
         //Debug.Log(x.ToString() + ", " + z.ToString());
@@ -851,10 +853,7 @@ static public class TerrainGenerator
     {
         Color raw = heightmaps[x_index * z_patch_num + z_index].GetPixelBilinear(u, v);
         return raw.g * 64 * 64 + raw.b * 64 + raw.a;
-        //int x = Mathf.FloorToInt(u * (PublicOutputInfo.tex_size - 1));
-        //int z = Mathf.FloorToInt(v * (PublicOutputInfo.tex_size - 1));
-        //Debug.Log(x.ToString() + ", " + z.ToString());
-        //return heights[x_index * z_patch_num + z_index][x * PublicOutputInfo.tex_size + z];
+        //return raw.g;
     }
 
     static float getHeightFromComputeShader(float x, float z)

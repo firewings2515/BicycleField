@@ -95,10 +95,10 @@ public class RoadManager : MonoBehaviour
             while (trigger_wait_queue.Count > 0)
             {
                 GameObject trigger = trigger_wait_queue.Dequeue();
-                if (trigger)
-                {
-                    trigger.transform.position = new Vector3(trigger.transform.position.x, TerrainGenerator.getHeightWithBais(trigger.transform.position.x, trigger.transform.position.z), trigger.transform.position.z);
-                }
+                //if (trigger)
+                //{
+                //    trigger.transform.position = new Vector3(trigger.transform.position.x, TerrainGenerator.getHeightWithBais(trigger.transform.position.x, trigger.transform.position.z), trigger.transform.position.z);
+                //}
             }
         }
     }
@@ -108,7 +108,7 @@ public class RoadManager : MonoBehaviour
         if (getNextSegment(out string str_point))
         {
             Vector3 vec3_point = Functions.StrToVec3(str_point);
-            vec3_point.y = 0.0f;
+            //vec3_point.y = 0.0f;
 
             //queue_checkpoint_vec3.Enqueue(vec3_point);
             spawnAnchorCheckpoint(vec3_point);

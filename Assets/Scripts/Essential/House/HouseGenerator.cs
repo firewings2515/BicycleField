@@ -63,13 +63,13 @@ static public class HouseGenerator
         Vector3 total = new Vector3();
         //if (TerrainGenerator.is_initial)
         //{
-        single_point.y = TerrainGenerator.getHeightWithBais(single_point.x, single_point.z);
+        //single_point.y = TerrainGenerator.getHeightWithBais(single_point.x, single_point.z);
         //}
         for (int i = 0; i < polygon_count; i++) {
-            Vector3 point = new Vector3(float.Parse(house_infos[coord_index]),0, float.Parse(house_infos[coord_index + 2]));
+            Vector3 point = new Vector3(float.Parse(house_infos[coord_index]), float.Parse(house_infos[coord_index + 1]), float.Parse(house_infos[coord_index + 2]));
             //if (TerrainGenerator.is_initial)
             //{
-            point.y = TerrainGenerator.getHeightWithBais(point.x, point.z);
+            //point.y = TerrainGenerator.getHeightWithBais(point.x, point.z);
             //}
             if (point.y < min_y) min_y = point.y;
             points.Add(point);

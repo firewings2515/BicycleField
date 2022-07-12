@@ -63,7 +63,7 @@ namespace PathCreation.Examples
 
             bool usePathNormals = !(path.space == PathSpace.xyz && flattenSurface);
 
-            float last_y = TerrainGenerator.getHeightWithBais(path.GetPoint(0).x, path.GetPoint(0).z);
+            //float last_y = TerrainGenerator.getHeightWithBais(path.GetPoint(0).x, path.GetPoint(0).z);
 
             for (int i = 0; i < path.NumPoints; i++)
             {
@@ -78,8 +78,10 @@ namespace PathCreation.Examples
                 //Vector3 vertSideA = new Vector3(x, y, z) - localRight * Mathf.Abs(roadWidth);
                 //Vector3 vertSideB = new Vector3(x, y, z) + localRight * Mathf.Abs(roadWidth);
 
-                Vector3 vertSideA = new Vector3(path.GetPoint(i).x, TerrainGenerator.getHeightWithBais(path.GetPoint(i).x, path.GetPoint(i).z) + road_y_offset, path.GetPoint(i).z) - localRight * Mathf.Abs(roadWidth);
-                Vector3 vertSideB = new Vector3(path.GetPoint(i).x, TerrainGenerator.getHeightWithBais(path.GetPoint(i).x, path.GetPoint(i).z) + road_y_offset, path.GetPoint(i).z) + localRight * Mathf.Abs(roadWidth);
+                //Vector3 vertSideA = new Vector3(path.GetPoint(i).x, TerrainGenerator.getHeightWithBais(path.GetPoint(i).x, path.GetPoint(i).z) + road_y_offset, path.GetPoint(i).z) - localRight * Mathf.Abs(roadWidth);
+                //Vector3 vertSideB = new Vector3(path.GetPoint(i).x, TerrainGenerator.getHeightWithBais(path.GetPoint(i).x, path.GetPoint(i).z) + road_y_offset, path.GetPoint(i).z) + localRight * Mathf.Abs(roadWidth);
+                Vector3 vertSideA = new Vector3(path.GetPoint(i).x, path.GetPoint(i).y + road_y_offset, path.GetPoint(i).z) - localRight * Mathf.Abs(roadWidth);
+                Vector3 vertSideB = new Vector3(path.GetPoint(i).x, path.GetPoint(i).y + road_y_offset, path.GetPoint(i).z) + localRight * Mathf.Abs(roadWidth);
 
                 // Add top of road vertices
                 verts[vertIndex + 0] = vertSideA;

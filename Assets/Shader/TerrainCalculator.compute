@@ -56,11 +56,13 @@ float4 toHeightmap(float height, float anchor)
     float height_1 = (height_int % 64) / 64.0;
     float height_2 = height - height_int;
     return float4(anchor, height_0, height_1, height_2);
+    //return float4(anchor, height, 0, 0);
 }
 
 float decodeHeight(float4 raw)
 {
     return raw.g * 64.0 * 64.0 + raw.b * 64.0 + raw.a;
+    //return raw.g;
 }
 
 // sigma = 10

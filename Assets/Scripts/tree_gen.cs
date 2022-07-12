@@ -29,10 +29,10 @@ public class tree_gen : MonoBehaviour
         tree.transform.position = transform.position;
         Vector3 offset = random_offset();
         Vector3 pos = new Vector3(tree.transform.position.x + offset.x, 0, tree.transform.position.z + offset.z);
-        if (TerrainGenerator.is_initial)
-        {
-            pos.y = TerrainGenerator.getHeightWithBais(pos.x, pos.y);
-        }
+        //if (TerrainGenerator.is_initial)
+        //{
+        //    pos.y = TerrainGenerator.getHeightWithBais(pos.x, pos.y);
+        //}
         pos.y += 5.0f;
         tree.transform.position = pos;
         tree.transform.localScale = new Vector3(5,5,1);

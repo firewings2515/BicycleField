@@ -33,7 +33,7 @@ namespace PathCreation.Examples
             if (TerrainGenerator.is_initial)
             {
                 Vector3 tempGPA = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
-                tempGPA.y = TerrainGenerator.getHeightWithBais(tempGPA.x, tempGPA.z);
+                //tempGPA.y = TerrainGenerator.getHeightWithBais(tempGPA.x, tempGPA.z);
 
                 if (!is_started)
                 {
@@ -42,7 +42,7 @@ namespace PathCreation.Examples
                         // Subscribed to the pathUpdated event so that we're notified if the path changes during the game
                         pathCreator.pathUpdated += OnPathChanged;
                         transform.position = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
-                        transform.position = new Vector3(transform.position.x, Mathf.Lerp(transform.position.y,TerrainGenerator.getHeightWithBais(transform.position.x, transform.position.z), 0.1f) + cam_y_offset, transform.position.z);
+                        //transform.position = new Vector3(transform.position.x, Mathf.Lerp(transform.position.y,TerrainGenerator.getHeightWithBais(transform.position.x, transform.position.z), 0.1f) + cam_y_offset, transform.position.z);
                         transform.rotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
                     }
 
@@ -53,7 +53,7 @@ namespace PathCreation.Examples
 
                 Vector3 here = tempGPA;
                 Vector3 there = pathCreator.path.GetPointAtDistance(distanceTravelled + 1f, endOfPathInstruction);
-                there.y = TerrainGenerator.getHeightWithBais(there.x, there.z);
+                //there.y = TerrainGenerator.getHeightWithBais(there.x, there.z);
                 float slope = (there.y - here.y) / (Mathf.Sqrt(Mathf.Pow(there.x - here.x, 2) + Mathf.Pow(there.z - here.z, 2)));
                 Info.slope = slope;
                 //slope_display.GetComponent<Text>().text = "Slope: " + slope.ToString();
@@ -122,7 +122,8 @@ namespace PathCreation.Examples
         private float calculateSlopeHeightDiff(int id, int anchor)
         {
             Vector3 there = pathCreator.path.GetPointAtDistance(distanceTravelled + (id - anchor) * Info.mapview_height, endOfPathInstruction);
-            float result = (TerrainGenerator.getHeightWithBais(transform.position.x, transform.position.z) - TerrainGenerator.getHeightWithBais(there.x, there.z)) * 5;
+            //float result = (TerrainGenerator.getHeightWithBais(transform.position.x, transform.position.z) - TerrainGenerator.getHeightWithBais(there.x, there.z)) * 5;
+            float result = (transform.position.y - there.y) * 5;
             if (result > 100) result = 100;
             if (result < -100) result = -100;
             return result;
