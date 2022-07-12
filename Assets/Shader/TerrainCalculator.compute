@@ -14,6 +14,7 @@ float z;
 float resolution;
 int gaussian_m;
 RWStructuredBuffer<int> progress;
+RWStructuredBuffer<float> heights;
 
 float getWeight(float d, float w)
 {
@@ -152,33 +153,33 @@ float2 renderConstraints(float2 xz)
         }
     }
 
-    //if (building_constraints_count > 0)
-    //{
-    //    int constraints_index = 0;
-    //    for (int building_index = 0; building_index < building_constraints_count; building_index++)
-    //    {
-    //        /*float2 loc = building_constraints[constraints_index].xz;
-    //        float dist = length(loc - xz);
-    //        if (dist < 8.0)
-    //        {
-    //            v_max = 1;
-    //        }*/
-    //        for (int constraints_points_count_index = 0; constraints_points_count_index < building_constraints_points_count[building_index]; constraints_index++, constraints_points_count_index++)
-    //        {
-    //            float2 loc = building_constraints[constraints_index].xz;
-    //            float dist = length(loc - xz);
-    //            if (dist < 8.0)
-    //            {
-    //                v_max = 1;
-    //                if (dist_min > dist)
-    //                {
-    //                    dist_min = dist;
-    //                    h = loc.y;
-    //                }
-    //            }
-    //        }
-    //    }
-    //}
+    if (building_constraints_count > 0)
+    {
+        int constraints_index = 0;
+        for (int building_index = 0; building_index < building_constraints_count; building_index++)
+        {
+            /*float2 loc = building_constraints[constraints_index].xz;
+            float dist = length(loc - xz);
+            if (dist < 8.0)
+            {
+                v_max = 1;
+            }*/
+            for (int constraints_points_count_index = 0; constraints_points_count_index < building_constraints_points_count[building_index]; constraints_index++, constraints_points_count_index++)
+            {
+                float2 loc = building_constraints[constraints_index].xz;
+                float dist = length(loc - xz);
+                if (dist < 8.0)
+                {
+                    v_max = 1;
+                    if (dist_min > dist)
+                    {
+                        dist_min = dist;
+                        h = loc.y;
+                    }
+                }
+            }
+        }
+    }
     return float2(v_max, h);
 }
 
@@ -186,13 +187,16 @@ float2 renderConstraints(float2 xz)
 void IDWTerrain(uint3 id : SV_DispatchThreadID)
 {
     //float height = IDW(x + id.x * resolution, z + id.y * resolution) + bias_y; // no-need-passing gaussian filter
-    float2 coord = float2(x + id.x * resolution - 16, z + id.y * resolution - 16);
+    //float2 coord = float2(x + id.x * resolution - 16, z + id.y * resolution - 16);
+    float2 coord = float2(x + id.x * resolution, z + id.y * resolution);
     float height = IDW(coord);
     //float2 road_constraint = renderConstraints(coord); // output: x is dist, y is DEM height
     //float road_constraint = roadConstraint(x + id.x * resolution, z + id.y * resolution);
     //height = (road_constraint.x) * road_constraint.y + (1 - road_constraint.x) * height;
     Result[id.xy] = toHeightmap(height, 0);
+    heights[id.x * 17 * 8 + id.y] = height;
     //Constraintsmap[id.xy] = float4(road_constraint.x, 0, 0, 1);
+    progress[0] = 1;
 }
 
 [numthreads(8, 8, 1)]

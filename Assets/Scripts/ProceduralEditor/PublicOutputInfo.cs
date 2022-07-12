@@ -14,5 +14,6 @@ public static class PublicOutputInfo
     public static Vector2 boundary_min;                                                                 // for terrain to getDEMHeight
     public static int gaussian_m = 16;
     public static int tex_size = 129;                                                                   
+    public static int height_buffer_row_size = 136;
     public static int pregaussian_tex_size = tex_size + 2 * gaussian_m;                                 // 129 + 32 = 161
 }

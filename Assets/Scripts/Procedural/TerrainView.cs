@@ -37,6 +37,7 @@ public class TerrainView : MonoBehaviour
             if (progress[0] == 1)
             {
                 is_update_mesh = true;
+                TerrainGenerator.progress_buffer[x_index * TerrainGenerator.z_patch_num + z_index].Release();
                 StartCoroutine(TerrainGenerator.generateTerrainPatchWithTex(x_index, z_index, x_piece_num, z_piece_num));
             }
             else
