@@ -25,7 +25,7 @@ static public class HouseGenerator
     static public Queue<List<int>> queue_house_id = new Queue<List<int>>();
     static public Queue<List<string>> queue_info = new Queue<List<string>>();
 
-    static public GameObject house_manager;
+    static public GameObject building_manager;
 
     static public void init() {
         //builder = new bgBuilder(grammar_files_path);
@@ -85,13 +85,11 @@ static public class HouseGenerator
             points[i] = new Vector3(points[i].x - averge.x, 0, points[i].z - averge.z);
         }
 
-
         GameObject gobj;
         //gobj = builder.build(component_names[Random.Range(0, component_names.Length)]);
         //gobj.transform.position = single_point;
         gobj = build_polygon_house(points,4);
         gobj.transform.position = averge;
-
         //gobj.transform.Translate(0, single_point.y,0);
 
         //gobj.transform.rotation = Quaternion.Euler(0,Random.Range(0,360),0);
@@ -100,7 +98,7 @@ static public class HouseGenerator
             segment_id_q.Add(segment_id);
         }
         gobj_db[segment_id].Add(house_id, gobj);
-        gobj.transform.parent = house_manager.transform;
+        gobj.transform.parent = building_manager.transform;
     }
 
     static public void destroyEarliestSegment()

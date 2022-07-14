@@ -8,11 +8,11 @@
 Texture2D<float4> input;
 RWTexture2D<float4> Result;
 float4 features[1024];
-int features_count;
+uint features_count;
 float x;
 float z;
 float resolution;
-int gaussian_m;
+uint gaussian_m;
 RWStructuredBuffer<int> progress;
 RWStructuredBuffer<float> heights;
 
@@ -28,7 +28,7 @@ float IDW(float2 xz)
 {
     float sum_up = 0.0;
     float sum_down = 0.0;
-    for (int i = 0; i < features_count; i++)
+    for (uint i = 0; i < features_count; i++)
     {
         //if (features[i].w > -1)
         //    continue;
@@ -52,7 +52,7 @@ float IDW(float2 xz)
 
 float4 toHeightmap(float height, float anchor)
 {
-    int height_int = int(height);
+    uint height_int = uint(height);
     float height_0 = (height_int / 64) / 64.0;
     float height_1 = (height_int % 64) / 64.0;
     float height_2 = height - height_int;
@@ -106,10 +106,36 @@ static const float coeffs[] = {
 RWTexture2D<float4> Constraintsmap;
 
 float4 road_constraints[512];
-int road_constraints_count;
+uint road_constraints_count;
 float4 building_constraints[1024];
-int building_constraints_count;
-int building_constraints_points_count[128];
+uint building_constraints_count;
+uint building_constraints_points_count[128];
+
+//***********************************************************************
+//
+// * Returns which side of the edge the line (x,y) is on. The return value
+//   is one of the constants defined above (LEFT, RIGHT, ON). See above
+//   for a discussion of which side is left and which is right.
+//=======================================================================
+int pointSide(float2 side_p1, float2 side_p2, float2 p)
+{
+    // Compute the determinant: | xs ys 1 |
+    //                          | xe ye 1 |
+    //                          | x  y  1 |
+    // Use its sign to get the answer.
+    float det = side_p1.x *
+        (side_p2.y - p.y) -
+        side_p1.y *
+        (side_p2.x - p.x) +
+        side_p2.x * p.y -
+        side_p2.y * p.x;
+    if (det == 0.0)
+        return 0;
+    else if (det > 0.0)
+        return -1;
+    else
+        return 1;
+}
 
 float2 renderConstraints(float2 xz)
 {
@@ -123,9 +149,9 @@ float2 renderConstraints(float2 xz)
                            1.5, -2.5,    0,   1,
                           -1.5,    2,  0.5,   0,
                            0.5, -0.5,    0,   0 };
-    for (int constraints_index = 0; constraints_index < road_constraints_count - 3; constraints_index++)
+    for (uint constraints_index = 0; constraints_index < road_constraints_count - 3; constraints_index++)
     {
-        for (int i = 0; i < 10; i++)
+        for (uint i = 0; i < 10; i++)
         {
             float t = i / 10.0;
             float4 t_vector = float4(t * t * t, t * t, t, 1);
@@ -155,28 +181,29 @@ float2 renderConstraints(float2 xz)
 
     if (building_constraints_count > 0)
     {
-        int constraints_index = 0;
-        for (int building_index = 0; building_index < building_constraints_count; building_index++)
+        uint constraints_index = 0;
+        uint no = 0;
+        for (uint building_index = 0; building_index < 1 && building_index < building_constraints_count; building_index++)
         {
-            /*float2 loc = building_constraints[constraints_index].xz;
-            float dist = length(loc - xz);
-            if (dist < 8.0)
+            int last_clockwise = 2;
+            for (uint constraints_points_count_index = 0; constraints_points_count_index < building_constraints_points_count[building_index] - 1; constraints_index++, constraints_points_count_index++)
+            {
+                int clockwise = pointSide(building_constraints[constraints_index].xz, building_constraints[constraints_index + 1].xz, xz);
+                if (last_clockwise == 2)
+                {
+                    last_clockwise = clockwise;
+                }
+                if (no == 0 && clockwise != last_clockwise)
+                {
+                    no = 1;
+                }
+            }
+            constraints_index++;
+            if (no == 0)
             {
                 v_max = 1;
-            }*/
-            for (int constraints_points_count_index = 0; constraints_points_count_index < building_constraints_points_count[building_index]; constraints_index++, constraints_points_count_index++)
-            {
-                float2 loc = building_constraints[constraints_index].xz;
-                float dist = length(loc - xz);
-                if (dist < 8.0)
-                {
-                    v_max = 1;
-                    if (dist_min > dist)
-                    {
-                        dist_min = dist;
-                        h = loc.y;
-                    }
-                }
+                h = building_constraints[constraints_index - 1].y;
+                break;
             }
         }
     }
@@ -193,7 +220,10 @@ void IDWTerrain(uint3 id : SV_DispatchThreadID)
     //float2 road_constraint = renderConstraints(coord); // output: x is dist, y is DEM height
     //float road_constraint = roadConstraint(x + id.x * resolution, z + id.y * resolution);
     //height = (road_constraint.x) * road_constraint.y + (1 - road_constraint.x) * height;
-    Result[id.xy] = toHeightmap(height, 0);
+    float2 road_constraint = renderConstraints(coord); // x is dist, y is DEM height
+    height = (road_constraint.x) * road_constraint.y + (1 - road_constraint.x) * height;
+    Result[id.xy] = toHeightmap(height, road_constraint.x);
+    //Result[id.xy] = toHeightmap(height, 0.0);
     heights[id.x * 17 * 8 + id.y] = height;
     //Constraintsmap[id.xy] = float4(road_constraint.x, 0, 0, 1);
     progress[0] = 1;
@@ -204,10 +234,10 @@ void GaussianFilter(uint3 id : SV_DispatchThreadID)
 {
     float sum = 0.0;
     float2 new_coord = id.xy * resolution + float2(gaussian_m, gaussian_m);
-    int N = 2 * gaussian_m + 1;
-    for (int i = 0; i < N; i++)
+    uint N = 2 * gaussian_m + 1;
+    for (uint i = 0; i < N; i++)
     {
-        for (int j = 0; j < N; j++)
+        for (uint j = 0; j < N; j++)
         {
             float2 tc = new_coord + float2(i - gaussian_m, j - gaussian_m);
             sum += coeffs[i] * coeffs[j] * decodeHeight(input[tc]);

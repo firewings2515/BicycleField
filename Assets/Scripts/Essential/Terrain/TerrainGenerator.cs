@@ -26,7 +26,7 @@ static public class TerrainGenerator
     static public Material terrain_nni_mat;                             // Use the material with NNI shader
     static public bool generate;
     static public int vision_patch_num = 5;                             // The number of patches the viewer can see
-    static public float feature_include_length = 320.0f + 16.0f;        // 16 for gaussian M
+    static public float feature_include_length = 320.0f;                // + 16 for gaussian M if want to pass gaussian filter
     static public GameObject[] terrains;                                // Store all patches of terrains
     static public bool need_update = false;                             // Call TerrainManager to generate new patches
     static public int patch_x_index;                                    // Used to calculate the index for removing checking
@@ -56,6 +56,13 @@ static public class TerrainGenerator
     static public Texture2D[] heightmaps;
     static public Texture2D[] constraintsmap;
     static public GameObject terrain_manager;
+    static public GameObject constraints_camera_manager;
+    static public RenderTexture[] constraints_texs;
+    static public GameObject building_polygons_manager;
+    static public Material building_polygon_mat;
+    static public GameObject[] building_polygons;
+    static public bool[] constraintsmap_generated;
+    static float polygon_dilation = 1.25f;
     /// <summary>
     /// Load feature points file with file_path.
     /// Everything that needs height information must wait until is_initial is True.
@@ -72,6 +79,9 @@ static public class TerrainGenerator
         progress_buffer = new ComputeBuffer[x_patch_num * z_patch_num];
         height_buffer = new ComputeBuffer[x_patch_num * z_patch_num];
         heights = new float[x_patch_num * z_patch_num][];
+        constraints_texs = new RenderTexture[x_patch_num * z_patch_num];
+        constraints_camera_manager = new GameObject("ConstraintsCameraManager");
+        constraintsmap_generated = new bool[x_patch_num * z_patch_num];
         is_initial = true;
     }
 
@@ -164,12 +174,14 @@ static public class TerrainGenerator
             int building_n = int.Parse(sr.ReadLine());
             building_constraints_points_count = new int[building_n];
             building_constraints_accumulate_index = new int[building_n];
+            building_polygons = new GameObject[building_n];
             int current_building_constraints_accumulate_index = 0;
             for (int f_i = 0; f_i < building_n; f_i++)
             {
                 building_constraints_points_count[f_i] = int.Parse(sr.ReadLine());
                 building_constraints_accumulate_index[f_i] = current_building_constraints_accumulate_index;
                 current_building_constraints_accumulate_index += building_constraints_points_count[f_i];
+                createBuildingPolygon(f_i);
             }
             Debug.Log("Read Feature File " + file_path + " Successfully");
 
@@ -216,24 +228,69 @@ static public class TerrainGenerator
         float expanded_length = feature_include_length;
         int[] area_features_index = kdtree.getAreaPoints(x - expanded_length, z - expanded_length, x + PublicOutputInfo.patch_length + expanded_length, z + PublicOutputInfo.patch_length + expanded_length);
         Vector4[] area_features = new Vector4[area_features_index.Length];
+        int[] area_constraints_index = kdtree.getAreaPoints(x - 16, z - 16, x + PublicOutputInfo.patch_length + 16, z + PublicOutputInfo.patch_length + 16);
         List<Vector4> area_road_constraints_list = new List<Vector4>();
         List<Vector4> area_building_constraints_contact_points_list = new List<Vector4>();
         for (int area_features_index_index = 0; area_features_index_index < area_features_index.Length; area_features_index_index++)
         {
             WVec3 feature = kdtree.nodes[area_features_index[area_features_index_index]];
+            //if (feature.w < 0)
             area_features[area_features_index_index] = new Vector4(feature.x, feature.y, feature.z, feature.w);
+        }
+
+        for (int area_constraints_index_index = 0; area_constraints_index_index < area_constraints_index.Length; area_constraints_index_index++)
+        {
+            WVec3 feature = kdtree.nodes[area_constraints_index[area_constraints_index_index]];
             if (feature.w > -1)
             {
                 if (feature.w < 100000)
-                    area_road_constraints_list.Add(area_features[area_features_index_index]);
+                    area_road_constraints_list.Add(new Vector4(feature.x, feature.y, feature.z, feature.w));
                 else
-                    area_building_constraints_contact_points_list.Add(area_features[area_features_index_index]);
+                    area_building_constraints_contact_points_list.Add(new Vector4(feature.x, feature.y, feature.z, feature.w));
             }
         }
 
         var area_building_constraints = buildingConstraintsCompile(area_building_constraints_contact_points_list);
 
         return (area_features, roadConstraintsCompile(area_road_constraints_list), area_building_constraints.Item1, area_building_constraints.Item2);
+    }
+
+    static void addAreaRoadConstraintsHead(ref List<Vector4> area_road_constraints)
+    {
+        if (Mathf.Abs(area_road_constraints[0].w) < 1e-6) // first_w == 0
+        {
+            if (area_road_constraints.Count >= 2)
+            {
+                Vector4 head_v = (area_road_constraints[0] - area_road_constraints[1]).normalized;
+                area_road_constraints.Insert(0, area_road_constraints[0] + head_v);
+            }
+        }
+        else // first_w >= 1
+        {
+            int first_w = Mathf.FloorToInt(area_road_constraints[0].w + 0.000001f);
+            Vector4 sup_constraint = new Vector4(road_constraints[first_w - 1].x, road_constraints[first_w - 1].y, road_constraints[first_w - 1].z, road_constraints[first_w - 1].w);
+            area_road_constraints.Insert(0, sup_constraint);
+        }
+    }
+
+    static void addAreaRoadConstraintsTail(ref List<Vector4> area_road_constraints)
+    {
+        int last_w = Mathf.FloorToInt(area_road_constraints[area_road_constraints.Count - 1].w + 0.000001f);
+        if (last_w + 1 < road_constraints.Length)
+        {
+            WVec3 constraint = road_constraints[last_w + 1];
+            Vector4 sup_constraint = new Vector4(constraint.x, constraint.y, constraint.z, constraint.w);
+            area_road_constraints.Add(sup_constraint);
+        }
+        else
+        {
+            WVec3 constraint_0 = road_constraints[last_w];
+            WVec3 constraint_1 = road_constraints[last_w - 1];
+            Vector4 sup_constraint_0 = new Vector4(constraint_0.x, constraint_0.y, constraint_0.z, constraint_0.w);
+            Vector4 sup_constraint_1 = new Vector4(constraint_1.x, constraint_1.y, constraint_1.z, constraint_1.w);
+            Vector4 tail_v = (sup_constraint_0 - sup_constraint_1).normalized;
+            area_road_constraints.Add(sup_constraint_0 + tail_v);
+        }
     }
 
     static Vector4[] roadConstraintsCompile(List<Vector4> area_road_constraints)
@@ -250,20 +307,8 @@ static public class TerrainGenerator
         //Debug.Log(origin);
         if (area_road_constraints.Count > 0)
         {
-            if (Mathf.Abs(area_road_constraints[0].w) < 1e-6)
-            {
-                if (area_road_constraints.Count >= 2)
-                {
-                    Vector4 head_v = (area_road_constraints[0] - area_road_constraints[1]).normalized;
-                    area_road_constraints.Insert(0, area_road_constraints[0] + head_v);
-                }
-            }
-            else // first_w >= 1
-            {
-                int first_w = Mathf.FloorToInt(area_road_constraints[0].w + 0.000001f);
-                Vector4 sup_constraint = new Vector4(road_constraints[first_w - 1].x, road_constraints[first_w - 1].y, road_constraints[first_w - 1].z, road_constraints[first_w - 1].w);
-                area_road_constraints.Insert(0, sup_constraint);
-            }
+            addAreaRoadConstraintsHead(ref area_road_constraints);
+            addAreaRoadConstraintsHead(ref area_road_constraints);
             for (int area_constraints_index = 0; area_constraints_index < area_road_constraints.Count - 1; area_constraints_index++)
             {
                 int diff_w = Mathf.FloorToInt(Mathf.Abs(area_road_constraints[area_constraints_index].w - area_road_constraints[area_constraints_index + 1].w) + 0.000003f);
@@ -281,22 +326,8 @@ static public class TerrainGenerator
                     area_road_constraints.Insert(area_constraints_index + 1, sup_constraint);
                 }
             }
-            int last_w = Mathf.FloorToInt(area_road_constraints[area_road_constraints.Count - 1].w + 0.000001f);
-            if (last_w + 1 < road_constraints.Length)
-            {
-                WVec3 constraint = road_constraints[last_w + 1];
-                Vector4 sup_constraint = new Vector4(constraint.x, constraint.y, constraint.z, constraint.w);
-                area_road_constraints.Add(sup_constraint);
-            }
-            else
-            {
-                WVec3 constraint_0 = road_constraints[last_w];
-                WVec3 constraint_1 = road_constraints[last_w - 1];
-                Vector4 sup_constraint_0 = new Vector4(constraint_0.x, constraint_0.y, constraint_0.z, constraint_0.w);
-                Vector4 sup_constraint_1 = new Vector4(constraint_1.x, constraint_1.y, constraint_1.z, constraint_1.w);
-                Vector4 tail_v = (sup_constraint_0 - sup_constraint_1).normalized;
-                area_road_constraints.Add(sup_constraint_0 + tail_v);
-            }
+            addAreaRoadConstraintsTail(ref area_road_constraints);
+            addAreaRoadConstraintsTail(ref area_road_constraints);
         }
         //string aftersup = "after sup: ";
         //for (int area_constraints_index = 0; area_constraints_index < area_constraints.Count; area_constraints_index++)
@@ -329,12 +360,14 @@ static public class TerrainGenerator
                     area_building_constraints_points_list.Add(new Vector4(constraint.x, constraint.y, constraint.z, constraint.w));
                     //dd += constraint.x + " " + constraint.y + " " + constraint.z + " " + constraint.w + "\n";
                 }
-                building_constraints_points_count_list.Add(building_constraints_points_count[building_id]);
+                WVec3 constraint_repeat = building_constraints[building_constraints_accumulate_index[building_id]];
+                area_building_constraints_points_list.Add(new Vector4(constraint_repeat.x, constraint_repeat.y, constraint_repeat.z, constraint_repeat.w));
+                building_constraints_points_count_list.Add(building_constraints_points_count[building_id] + 1);
                 last_id = building_id;
             }
         }
         //Debug.Log(dd);
-        return (area_building_constraints_contact_points_list.ToArray(), building_constraints_points_count_list.ToArray());
+        return (area_building_constraints_points_list.ToArray(), building_constraints_points_count_list.ToArray());
     }
 
     static public Vector4[] getVertexFeatures(float x, float z)
@@ -603,10 +636,10 @@ static public class TerrainGenerator
         {
             GameObject ball = GameObject.Instantiate(ball_prefab, new Vector3(points[point_index].x, points[point_index].y, points[point_index].z), Quaternion.identity); // + min_y
             ball.transform.localScale = new Vector3(ball_size, ball_size, ball_size);
-            ball.name = tag + "_" + point_index.ToString();
+            ball.name = tag + "_" + point_index.ToString() + "w" + points[point_index].w.ToString();
             ball.transform.parent = parent;
 
-            if (points[point_index].w > 8)
+            if (points[point_index].w > -1)
             {
                 ball.GetComponent<MeshRenderer>().material.color = Color.red;
             }
@@ -628,24 +661,26 @@ static public class TerrainGenerator
         Vector4[] area_features = area_features_constraints.Item1;
         if (area_features.Length > 1024)
             Debug.LogError("Warning! Compute shader features size is not enough");
-        //if (x_index == 14 && z_index == 12)
-        //{
-        //    WVec3[] meow = new WVec3[area_features.Length];
-        //    for (int i = 0; i < area_features.Length; i++)
-        //    {
-        //        meow[i].x = area_features[i].x;
-        //        meow[i].y = area_features[i].y;
-        //        meow[i].z = area_features[i].z;
-        //        meow[i].w = area_features[i].w;
-        //    }
-        //    showPoint(meow, "feature_leak", (new GameObject()).transform, feature_ball_prefab, 1.0f);
-        //}
         Vector4[] area_road_constraints = area_features_constraints.Item2;
         if (area_road_constraints.Length > 512)
             Debug.LogError("Warning! Compute shader road_constraints size is not enough");
         Vector4[] area_building_constraints = area_features_constraints.Item3;
         if (area_building_constraints.Length > 1024)
             Debug.LogError("Warning! Compute shader building_constraints size is not enough");
+
+        //if (x_index == 16 && z_index == 8)
+        //{
+        //    WVec3[] meow = new WVec3[area_building_constraints.Length];
+        //    for (int i = 0; i < area_building_constraints.Length; i++)
+        //    {
+        //        meow[i].x = area_building_constraints[i].x;
+        //        meow[i].y = area_building_constraints[i].y;
+        //        meow[i].z = area_building_constraints[i].z;
+        //        meow[i].w = area_building_constraints[i].w;
+        //    }
+        //    showPoint(meow, "feature_leak", (new GameObject()).transform, feature_ball_prefab, 1.0f);
+        //}
+
         int[] area_building_constraints_points_count = area_features_constraints.Item4;
         if (area_building_constraints_points_count.Length > 128)
             Debug.LogError("Warning! Compute shader building_constraints_points_count size is not enough");
@@ -666,9 +701,9 @@ static public class TerrainGenerator
         compute_shader.SetInt("features_count", area_features.Length);
         compute_shader.SetVectorArray("road_constraints", area_road_constraints);
         compute_shader.SetInt("road_constraints_count", area_road_constraints.Length);
-        //compute_shader.SetVectorArray("building_constraints", area_building_constraints);
-        //compute_shader.SetInts("building_constraints_points_count", area_building_constraints_points_count);
-        //compute_shader.SetInt("building_constraints_count", area_building_constraints_points_count.Length);
+        compute_shader.SetVectorArray("building_constraints", area_building_constraints);
+        compute_shader.SetInts("building_constraints_points_count", area_building_constraints_points_count);
+        compute_shader.SetInt("building_constraints_count", area_building_constraints_points_count.Length);
         compute_shader.SetFloat("x", min_x + x_index * PublicOutputInfo.patch_length);
         compute_shader.SetFloat("z", min_z + z_index * PublicOutputInfo.patch_length);
         compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / (PublicOutputInfo.tex_size - 1)); // patch_length / tex_length
@@ -776,17 +811,51 @@ static public class TerrainGenerator
         terrains[x_index * z_patch_num + z_index] = new GameObject("terrain_peice_" + x_index + "_" + z_index);
         MeshRenderer mr = terrains[x_index * z_patch_num + z_index].AddComponent<MeshRenderer>();
         //mr.material = new Material(terrain_mat);
-        mr.material.SetTexture("_MainTex", heightmaps[x_index * z_patch_num + z_index]);
+        //mr.material.SetTexture("_MainTex", heightmaps[x_index * z_patch_num + z_index]);
         //mr.material.SetTexture("_MainTex", heightmap_pregaussian);
         //mr.material.SetTexture("_MainTex", heightmap_gaussian);
         //mr.material.SetTexture("_MainTex", constraintsmap[x_index * z_patch_num + z_index]);
-        //mr.material.SetTexture("_MainTex", main_tex);
+        mr.material.SetTexture("_MainTex", main_tex);
         terrains[x_index * z_patch_num + z_index].AddComponent<TerrainView>();
         terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().x_index = x_index;
         terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().z_index = z_index;
         terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().x_piece_num = x_piece_num;
         terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().z_piece_num = z_piece_num;
         terrains[x_index * z_patch_num + z_index].transform.parent = terrain_manager.transform;
+        // ===========================================================================================================
+
+        // =================================== setting Camera ========================================================
+        GameObject constraints_camera = new GameObject("ConstraintsCamera_" + x_index + "_" + z_index);
+        Camera constraints_cam = constraints_camera.AddComponent<Camera>();
+        constraints_cam.name = x_index + "_" + z_index;
+        float center_x = min_x + (2 * x_index + 1) * PublicOutputInfo.patch_length / 2;
+        float center_z = min_z + (2 * z_index + 1) * PublicOutputInfo.patch_length / 2;
+        float center_y = min_y + getDEMHeight(center_x, center_z, true);
+        if (terrain_mode == 0)
+            center_y = min_y + heights[x_index * z_patch_num + z_index][(x_patch_num / 2) * PublicOutputInfo.height_buffer_row_size + (z_piece_num / 2)];
+        constraints_camera.transform.position = new Vector3(center_x, center_y, center_z) + Vector3.up * 100;
+        constraints_cam.transform.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
+        constraints_camera.transform.parent = constraints_camera_manager.transform;
+        constraints_cam.orthographic = true;
+        constraints_cam.orthographicSize = PublicOutputInfo.tex_size / 2.0f;
+        constraints_cam.cullingMask = LayerMask.GetMask("Constraints");
+        constraints_texs[x_index * z_patch_num + z_index] = new RenderTexture(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, 24);
+        constraints_cam.targetTexture = constraints_texs[x_index * z_patch_num + z_index];
+        constraints_cam.clearFlags = CameraClearFlags.SolidColor;
+        constraints_cam.backgroundColor = Color.white;
+        constraints_cam.Render();
+        // ===========================================================================================================
+
+        // ================================= rendering texture2D =====================================================
+        constraintsmap[x_index * z_patch_num + z_index] = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false);
+        RenderTexture.active = constraints_texs[x_index * z_patch_num + z_index];
+        // Read pixels
+        constraintsmap[x_index * z_patch_num + z_index].ReadPixels(rect_result, 0, 0);
+        constraintsmap[x_index * z_patch_num + z_index].wrapMode = TextureWrapMode.Clamp;
+        constraintsmap[x_index * z_patch_num + z_index].Apply();
+        RenderTexture.active = null; // added to avoid errors
+        // Upload texture data to the GPU, so the GPU renders the updated texture
+        constraintsmap_generated[x_index * z_patch_num + z_index] = true;
         // ===========================================================================================================
         yield return null;
     }
@@ -815,7 +884,8 @@ static public class TerrainGenerator
         float center_y = min_y + getDEMHeight(center_x, center_z, true);
         if (terrain_mode == 0)
             //center_y = min_y + getHeightFromComputeShader(center_x, center_z);
-            center_y = min_y + heights[x_index * z_patch_num + z_index][(x_patch_num / 2) * PublicOutputInfo.height_buffer_row_size + (z_piece_num / 2)];
+            //center_y = min_y + heights[x_index * z_patch_num + z_index][(x_patch_num / 2) * PublicOutputInfo.height_buffer_row_size + (z_piece_num / 2)];
+            center_y = min_y + getHeightFromBufferAndConstraintsmap(x_index, z_index, x_piece_num / 2, z_piece_num / 2);
 
         Vector3 center = new Vector3(center_x, center_y, center_z);
         for (int i = 0; i <= x_piece_num; i++)
@@ -829,7 +899,7 @@ static public class TerrainGenerator
                     terrain_points[i, j, 1] = min_y + getDEMHeight(terrain_points[i, j, 0], terrain_points[i, j, 2], true);
                 else
                     //terrain_points[i, j, 1] = min_y + getHeightFromTexBilinear(x_index, z_index, uv[i * (z_piece_num + 1) + j].x, uv[i * (z_piece_num + 1) + j].y);
-                    terrain_points[i, j, 1] = min_y + heights[x_index * z_patch_num + z_index][(i * (int)PublicOutputInfo.piece_length) * PublicOutputInfo.height_buffer_row_size + (j * (int)PublicOutputInfo.piece_length)];
+                    terrain_points[i, j, 1] = min_y + getHeightFromBufferAndConstraintsmap(x_index, z_index, i, j);
                 vertice[i * (z_piece_num + 1) + j] = new Vector3(terrain_points[i, j, 0] - center.x, terrain_points[i, j, 1] - center.y, terrain_points[i, j, 2] - center.z);
             }
         }
@@ -899,9 +969,90 @@ static public class TerrainGenerator
         return getHeightFromTexBilinear(x_index, z_index, u, v);
     }
 
+    static float getHeightFromBufferAndConstraintsmap(int x_index, int z_index, int peice_x_index, int peice_z_index)
+    {
+        Color raw = constraintsmap[x_index * z_patch_num + z_index].GetPixel(peice_x_index * (int)PublicOutputInfo.piece_length, peice_z_index * (int)PublicOutputInfo.piece_length);
+        int building_id = Mathf.FloorToInt(raw.r * 64 * 64 * 64 + raw.g * 64 * 64 + raw.b * 64 + 0.5f);
+        if (building_id >= 0 && building_id < building_constraints_points_count.Length)
+            return building_constraints[building_constraints_accumulate_index[building_id]].y;
+        else // 20887
+            return heights[x_index * z_patch_num + z_index][(peice_x_index * (int)PublicOutputInfo.piece_length) * PublicOutputInfo.height_buffer_row_size + (peice_z_index * (int)PublicOutputInfo.piece_length)];
+    }
+
     static public bool checkTerrainLoaded()
     {
         return is_queue_generate_patch_empty;
+    }
+
+    static void createBuildingPolygon(int building_id) // generate a house polygon
+    {
+        Vector3[] vertice = new Vector3[building_constraints_points_count[building_id]];
+        Vector2[] vertex2D = new Vector2[vertice.Length];
+        Vector3 total = new Vector3();
+        // generate polygon vertex
+        for (int index = 0; index < vertice.Length; index++)
+        {
+            Vector3 vertex = new Vector3(building_constraints[building_constraints_accumulate_index[building_id] + index].x, building_constraints[building_constraints_accumulate_index[building_id] + index].y, building_constraints[building_constraints_accumulate_index[building_id] + index].z);
+            vertice[index] = vertex;
+            vertex2D[index] = new Vector2(vertex.x, vertex.z);
+            total += vertex;
+        }
+        Vector3 center = total / vertice.Length;
+        for (int index = 0; index < vertice.Length; index++)
+        {
+            vertice[index] -= center;
+            vertice[index] *= polygon_dilation;
+        }
+
+        // Use the triangulator to get indices for creating triangles
+        Triangulator tr = new Triangulator(vertex2D);
+        int[] indices = tr.Triangulate();
+
+        //Assign data to mesh
+        Mesh mesh = new Mesh();
+        mesh.vertices = vertice;
+        mesh.triangles = indices;
+
+        //Recalculations
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        mesh.Optimize();
+
+        //Name the mesh
+        mesh.name = building_id.ToString();
+
+        // create a gameobject to scene
+        building_polygons[building_id] = new GameObject("BuildingPolygon_" + building_id.ToString());
+        MeshFilter mf = building_polygons[building_id].AddComponent<MeshFilter>();
+        MeshRenderer mr = building_polygons[building_id].AddComponent<MeshRenderer>();
+        mf.mesh = mesh;
+        mr.material = building_polygon_mat;
+        mr.material.SetInt("polygon_ID", building_id);
+        building_polygons[building_id].transform.position = center;
+        building_polygons[building_id].transform.parent = building_polygons_manager.transform;
+        building_polygons[building_id].layer = LayerMask.NameToLayer("Constraints");
+    }
+
+    static void endFrameRendering(Camera cam)
+    {
+        string[] index = cam.name.Split('_');
+        int x_index, z_index;
+        if (index.Length == 2 && int.TryParse(index[0], out x_index) && int.TryParse(index[1], out z_index) && !constraintsmap_generated[x_index * z_patch_num + z_index])
+        {
+            Debug.Log(x_index + ", " + z_index);
+            Rect rect_result = new Rect(0, 0, PublicOutputInfo.tex_size, PublicOutputInfo.tex_size);
+            constraintsmap[x_index * z_patch_num + z_index] = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false);
+            RenderTexture.active = constraints_texs[x_index * z_patch_num + z_index];
+            // Read pixels
+            constraintsmap[x_index * z_patch_num + z_index].ReadPixels(rect_result, 0, 0);
+            constraintsmap[x_index * z_patch_num + z_index].wrapMode = TextureWrapMode.Clamp;
+            constraintsmap[x_index * z_patch_num + z_index].Apply();
+            RenderTexture.active = null; // added to avoid errors
+            terrains[x_index * z_patch_num + z_index].GetComponent<Renderer>().material.mainTexture = constraintsmap[x_index * z_patch_num + z_index];
+
+            // Upload texture data to the GPU, so the GPU renders the updated texture
+            constraintsmap_generated[x_index * z_patch_num + z_index] = true;
+        }
     }
 
     //static void getHightFromShader(float x, float z)

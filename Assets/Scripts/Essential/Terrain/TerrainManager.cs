@@ -15,12 +15,12 @@ public class TerrainManager : MonoBehaviour
     //public Material heightmap_mat;
     public ComputeShader compute_shader;
     public Texture2D main_tex;
+    public Material building_polygon_mat;
 
     // Start is called before the first frame update
     void Start()
     {
-        GameObject terrain_manager = new GameObject("TerrainManager");
-        TerrainGenerator.terrain_manager = terrain_manager;
+        TerrainGenerator.terrain_manager = new GameObject("TerrainManager");
         TerrainGenerator.terrain_mat = terrain_mat;
         TerrainGenerator.terrain_idw_mat = terrain_idw_mat;
         TerrainGenerator.terrain_nni_mat = terrain_nni_mat;
@@ -29,6 +29,8 @@ public class TerrainManager : MonoBehaviour
         //TerrainGenerator.heightmap_mat = heightmap_mat;
         TerrainGenerator.compute_shader = compute_shader;
         TerrainGenerator.main_tex = main_tex;
+        TerrainGenerator.building_polygons_manager = new GameObject("BuildingPolygonsManager");
+        TerrainGenerator.building_polygon_mat = building_polygon_mat;
         TerrainGenerator.loadTerrain();
     }
 

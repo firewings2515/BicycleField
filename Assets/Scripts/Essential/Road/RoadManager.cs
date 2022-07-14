@@ -29,11 +29,11 @@ public class RoadManager : MonoBehaviour
     private bool finished = false;
     GameObject trigger_manager;
     int trigger_index = 0;
-    Queue<GameObject> trigger_wait_queue = new Queue<GameObject>();
 
     private void Start()
     {
         trigger_manager = new GameObject("TriggerManager");
+        //gameObject.layer = LayerMask.NameToLayer("Constraints");
     }
 
     // Update is called once per frame
@@ -68,8 +68,7 @@ public class RoadManager : MonoBehaviour
         }
         if (is_initial)
         {
-            if (TerrainGenerator.checkTerrainLoaded())
-                is_started = true;
+            is_started = true;
         }
         if (!is_started) return;
 
@@ -78,28 +77,12 @@ public class RoadManager : MonoBehaviour
             getAndSetNextSegment();
 
             path_creator.bezierPath = path_creator.bezierPath; //force update
-            check_terrain_loaded = true;
-        }
-        else if (check_terrain_loaded)
-        {
-            if (TerrainGenerator.checkTerrainLoaded())
-            {
-                check_terrain_loaded = false;
-                update_mesh = true;
-            }
+            update_mesh = true;
         }
         else if (update_mesh)
         {
             update_mesh = false;
             GetComponent<PathCreation.Examples.MyRoadMeshCreator>().CreateRoadMesh();
-            while (trigger_wait_queue.Count > 0)
-            {
-                GameObject trigger = trigger_wait_queue.Dequeue();
-                //if (trigger)
-                //{
-                //    trigger.transform.position = new Vector3(trigger.transform.position.x, TerrainGenerator.getHeightWithBais(trigger.transform.position.x, trigger.transform.position.z), trigger.transform.position.z);
-                //}
-            }
         }
     }
 
@@ -160,7 +143,7 @@ public class RoadManager : MonoBehaviour
             //GetComponent<HouseManager>().addToBuffer(point_data);
             point_data = reader.ReadLine();
         }
-        //HouseGenerator.generateHouses(segment_id_list, house_id_list, info_list);
+        HouseGenerator.generateHouses(segment_id_list, house_id_list, info_list);
         return point_data != null;
     }
 
@@ -193,7 +176,6 @@ public class RoadManager : MonoBehaviour
         GameObject trigger = new GameObject("Trigger" + (trigger_index++).ToString());
         trigger.transform.position = position;
         trigger.transform.parent = trigger_manager.transform;
-        trigger_wait_queue.Enqueue(trigger);
         trigger.AddComponent<SphereCollider>();
         trigger.GetComponent<SphereCollider>().isTrigger = true;
         trigger.GetComponent<SphereCollider>().transform.localScale *= Info.CHECKPOINT_SIZE;
