@@ -63,6 +63,10 @@ static public class TerrainGenerator
     static public GameObject[] building_polygons;
     static public bool[] constraintsmap_generated;
     static float polygon_dilation = 1.25f;
+    static public float power = 3.0f;
+    static public bool need_mse = false;
+    static public Terrain origin_terrain;
+    static bool[] gameobject_generated;
     /// <summary>
     /// Load feature points file with file_path.
     /// Everything that needs height information must wait until is_initial is True.
@@ -78,6 +82,7 @@ static public class TerrainGenerator
         terrains = new GameObject[x_patch_num * z_patch_num];
         progress_buffer = new ComputeBuffer[x_patch_num * z_patch_num];
         height_buffer = new ComputeBuffer[x_patch_num * z_patch_num];
+        gameobject_generated = new bool[x_patch_num * z_patch_num];
         heights = new float[x_patch_num * z_patch_num][];
         constraints_texs = new RenderTexture[x_patch_num * z_patch_num];
         constraints_camera_manager = new GameObject("ConstraintsCameraManager");
@@ -234,7 +239,7 @@ static public class TerrainGenerator
         for (int area_features_index_index = 0; area_features_index_index < area_features_index.Length; area_features_index_index++)
         {
             WVec3 feature = kdtree.nodes[area_features_index[area_features_index_index]];
-            //if (feature.w < 0)
+            if (feature.w < 0)
             area_features[area_features_index_index] = new Vector4(feature.x, feature.y, feature.z, feature.w);
         }
 
@@ -706,6 +711,7 @@ static public class TerrainGenerator
         compute_shader.SetInt("building_constraints_count", area_building_constraints_points_count.Length);
         compute_shader.SetFloat("x", min_x + x_index * PublicOutputInfo.patch_length);
         compute_shader.SetFloat("z", min_z + z_index * PublicOutputInfo.patch_length);
+        compute_shader.SetFloat("power", power);
         compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / (PublicOutputInfo.tex_size - 1)); // patch_length / tex_length
         //compute_shader.SetInt("gaussian_m", PublicOutputInfo.gaussian_m); // gaussian filter M
         height_buffer[x_index * z_patch_num + z_index] = new ComputeBuffer(PublicOutputInfo.height_buffer_row_size * PublicOutputInfo.height_buffer_row_size, 4);
@@ -808,54 +814,67 @@ static public class TerrainGenerator
         // ===========================================================================================================
 
         // ================================= setting GameObject ======================================================
-        terrains[x_index * z_patch_num + z_index] = new GameObject("terrain_peice_" + x_index + "_" + z_index);
-        MeshRenderer mr = terrains[x_index * z_patch_num + z_index].AddComponent<MeshRenderer>();
-        //mr.material = new Material(terrain_mat);
-        //mr.material.SetTexture("_MainTex", heightmaps[x_index * z_patch_num + z_index]);
-        //mr.material.SetTexture("_MainTex", heightmap_pregaussian);
-        //mr.material.SetTexture("_MainTex", heightmap_gaussian);
-        //mr.material.SetTexture("_MainTex", constraintsmap[x_index * z_patch_num + z_index]);
-        mr.material.SetTexture("_MainTex", main_tex);
-        terrains[x_index * z_patch_num + z_index].AddComponent<TerrainView>();
-        terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().x_index = x_index;
-        terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().z_index = z_index;
-        terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().x_piece_num = x_piece_num;
-        terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().z_piece_num = z_piece_num;
-        terrains[x_index * z_patch_num + z_index].transform.parent = terrain_manager.transform;
+        if (!gameobject_generated[x_index * z_patch_num + z_index])
+        {
+            terrains[x_index * z_patch_num + z_index] = new GameObject("terrain_peice_" + x_index + "_" + z_index);
+            MeshRenderer mr = terrains[x_index * z_patch_num + z_index].AddComponent<MeshRenderer>();
+            terrains[x_index * z_patch_num + z_index].AddComponent<MeshFilter>();
+            //mr.material = new Material(terrain_mat);
+            mr.material.SetTexture("_MainTex", heightmaps[x_index * z_patch_num + z_index]);
+            //mr.material.SetTexture("_MainTex", heightmap_pregaussian);
+            //mr.material.SetTexture("_MainTex", heightmap_gaussian);
+            //mr.material.SetTexture("_MainTex", constraintsmap[x_index * z_patch_num + z_index]);
+            //mr.material.SetTexture("_MainTex", main_tex);
+            terrains[x_index * z_patch_num + z_index].AddComponent<TerrainView>();
+            terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().x_index = x_index;
+            terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().z_index = z_index;
+            terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().x_piece_num = x_piece_num;
+            terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().z_piece_num = z_piece_num;
+            terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().need_mse = need_mse;
+            terrains[x_index * z_patch_num + z_index].GetComponent<TerrainView>().origin_terrain = origin_terrain;
+            terrains[x_index * z_patch_num + z_index].transform.parent = terrain_manager.transform;
+            gameobject_generated[x_index * z_patch_num + z_index] = true;
+        }
         // ===========================================================================================================
 
         // =================================== setting Camera ========================================================
-        GameObject constraints_camera = new GameObject("ConstraintsCamera_" + x_index + "_" + z_index);
-        Camera constraints_cam = constraints_camera.AddComponent<Camera>();
-        constraints_cam.name = x_index + "_" + z_index;
-        float center_x = min_x + (2 * x_index + 1) * PublicOutputInfo.patch_length / 2;
-        float center_z = min_z + (2 * z_index + 1) * PublicOutputInfo.patch_length / 2;
-        float center_y = min_y + getDEMHeight(center_x, center_z, true);
-        if (terrain_mode == 0)
-            center_y = min_y + heights[x_index * z_patch_num + z_index][(x_patch_num / 2) * PublicOutputInfo.height_buffer_row_size + (z_piece_num / 2)];
-        constraints_camera.transform.position = new Vector3(center_x, center_y, center_z) + Vector3.up * 100;
-        constraints_cam.transform.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
-        constraints_camera.transform.parent = constraints_camera_manager.transform;
-        constraints_cam.orthographic = true;
-        constraints_cam.orthographicSize = PublicOutputInfo.tex_size / 2.0f;
-        constraints_cam.cullingMask = LayerMask.GetMask("Constraints");
-        constraints_texs[x_index * z_patch_num + z_index] = new RenderTexture(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, 24);
-        constraints_cam.targetTexture = constraints_texs[x_index * z_patch_num + z_index];
-        constraints_cam.clearFlags = CameraClearFlags.SolidColor;
-        constraints_cam.backgroundColor = Color.white;
-        constraints_cam.Render();
+        if (!constraintsmap_generated[x_index * z_patch_num + z_index])
+        {
+            GameObject constraints_camera = new GameObject("ConstraintsCamera_" + x_index + "_" + z_index);
+            Camera constraints_cam = constraints_camera.AddComponent<Camera>();
+            constraints_cam.name = x_index + "_" + z_index;
+            float center_x = min_x + (2 * x_index + 1) * PublicOutputInfo.patch_length / 2;
+            float center_z = min_z + (2 * z_index + 1) * PublicOutputInfo.patch_length / 2;
+            float center_y = min_y + getDEMHeight(center_x, center_z, true);
+            if (terrain_mode == 0)
+                center_y = min_y + heights[x_index * z_patch_num + z_index][(x_patch_num / 2) * PublicOutputInfo.height_buffer_row_size + (z_piece_num / 2)];
+            constraints_camera.transform.position = new Vector3(center_x, center_y, center_z) + Vector3.up * 100;
+            constraints_cam.transform.rotation = Quaternion.Euler(90.0f, 0.0f, 0.0f);
+            constraints_camera.transform.parent = constraints_camera_manager.transform;
+            constraints_cam.orthographic = true;
+            constraints_cam.orthographicSize = PublicOutputInfo.tex_size / 2.0f;
+            constraints_cam.cullingMask = LayerMask.GetMask("Constraints");
+            constraints_texs[x_index * z_patch_num + z_index] = new RenderTexture(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, 24);
+            constraints_cam.targetTexture = constraints_texs[x_index * z_patch_num + z_index];
+            constraints_cam.clearFlags = CameraClearFlags.SolidColor;
+            constraints_cam.backgroundColor = Color.white;
+            constraints_cam.Render();
+        }
         // ===========================================================================================================
 
         // ================================= rendering texture2D =====================================================
-        constraintsmap[x_index * z_patch_num + z_index] = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false);
-        RenderTexture.active = constraints_texs[x_index * z_patch_num + z_index];
-        // Read pixels
-        constraintsmap[x_index * z_patch_num + z_index].ReadPixels(rect_result, 0, 0);
-        constraintsmap[x_index * z_patch_num + z_index].wrapMode = TextureWrapMode.Clamp;
-        constraintsmap[x_index * z_patch_num + z_index].Apply();
-        RenderTexture.active = null; // added to avoid errors
-        // Upload texture data to the GPU, so the GPU renders the updated texture
-        constraintsmap_generated[x_index * z_patch_num + z_index] = true;
+        if (!constraintsmap_generated[x_index * z_patch_num + z_index])
+        {
+            constraintsmap[x_index * z_patch_num + z_index] = new Texture2D(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, TextureFormat.RGB24, false);
+            RenderTexture.active = constraints_texs[x_index * z_patch_num + z_index];
+            // Read pixels
+            constraintsmap[x_index * z_patch_num + z_index].ReadPixels(rect_result, 0, 0);
+            constraintsmap[x_index * z_patch_num + z_index].wrapMode = TextureWrapMode.Clamp;
+            constraintsmap[x_index * z_patch_num + z_index].Apply();
+            RenderTexture.active = null; // added to avoid errors
+                                         // Upload texture data to the GPU, so the GPU renders the updated texture
+            constraintsmap_generated[x_index * z_patch_num + z_index] = true;
+        }
         // ===========================================================================================================
         yield return null;
     }
@@ -927,7 +946,7 @@ static public class TerrainGenerator
         mesh.Optimize();
         //Name the mesh
         mesh.name = "terrain_mesh";
-        MeshFilter mf = terrains[x_index * z_patch_num + z_index].AddComponent<MeshFilter>();
+        MeshFilter mf = terrains[x_index * z_patch_num + z_index].GetComponent<MeshFilter>();
         mf.mesh = mesh;
         //mr.material = new Material(heightmap_mat);
         //mr.material.SetTexture("_MainTex", main_tex);
@@ -935,6 +954,22 @@ static public class TerrainGenerator
 
         terrains[x_index * z_patch_num + z_index].transform.position = center;
         yield return null;
+    }
+
+    static public float calcMSE(Terrain terrain, int x_index, int z_index, int x_piece_num, int z_piece_num)
+    {
+        float mse = 0.0f;
+        Vector3[] vertices = terrains[x_index * z_patch_num + z_index].GetComponent<MeshFilter>().mesh.vertices;
+        TerrainData terrainData = terrain.terrainData;
+        for (int i = 0; i <= x_piece_num; i++)
+        {
+            for (int j = 0; j <= z_piece_num; j++)
+            {
+                mse += Mathf.Pow(vertices[i * (z_piece_num + 1) + j].y - terrainData.GetHeight(i * Mathf.FloorToInt(PublicOutputInfo.piece_length), j * Mathf.FloorToInt(PublicOutputInfo.piece_length)), 2);
+            }
+        }
+        mse /= (x_piece_num + 1) * (z_piece_num + 1);
+        return mse;
     }
 
     static float getHeightFromTex(int x_index, int z_index, int peice_x_index, int peice_z_index)

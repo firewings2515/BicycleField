@@ -106,7 +106,10 @@ public class FeatureFileGenerator : MonoBehaviour
                         building_constrain_index++;
                     }
                 }
-                writeFeatureFile(Application.streamingAssetsPath + "//" + file_path, features, building_point_count);
+                Vector3 boundary_min = osm_editor.osm_reader.boundary_min;
+                Vector3 terrain_min = new Vector3(road_integration.terrain_min_x - PublicOutputInfo.origin_pos.x, -PublicOutputInfo.origin_pos.y, road_integration.terrain_min_z - PublicOutputInfo.origin_pos.z);
+                Vector3 terrain_max = new Vector3(road_integration.terrain_max_x - PublicOutputInfo.origin_pos.x, -PublicOutputInfo.origin_pos.y, road_integration.terrain_max_z - PublicOutputInfo.origin_pos.z);
+                PublicOutputInfo.writeFeatureFile(Application.streamingAssetsPath + "//" + file_path, features, building_point_count, boundary_min, terrain_min, terrain_max);
             }
         }
     }
@@ -296,37 +299,5 @@ public class FeatureFileGenerator : MonoBehaviour
             }
         }
         return edges;
-    }
-
-    /// <summary>
-    /// all terrains in a feature file
-    /// </summary>
-    /// <param name="file_path"></param>
-    /// <param name="features"></param>
-    void writeFeatureFile(string file_path, WVec3[] features, int[] building_point_count)
-    {
-        KDTree kdtree = new KDTree();
-        kdtree.buildKDTree(features);
-
-        Debug.Log("Writing " + file_path);
-        using (StreamWriter sw = new StreamWriter(file_path))
-        {
-            PublicOutputInfo.boundary_min = osm_editor.osm_reader.boundary_min;
-            sw.WriteLine(PublicOutputInfo.boundary_min.x + " " + PublicOutputInfo.boundary_min.y);
-            sw.WriteLine(PublicOutputInfo.origin_pos.x + " " + PublicOutputInfo.origin_pos.y + " " + PublicOutputInfo.origin_pos.z);
-            sw.WriteLine((road_integration.terrain_min_x - PublicOutputInfo.origin_pos.x).ToString() + " " + (-PublicOutputInfo.origin_pos.y).ToString() + " " + (road_integration.terrain_min_z - PublicOutputInfo.origin_pos.z).ToString() + " " + (road_integration.terrain_max_x - PublicOutputInfo.origin_pos.x).ToString() + " " + (-PublicOutputInfo.origin_pos.y).ToString() + " " + (road_integration.terrain_max_z - PublicOutputInfo.origin_pos.z).ToString());
-            sw.WriteLine(features.Length);
-            for (int point_index = 0; point_index < features.Length; point_index++)
-            {
-                Vector3 feature_out = new Vector3(kdtree.nodes[point_index].x - PublicOutputInfo.origin_pos.x, kdtree.nodes[point_index].y, kdtree.nodes[point_index].z - PublicOutputInfo.origin_pos.z);
-                sw.WriteLine(feature_out.x + " " + feature_out.y + " " + feature_out.z + " " + kdtree.nodes[point_index].w + " " + kdtree.parent[point_index] + " " + kdtree.left[point_index] + " " + kdtree.right[point_index]);
-            }
-            sw.WriteLine(building_point_count.Length);
-            for (int building_point_index = 0; building_point_index < building_point_count.Length; building_point_index++)
-            {
-                sw.WriteLine(building_point_count[building_point_index]);
-            }
-        }
-        Debug.Log("Write " + file_path + " Successfully!");
     }
 }

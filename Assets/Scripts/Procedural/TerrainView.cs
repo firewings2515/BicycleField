@@ -13,6 +13,8 @@ public class TerrainView : MonoBehaviour
     public int z_index;
     public int x_piece_num;
     public int z_piece_num;
+    public bool need_mse = false;
+    public Terrain origin_terrain;
     void Start()
     {
         
@@ -48,7 +50,12 @@ public class TerrainView : MonoBehaviour
         if (is_idw_ok && !is_update_mesh && TerrainGenerator.constraintsmap_generated[x_index * TerrainGenerator.z_patch_num + z_index])
         {
             is_update_mesh = true;
-            StartCoroutine(TerrainGenerator.generateTerrainPatchWithTex(x_index, z_index, x_piece_num, z_piece_num));
+            if (need_mse)
+            {
+                StartCoroutine(IDWAnalyze(origin_terrain, x_index, z_index, x_piece_num, z_piece_num));
+            }
+            else
+                StartCoroutine(TerrainGenerator.generateTerrainPatchWithTex(x_index, z_index, x_piece_num, z_piece_num));
         }
         //if (GetComponent<MeshRenderer>().isVisible)
         //{
@@ -81,5 +88,28 @@ public class TerrainView : MonoBehaviour
         //        break;
         //    }
         //}
+    }
+
+    public IEnumerator IDWAnalyze(Terrain terrain, int x_index, int z_index, int x_piece_num, int z_piece_num)
+    {
+        float min_mse = float.MaxValue;
+        float min_error_power = TerrainGenerator.power;
+        for (; TerrainGenerator.power < 10.0f; TerrainGenerator.power += 0.1f)
+        {
+            yield return StartCoroutine(TerrainGenerator.generateTerrainPatchTex(x_index, z_index, x_piece_num, z_piece_num));
+            yield return StartCoroutine(TerrainGenerator.generateTerrainPatchWithTex(x_index, z_index, x_piece_num, z_piece_num));
+            float mse = TerrainGenerator.calcMSE(origin_terrain, x_index, z_index, x_piece_num, z_piece_num);
+            if (mse < min_mse)
+            {
+                min_mse = mse;
+                min_error_power = TerrainGenerator.power;
+            }
+            Debug.Log(TerrainGenerator.power + ": " + mse);
+        }
+        TerrainGenerator.power = min_error_power;
+        yield return StartCoroutine(TerrainGenerator.generateTerrainPatchTex(x_index, z_index, x_piece_num, z_piece_num));
+        yield return StartCoroutine(TerrainGenerator.generateTerrainPatchWithTex(x_index, z_index, x_piece_num, z_piece_num));
+        Debug.Log("The best power: " + min_error_power + " MSE = " + min_mse);
+        yield return null;
     }
 }

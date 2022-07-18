@@ -11,6 +11,7 @@ float4 features[1024];
 uint features_count;
 float x;
 float z;
+float power;
 float resolution;
 uint gaussian_m;
 RWStructuredBuffer<int> progress;
@@ -41,8 +42,8 @@ float IDW(float2 xz)
             /*dist = 320 - dist + 1;
             sum_up += dist * features[i].y*5;
             sum_down += dist*5;*/
-            sum_up += getWeight(dist, 3) * features[i].y;
-            sum_down += getWeight(dist, 3);
+            sum_up += getWeight(dist, power) * features[i].y;
+            sum_down += getWeight(dist, power);
         }
     }
     if (sum_down < 1e-6)
