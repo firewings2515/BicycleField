@@ -8,170 +8,138 @@ using UnityEngine.UI;
 
 public class RoadManager : MonoBehaviour
 {
-    private int current_segment = 2;
-    private int current_loaded_segment = 0;
-    private int last_segment = 0;
-    private int house_id = 0;
-
-    private StreamReader reader;
-
-    public string file_name;
+    //road
     public PathCreator path_creator;
     public bool path_loop = false;
+
+    //data
+    public string file_name;
+    private StreamReader reader;
+    private string[] data_lines;
+    private int current_line = 0;
+
+    //segment
+    private int rendered_segments = 2; //because 2 exist by default
+    private int current_segment = 0;
     private bool update_mesh = false;
-    private bool check_terrain_loaded = false;
-
-    private bool is_started = false;
-    private bool is_initial = false;
-
-    private string last_data = null;
-    public GameObject finish_flag;
-    private bool finished = false;
-    GameObject trigger_manager;
-    int trigger_index = 0;
+    
+    //trigger
+    private GameObject trigger_manager;
+    private int trigger_index = 0;
 
     private void Start()
     {
         trigger_manager = new GameObject("TriggerManager");
-        //gameObject.layer = LayerMask.NameToLayer("Constraints");
+        readRoadData();
+        initializeRoad();
+
+        preCalc(); //need to store in memory and not calc every execution
+    }
+
+    private void readRoadData()
+    {
+        reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
+        string data = reader.ReadToEnd();
+        data_lines = data.Split('\n');
+    }
+
+    private void preCalc()
+    {
+        calcTotalRoadLength();
+        //there should be more
+    }
+
+    private void calcTotalRoadLength()
+    {
+        for (int id = 1; id < data_lines.Length; id++)
+        {
+            Info.total_length += (Functions.StrToVec3(data_lines[id]) - Functions.StrToVec3(data_lines[id - 1])).magnitude;
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (TerrainGenerator.is_initial && !is_initial) 
+        generateRoad();
+    }
+
+    private void initializeRoad()
+    {
+        
+        while (path_creator.bezierPath.NumSegments < Info.MAX_SEGMENTS) generateNextSegment();
+
+        //remove both default segment
+        removeFirstSegment(false);
+        removeFirstSegment(false);
+    }
+
+    private void generateRoad()
+    {
+        if (Info.MAX_SEGMENTS - rendered_segments <= Info.PRELOAD_SEGMENT)
         {
-            is_initial = true;
-            reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
-
-            string end_point_data = reader.ReadLine();
-            Info.end_point = Functions.StrToVec3(end_point_data);
-
-            reader.ReadLine(); // throw away terrain anchor point (0, 0, 0)
-
-            //remove first default segment
-            removeEarliestRoad(false);
-
-            while (path_creator.bezierPath.NumSegments < Info.MAX_LOADED_SEGMENT)
-            {
-                getAndSetNextSegment();
-            }
-
-            //remove second default segment
-            getAndSetNextSegment();
-
-            //remove last default segment
-            removeEarliestRoad(false);
-
-            path_creator.bezierPath.NotifyPathModified();
-            check_terrain_loaded = true;
-        }
-        if (is_initial)
-        {
-            is_started = true;
-        }
-        if (!is_started) return;
-
-        if (Info.MAX_LOADED_SEGMENT - current_segment <= Info.PRELOAD_SEGMENT)
-        {
-            getAndSetNextSegment();
-
+            generateNextSegment();
             path_creator.bezierPath = path_creator.bezierPath; //force update
+
             update_mesh = true;
         }
         else if (update_mesh)
         {
-            update_mesh = false;
             GetComponent<PathCreation.Examples.MyRoadMeshCreator>().CreateRoadMesh();
+            update_mesh = false;
         }
     }
 
-    private void getAndSetNextSegment()
+    private void generateNextSegment()
     {
         if (getNextSegment(out string str_point))
         {
             Vector3 vec3_point = Functions.StrToVec3(str_point);
-            //vec3_point.y = 0.0f;
 
-            //queue_checkpoint_vec3.Enqueue(vec3_point);
-            spawnAnchorCheckpoint(vec3_point);
+            //terrain
+            TerrainGenerator.generateTerrain(vec3_point);
 
-            generateRoad(vec3_point);
-            if (path_creator.bezierPath.NumSegments > Info.MAX_LOADED_SEGMENT) removeEarliestRoad();
+            //checkpoint
+            spawnCheckpoint(vec3_point);
+
+            //road
+            addRoadSegment(vec3_point);
+            if (path_creator.bezierPath.NumSegments > Info.MAX_SEGMENTS) removeFirstSegment();
         }
     }
 
     private bool getNextSegment(out string point_data)
     {
-        current_loaded_segment++;
-        house_id = 0;
-        //
-        List<int> segment_id_list = new List<int>();
-        List< int > house_id_list = new List<int>();
-        List<string> info_list = new List<string>();
-        //
-        string new_data = reader.ReadLine();
-        if (new_data == null && last_data != null && !finished)
-        {
-            string[] infos = last_data.Split(' ');
-            Vector3 point = new Vector3(float.Parse(infos[0]), float.Parse(infos[1]) + 20, float.Parse(infos[2]));
-            GameObject.Instantiate(finish_flag, point, Quaternion.identity);
-            finished = true;
-        }
-        last_data = new_data;
-        point_data = new_data;
+        point_data = null;
 
-        if (path_loop)
+        //end reached
+        if (current_line == data_lines.Length)
         {
-            if (point_data == null)
-            {
-                reader.Close();
-                reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
-                reader.ReadLine(); // last point repeats -> delete
-                point_data = reader.ReadLine();
-            }
+            if (path_loop) current_line = 0;
+            else return false;
         }
 
-        while (point_data != null && point_data[0] == 'H')
-        {
-            segment_id_list.Add(current_loaded_segment);
-            house_id_list.Add(house_id);
-            info_list.Add(point_data);
-            
-            house_id++;
-
-            //GetComponent<HouseManager>().addToBuffer(point_data);
-            point_data = reader.ReadLine();
-        }
-        HouseGenerator.generateHouses(segment_id_list, house_id_list, info_list);
+        point_data = data_lines[current_line++];
         return point_data != null;
     }
 
-    private void generateRoad(Vector3 road)
+    private void addRoadSegment(Vector3 road)
+    {
+        path_creator.bezierPath.AddSegmentToEnd(road);
+        Selection.activeGameObject = this.gameObject; //force display
+    }
+
+    private void removeFirstSegment(bool destroy = true)
     {
         //terrain
-        TerrainGenerator.generateTerrain(road);
-        //BezierPath new_bezier = new BezierPath(path_creator.bezierPath[0]);
-        //new_bezier = path_creator.bezierPath;
-        //path_creator.bezierPath = new_bezier;
-
-        path_creator.bezierPath.AddSegmentToEnd(road);
-        //force display
-        Selection.activeGameObject = this.gameObject;
-    }
-
-    private void removeEarliestRoad(bool destroy = true)
-    {
-        //if (destroy) HouseGenerator.destroySegment(last_segment++);
-        if (destroy) last_segment++;
-
         Vector3 remove_pos = path_creator.bezierPath.GetPoint(0);
         StartCoroutine(TerrainGenerator.removeAreaTerrain(remove_pos.x, remove_pos.z));
+
+        //road
         path_creator.bezierPath.DeleteSegment(0);
-        current_segment--;
+        rendered_segments--;
     }
 
-    private void spawnAnchorCheckpoint(Vector3 position)
+    private void spawnCheckpoint(Vector3 position)
     {
         GameObject trigger = new GameObject("Trigger" + (trigger_index++).ToString());
         trigger.transform.position = position;
@@ -185,6 +153,9 @@ public class RoadManager : MonoBehaviour
 
     public void incrementCurrentSegment()
     {
+        rendered_segments++;
         current_segment++;
+
+        Info.total_length -= (Functions.StrToVec3(data_lines[current_segment]) - Functions.StrToVec3(data_lines[current_segment - 1])).magnitude;
     }
 }

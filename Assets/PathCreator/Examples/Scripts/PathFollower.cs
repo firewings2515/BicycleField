@@ -114,9 +114,7 @@ namespace PathCreation.Examples
 
         private void endDistanceDisplay()
         {
-            Vector3 end = Info.end_point;
-            Vector3 here = transform.position;
-            end_text.GetComponent<Text>().text = "終點: " + (int)((end - here).magnitude) + "公尺";
+            end_text.GetComponent<Text>().text = "終點: " + (int)Info.total_length + "公尺";
         }
 
         private float calculateSlopeHeightDiff(int id, int anchor)

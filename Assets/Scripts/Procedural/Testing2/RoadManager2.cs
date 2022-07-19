@@ -32,7 +32,7 @@ public class RoadManager2 : MonoBehaviour
     {
         reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
 
-        for (int seg_id = 0; seg_id < Info.MAX_LOADED_SEGMENT; seg_id++)
+        for (int seg_id = 0; seg_id < Info.MAX_SEGMENTS; seg_id++)
         {
             getAndSetNextSegment();
         }
@@ -41,7 +41,7 @@ public class RoadManager2 : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Info.MAX_LOADED_SEGMENT - current_running_segment <= Info.PRELOAD_SEGMENT)
+        if (Info.MAX_SEGMENTS - current_running_segment <= Info.PRELOAD_SEGMENT)
         {
             getAndSetNextSegment();
         }
@@ -52,7 +52,7 @@ public class RoadManager2 : MonoBehaviour
         if (getNextSegment(out string str_point))
         {
             Vector3 vec3_point = new Vector3();
-            for (int seg_id = 1; seg_id < Info.MAX_LOADED_SEGMENT; seg_id++)
+            for (int seg_id = 1; seg_id < Info.MAX_SEGMENTS; seg_id++)
             {
                 vec3_point = Functions.StrToVec3(str_point);
                 points.Add(vec3_point);
@@ -61,7 +61,7 @@ public class RoadManager2 : MonoBehaviour
             spawnAnchorCheckpoint(vec3_point);
             current_loaded_segment += 1;
 
-            if (points.Count >= current_seg + Info.MAX_LOADED_SEGMENT)
+            if (points.Count >= current_seg + Info.MAX_SEGMENTS)
             {
                 createNextMesh();
             }
@@ -101,7 +101,7 @@ public class RoadManager2 : MonoBehaviour
         GameObject segment = new GameObject();
         segments.Add(segment);
 
-        while (segments.Count > Info.MAX_LOADED_SEGMENT)
+        while (segments.Count > Info.MAX_SEGMENTS)
         {
             Destroy(segments[0]);
             segments.RemoveAt(0);
@@ -111,11 +111,11 @@ public class RoadManager2 : MonoBehaviour
         segment.AddComponent<PathCreator>();
         PathCreator pc = segment.GetComponent<PathCreator>();
         pc.bezierPath = new BezierPath(points[current_seg]);
-        for (int segment_id = current_seg + 1; segment_id < current_seg + Info.MAX_LOADED_SEGMENT; segment_id++)
+        for (int segment_id = current_seg + 1; segment_id < current_seg + Info.MAX_SEGMENTS; segment_id++)
         {
             pc.bezierPath.AddSegmentToEnd(points[segment_id]);
         }
-        current_seg += Info.MAX_LOADED_SEGMENT;
+        current_seg += Info.MAX_SEGMENTS;
 
         segment.AddComponent<RoadMeshCreator>();
         RoadMeshCreator rmc = segment.GetComponent<RoadMeshCreator>();
