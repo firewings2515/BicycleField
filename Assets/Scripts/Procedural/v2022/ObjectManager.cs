@@ -108,7 +108,7 @@ public class ObjectManager : MonoBehaviour
         }
         current_cyclist = new_cyclist;
         current_cyclist.GetComponent<PathFollower>().pathCreator = current_segment.GetComponent<PathCreator>();
-        current_cyclist.GetComponent<PathFollower>().speed = cyclist_speed;
+        Info.speed = cyclist_speed;
         current_cyclist.GetComponent<PathFollower>().setDistance(current_cyclist.GetComponent<PathFollower>().nearestDistance());
         cam.transform.parent = current_cyclist.transform;
     }

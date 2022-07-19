@@ -73,7 +73,7 @@ public class CurveSegmenter : MonoBehaviour
             PathFollower pf = cyclist.AddComponent<PathFollower>();
             pf.pathCreator = segments[0].GetComponent<PathCreator>();
             pf.endOfPathInstruction = EndOfPathInstruction.Stop;
-            pf.speed = 50;
+            Info.speed = 50;
         }
         else cyclist.GetComponent<PathFollower>().pathCreator = segments[0].GetComponent<PathCreator>();
     }

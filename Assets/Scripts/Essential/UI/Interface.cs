@@ -52,7 +52,7 @@ public class Interface : MonoBehaviour
         if (ftms_show.connect) {
             if (ftms_show.connector.has_speed)
             {
-                cyclist.GetComponent<PathCreation.Examples.PathFollower>().speed = ftms_show.connector.speed;
+                Info.speed = ftms_show.connector.speed;
             }
         }
     }
@@ -69,7 +69,7 @@ public class Interface : MonoBehaviour
 
     public void changeSpeed()
     {
-        cyclist.GetComponent<PathCreation.Examples.PathFollower>().speed = slider.value;
+        Info.speed = slider.value;
     }
 
     public void toggleSlope()
