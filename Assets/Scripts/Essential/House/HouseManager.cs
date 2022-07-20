@@ -58,16 +58,20 @@ public class HouseManager : MonoBehaviour
         buildings = new GameObject("buildings");
     }
 
-    public void generate_next_segment() {
-        exist_segments.Enqueue(local_segment_index);
-        generate_segment(local_segment_index);
-        local_segment_index++;
-    }
-
-    public void destroy_previous_segment(int count) {
+    public void generate_next_segment(int count = 1) {
         for (int i = 0; i < count; i++)
         {
-            destroy_segment(exist_segments.Dequeue());
+            exist_segments.Enqueue(local_segment_index);
+            generate_segment(local_segment_index);
+            local_segment_index++;
+        }
+    }
+
+    public void destroy_previous_segment(int count = 1) {
+        for (int i = 0; i < count; i++)
+        {
+            int seg = exist_segments.Dequeue();
+            destroy_segment(seg);
         }
     }
 
@@ -107,12 +111,22 @@ public class HouseManager : MonoBehaviour
         }
     }
 
+    bool need_destroy(int index) {
+        if (!exist_buildings.ContainsKey(index)) return false;
+        Queue<int> _exist_segments = exist_segments;
+        while (_exist_segments.Count > 0) {
+            List<int> shows = house_show[_exist_segments.Dequeue()];
+            if (shows.Contains(index)) return false;
+        }
+        return true;
+    }
+
     public void destroy_segment(int index)
     {
         List<int> shows = house_show[index];
         for (int i = 0; i < shows.Count; i++)
         {
-            if (exist_buildings.ContainsKey(shows[i]) && !now_shows.Contains(shows[i])) {
+            if (need_destroy(shows[i])) {
                 Destroy(exist_buildings[shows[i]]);
                 exist_buildings.Remove(shows[i]);
             }
