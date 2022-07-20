@@ -27,6 +27,8 @@ public class RoadManager : MonoBehaviour
     private GameObject trigger_manager;
     private int trigger_index = 0;
 
+
+    public HouseManager house_manager;
     private void Start()
     {
         trigger_manager = new GameObject("TriggerManager");
@@ -119,6 +121,7 @@ public class RoadManager : MonoBehaviour
         }
 
         point_data = data_lines[current_line++];
+
         return point_data != null;
     }
 
