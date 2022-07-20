@@ -13,6 +13,9 @@ public class HouseManager : MonoBehaviour
     Dictionary<int,GameObject> exist_buildings;
     HashSet<int> now_shows;
 
+    int local_segment_index = 0;
+    Queue<int> exist_segments; 
+
     void get_house_polygons() {
         string[] house_info_lines = System.IO.File.ReadAllLines(house_info_file);
         house_polygons = new List<List<Vector3>>(house_info_lines.Length);
@@ -53,6 +56,19 @@ public class HouseManager : MonoBehaviour
         get_house_polygons();
         get_house_shows();
         buildings = new GameObject("buildings");
+    }
+
+    public void generate_next_segment() {
+        exist_segments.Enqueue(local_segment_index);
+        generate_segment(local_segment_index);
+        local_segment_index++;
+    }
+
+    public void destroy_previous_segment(int count) {
+        for (int i = 0; i < count; i++)
+        {
+            destroy_segment(exist_segments.Dequeue());
+        }
     }
 
     public void generate_segment(int index) {
