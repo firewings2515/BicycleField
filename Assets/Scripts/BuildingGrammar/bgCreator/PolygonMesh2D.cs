@@ -2,70 +2,92 @@ using UnityEngine;
 using UnityEditor.EditorTools;
 using System.Reflection;
 using System.Linq;
-using System.Collections.Generic;
+using System;
 
 [ExecuteInEditMode]
-[RequireComponent (typeof (PolygonCollider2D))]
-[RequireComponent (typeof (MeshRenderer))]
-[RequireComponent (typeof (MeshFilter))]
+[RequireComponent(typeof(PolygonCollider2D))]
+[RequireComponent(typeof(MeshRenderer))]
+[RequireComponent(typeof(MeshFilter))]
 /// <summary>
 /// Builds a Mesh for a gameObject using the PolygonCollider2D's path</summary>
-public class PolygonMesh2D : MonoBehaviour {
-	protected PolygonCollider2D polygon;
-	protected MeshFilter meshFilter;
+public class PolygonMesh2D : MonoBehaviour
+{
+    protected PolygonCollider2D polygon;
+    protected MeshFilter meshFilter;
 
-	///<summary>The index of the polygon path to use for the mesh</summary>
-	int pathIndex = 0;
-	///<summary>The Z position for the generated mesh</summary>
-	public float zPosition = 0f;
+    ///<summary>The index of the polygon path to use for the mesh</summary>
+    int pathIndex = 0;
+    ///<summary>The Z position for the generated mesh</summary>
+    public float zPosition = 0f;
 
-	void Start() {
-		polygon = gameObject.GetComponent<PolygonCollider2D>();
-		ToolManager.SetActiveTool(Assembly.Load("UnityEditor").GetType("UnityEditor.PolygonCollider2DTool"));
-		meshFilter = gameObject.GetComponent<MeshFilter>();
-	} 
+    Vector2[] points;
 
-	#if UNITY_EDITOR
-	///<summary>
-	///(Re)builds the Mesh using the path of the PolygonCollider2D</summary>
-	public void OnColliderUpdate() {
-		Vector2[] path = polygon.GetPath(pathIndex);
-		Mesh msh = new Mesh();
+#if UNITY_EDITOR
+    void Start()
+    {
+        polygon = gameObject.GetComponent<PolygonCollider2D>();
+        start_edit();
+        meshFilter = gameObject.GetComponent<MeshFilter>();
+    }
 
-		msh.vertices = path.Select(v => new Vector3(v.x, v.y, zPosition)).ToArray();
-		msh.triangles = new Triangulator(path).Triangulate();
+    void start_edit() {
+        ToolManager.SetActiveTool(Assembly.Load("UnityEditor").GetType("UnityEditor.PolygonCollider2DTool"));
+    }
+    ///<summary>
+    ///(Re)builds the Mesh using the path of the PolygonCollider2D</summary>
+    public void OnColliderUpdate()
+    {
+        points = polygon.GetPath(pathIndex);
+        Mesh msh = new Mesh();
 
-		msh.RecalculateNormals();
-		msh.RecalculateBounds();
-		meshFilter.mesh = msh;
+        msh.vertices = points.Select(v => new Vector3(v.x, v.y, zPosition)).ToArray();
+        msh.triangles = new Triangulator(points).Triangulate();
 
-		//recalculate UV
-		Bounds bounds = msh.bounds;
+        msh.RecalculateNormals();
+        msh.RecalculateBounds();
+        meshFilter.mesh = msh;
 
-		msh.uv = path.Select(v => new Vector2(v.x / bounds.size.x, v.y / bounds.size.y)).ToArray();
-	}
+        //recalculate UV
+        Bounds bounds = msh.bounds;
 
-    void Update() {
-		if (!Application.isPlaying) OnColliderUpdate();	
-	}
-	#endif
+        msh.uv = points.Select(v => new Vector2(v.x / bounds.size.x, v.y / bounds.size.y)).ToArray();
+    }
+
+    void Update()
+    {
+        if (!Application.isPlaying) OnColliderUpdate();
+    }
+
+    public Vector2[] get_points() {
+        return polygon.points;
+    }
+
+
+    public void reset()
+    {
+        DestroyImmediate(meshFilter.gameObject);
+        GameObject obj = new GameObject();
+        obj.AddComponent<PolygonMesh2D>();
+    }
+#endif
+
 }
 
 
 
 //class Triangulator {
 //	private List<Vector2> mPoints = new List<Vector2>();
-	
+
 //	public Triangulator (Vector2[] points) {
 //		mPoints = new List<Vector2>(points);
 //	}
-	
+
 //	public int[] Triangulate() {
 //		List<int> indices = new List<int>();
-	
+
 //		int n = mPoints.Count;
 //		if (n < 3) return indices.ToArray();
-	
+
 //		int[] V = new int[n];
 //		if (Area() > 0) {
 //			for (int v = 0; v < n; v++)
@@ -75,13 +97,13 @@ public class PolygonMesh2D : MonoBehaviour {
 //			for (int v = 0; v < n; v++)
 //				V[v] = (n - 1) - v;
 //		}
-	
+
 //		int nv = n;
 //		int count = 2 * nv;
 //		for (int m = 0, v = nv - 1; nv > 2; ) {
 //			if ((count--) <= 0)
 //				return indices.ToArray();
-	
+
 //			int u = v;
 //			if (nv <= u)
 //				u = 0;
@@ -91,7 +113,7 @@ public class PolygonMesh2D : MonoBehaviour {
 //			int w = v + 1;
 //			if (nv <= w)
 //				w = 0;
-	
+
 //			if (Snip(u, v, w, nv, V)) {
 //				int a, b, c, s, t;
 //				a = V[u];
@@ -107,11 +129,11 @@ public class PolygonMesh2D : MonoBehaviour {
 //				count = 2 * nv;
 //			}
 //		}
-	
+
 //		indices.Reverse();
 //		return indices.ToArray();
 //	}
-	
+
 //	private float Area () {
 //		int n = mPoints.Count;
 //		float A = 0.0f;
@@ -122,7 +144,7 @@ public class PolygonMesh2D : MonoBehaviour {
 //		}
 //		return (A * 0.5f);
 //	}
-	
+
 //	private bool Snip (int u, int v, int w, int n, int[] V) {
 //		int p;
 //		Vector2 A = mPoints[V[u]];
@@ -139,22 +161,22 @@ public class PolygonMesh2D : MonoBehaviour {
 //		}
 //		return true;
 //	}
-	
+
 //	private bool InsideTriangle (Vector2 A, Vector2 B, Vector2 C, Vector2 P) {
 //		float ax, ay, bx, by, cx, cy, apx, apy, bpx, bpy, cpx, cpy;
 //		float cCROSSap, bCROSScp, aCROSSbp;
-	
+
 //		ax = C.x - B.x; ay = C.y - B.y;
 //		bx = A.x - C.x; by = A.y - C.y;
 //		cx = B.x - A.x; cy = B.y - A.y;
 //		apx = P.x - A.x; apy = P.y - A.y;
 //		bpx = P.x - B.x; bpy = P.y - B.y;
 //		cpx = P.x - C.x; cpy = P.y - C.y;
-	
+
 //		aCROSSbp = ax * bpy - ay * bpx;
 //		cCROSSap = cx * apy - cy * apx;
 //		bCROSScp = bx * cpy - by * cpx;
-	
+
 //		return ((aCROSSbp >= 0.0f) && (bCROSScp >= 0.0f) && (cCROSSap >= 0.0f));
 //	}
 //}
