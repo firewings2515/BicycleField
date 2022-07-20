@@ -25,7 +25,10 @@ public class HeightmapCompress : MonoBehaviour
     public bool get_terrain_feature;
     public bool add_constraints;
     Vector3[] constaints_custom;
-    public Terrain terrain;
+    public int terrain_case;
+    public int use_method;
+    public Terrain hill;
+    public Terrain cliff;
     public bool get_line_feature;
     public GameObject blue_ball;
     public GameObject red_ball;
@@ -38,6 +41,10 @@ public class HeightmapCompress : MonoBehaviour
     public bool is_finished = false;
     public bool is_fetched_features = false;
     bool wait_features = false;
+    Vector3[] directions;
+    Vector3 min_sample_vec3a = new Vector3(32, 0, 32);
+    Vector3 min_sample_vec3b = new Vector3(16, 0, 32);
+    Vector3 sample_length = new Vector3(64, 0, 64);
     // Start is called before the first frame update
     void Start()
     {
@@ -83,7 +90,17 @@ public class HeightmapCompress : MonoBehaviour
             get_terrain_feature = false;
             wait_features = true;
             point_cloud_list = new List<Vector3>();
-            StartCoroutine(getPointCloud(terrain, terrain.transform.position, terrain.transform.position + terrain.terrainData.size, true, true));
+            int dir = 64;
+            float ang_step = 2 * Mathf.PI / dir;
+            directions = new Vector3[dir]; //{ new Vector3(1.0f, 0.0f, 0.0f), new Vector3(0.707f, 0.0f, 0.707f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(-0.707f, 0.0f, 0.707f), new Vector3(-1.0f, 0.0f, 0.0f), new Vector3(-0.707f, 0.0f, -0.707f), new Vector3(0.0f, 0.0f, -1.0f), new Vector3(0.707f, 0.0f, -0.707f) };
+            for (int d = 0; d < dir; d++)
+            {
+                directions[d] = new Vector3(Mathf.Cos(d * ang_step), 0, Mathf.Sin(d * ang_step));
+            }
+            if (terrain_case == 0)
+                StartCoroutine(getPointCloud(hill, hill.transform.position + min_sample_vec3a, hill.transform.position + min_sample_vec3a + sample_length, true, true));
+            else
+                StartCoroutine(getPointCloud(cliff, cliff.transform.position + min_sample_vec3b, cliff.transform.position + min_sample_vec3a + sample_length, true, true));
         }
 
         if (add_constraints)
@@ -105,10 +122,12 @@ public class HeightmapCompress : MonoBehaviour
             is_fetched_features = true;
             wait_features = false;
             int constraint_begin_index = point_cloud_list.Count;
-            point_cloud_list.AddRange(constaints_custom);
             int[] building_point_count = new int[0];
             if (add_constraints)
+            {
+                point_cloud_list.AddRange(constaints_custom);
                 building_point_count = new int[] { constaints_custom.Length };
+            }
             Vector3[] point_cloud_array = point_cloud_list.ToArray();
             WVec3[] features = new WVec3[point_cloud_array.Length];
             for (int i = 0; i < point_cloud_array.Length; i++)
@@ -122,8 +141,18 @@ public class HeightmapCompress : MonoBehaviour
                     features[i].w = 100000 + (i - constraint_begin_index);
             }
             Vector3 boundary_min = new Vector3();
-            Vector3 terrain_min = new Vector3();
-            Vector3 terrain_max = new Vector3(terrain.terrainData.size.x, 0, terrain.terrainData.size.z);
+            Vector3 terrain_min;
+            Vector3 terrain_max;
+            if (terrain_case == 0)
+            {
+                terrain_min = hill.transform.position + min_sample_vec3a;
+                terrain_max = hill.transform.position + min_sample_vec3a + sample_length; //new Vector3(hill.terrainData.size.x, 0, hill.terrainData.size.z)
+            }
+            else
+            {
+                terrain_min = cliff.transform.position + min_sample_vec3b;
+                terrain_max = cliff.transform.position + min_sample_vec3b + sample_length; //new Vector3(cliff.terrainData.size.x, 0, cliff.terrainData.size.z)
+            }
             PublicOutputInfo.writeFeatureFile(Application.streamingAssetsPath + "//" + file_path, features, building_point_count, boundary_min, terrain_min, terrain_max);
         }
     }
@@ -139,11 +168,12 @@ public class HeightmapCompress : MonoBehaviour
         is_finished = false;
         is_fetched_features = false;
         GameObject feature_manager = new GameObject("feature_manager");
+        float delta = 0.5f;
         if (!custom)
         {
-            for (float x = min_vec3.x; x < max_vec3.x; x += interval)
+            for (float x = min_vec3.x; x < max_vec3.x + delta; x += interval)
             {
-                for (float z = min_vec3.z; z < max_vec3.z; z += interval)
+                for (float z = min_vec3.z; z < max_vec3.z + delta; z += interval)
                 {
                     float height = terrain.SampleHeight(new Vector3(x, 0, z));
                     Vector3 current_vec3 = new Vector3(x, height, z);
@@ -174,29 +204,46 @@ public class HeightmapCompress : MonoBehaviour
         }
         else
         {
-            Vector3[] custom_center = new Vector3[] { new Vector3(64, 0, 64) };
-            for (int custom_center_index = 0; custom_center_index < custom_center.Length; custom_center_index++)
+            if (use_method == 0)
             {
-                custom_center[custom_center_index].y = terrain.SampleHeight(custom_center[custom_center_index]);
-                List<List<Vector3>> w8d = W8DfromTerrain(terrain, min_vec3, max_vec3, custom_center[custom_center_index]);
-                Vector3[] w8d_center = new Vector3[1];
-                w8d_center[0] = custom_center[custom_center_index];
-                if (show_points)
-                    showPoint(w8d_center, "Feature_Center", feature_manager.transform, red_ball, 16.0f);
-                for (int w8d_index = 0; w8d_index < w8d.Count; w8d_index++)
+                Vector3[] custom_center;
+                if (terrain_case == 0)
+                    custom_center = new Vector3[] { new Vector3(64, 0, 64) };
+                else
+                    custom_center = new Vector3[] { new Vector3(192, 0, 64) };
+                for (int custom_center_index = 0; custom_center_index < custom_center.Length; custom_center_index++)
                 {
-                    //for (int w8d_point_index = 0; w8d_point_index < w8d[w8d_index].Count; w8d_point_index++)
-                    //{
-                    //    if (point_cloud_list.Contains(w8d[w8d_index][w8d_point_index]))
-                    //    {
-                    //        w8d[w8d_index].RemoveAt(w8d_point_index);
-                    //        w8d_point_index--;
-                    //    }
-                    //}
-                    point_cloud_list.AddRange(w8d[w8d_index]);
+                    custom_center[custom_center_index].y = terrain.SampleHeight(custom_center[custom_center_index]);
+                    List<List<Vector3>> w8d = W8DfromTerrain(terrain, min_vec3, max_vec3, custom_center[custom_center_index]);
+                    Vector3[] w8d_center = new Vector3[1];
+                    w8d_center[0] = custom_center[custom_center_index];
+                    if (show_points)
+                        showPoint(w8d_center, "Feature_Center", feature_manager.transform, red_ball, 16.0f);
+                    for (int w8d_index = 0; w8d_index < w8d.Count; w8d_index++)
+                    {
+                        //for (int w8d_point_index = 0; w8d_point_index < w8d[w8d_index].Count; w8d_point_index++)
+                        //{
+                        //    if (point_cloud_list.Contains(w8d[w8d_index][w8d_point_index]))
+                        //    {
+                        //        w8d[w8d_index].RemoveAt(w8d_point_index);
+                        //        w8d_point_index--;
+                        //    }
+                        //}
+                        for (int w8d_point_index = 0; w8d_point_index < w8d[w8d_index].Count; w8d_point_index++)
+                        {
+                            //float dist = Vector3.Distance(w8d[w8d_index][w8d_point_index], custom_center[0]);
+                            //if (20 > dist || dist > 70)
+                            point_cloud_list.Add(w8d[w8d_index][w8d_point_index]);
+                        }
+                        //point_cloud_list.AddRange(w8d[w8d_index]);
+                    }
                 }
+                //point_cloud_list.AddRange(custom_center);
             }
-            //point_cloud_list.AddRange(custom_center);
+            else
+            {
+                point_cloud_list.AddRange(uniformDistributionfromTerrain(terrain, min_vec3, max_vec3));
+            }
         }
 
         if (show_points)
@@ -275,12 +322,28 @@ public class HeightmapCompress : MonoBehaviour
         return terrain_feature_points;
     }
 
+    List<Vector3> uniformDistributionfromTerrain(Terrain terrain, Vector3 min_vec3, Vector3 max_vec3)
+    {
+        List<Vector3> terrain_feature_points = new List<Vector3>();
+        float delta = 0.5f;
+        for (float x = min_vec3.x; x < max_vec3.x + delta; x += interval)
+        {
+            for (float z = min_vec3.z; z < max_vec3.z + delta; z += interval)
+            {
+                Vector3 current_vec3 = new Vector3(x, 0, z);
+                current_vec3.y = terrain.SampleHeight(current_vec3);
+                terrain_feature_points.Add(current_vec3);
+            }
+        }
+
+        return terrain_feature_points;
+    }
+
     List<List<Vector3>> W8DfromTerrain(Terrain terrain, Vector3 min_vec3, Vector3 max_vec3, Vector3 center)
     {
-        Vector3[] directions = new Vector3[8] { new Vector3(1.0f, 0.0f, 0.0f), new Vector3(0.707f, 0.0f, 0.707f), new Vector3(0.0f, 0.0f, 1.0f), new Vector3(-0.707f, 0.0f, 0.707f), new Vector3(-1.0f, 0.0f, 0.0f), new Vector3(-0.707f, 0.0f, -0.707f), new Vector3(0.0f, 0.0f, -1.0f), new Vector3(0.707f, 0.0f, -0.707f) };
         List<List<Vector3>> terrain_feature_points = new List<List<Vector3>>();
 
-        for (int dir = 0; dir < 8; dir++)
+        for (int dir = 0; dir < directions.Length; dir++)
         {
             List<Vector2> terrain_feature_points2d = new List<Vector2>();
             float d = 0.0f;
@@ -300,7 +363,8 @@ public class HeightmapCompress : MonoBehaviour
 
             if (terrain_feature_points2d.Count > 1)
             {
-                Vector2[] terrain_feature_points2d_array = DouglasPeuckerAlgorithm.DouglasPeucker2D(terrain_feature_points2d, epsilon).ToArray();
+                //Vector2[] terrain_feature_points2d_array = DouglasPeuckerAlgorithm.DouglasPeucker2D(terrain_feature_points2d, epsilon).ToArray();
+                Vector2[] terrain_feature_points2d_array = terrain_feature_points2d.ToArray();
                 List<Vector3> terrain_feature_points3d = new List<Vector3>();
                 for (int terrain_feature_points2d_index = 0; terrain_feature_points2d_index < terrain_feature_points2d_array.Length; terrain_feature_points2d_index++)
                 {

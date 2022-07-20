@@ -7,12 +7,13 @@
 // with cs.SetTexture
 Texture2D<float4> input;
 RWTexture2D<float4> Result;
-float4 features[1024];
+float4 features[2048];
 uint features_count;
 float x;
 float z;
 float power;
 float resolution;
+float height_buffer_row_size;
 uint gaussian_m;
 RWStructuredBuffer<int> progress;
 RWStructuredBuffer<float> heights;
@@ -225,7 +226,7 @@ void IDWTerrain(uint3 id : SV_DispatchThreadID)
     height = (road_constraint.x) * road_constraint.y + (1 - road_constraint.x) * height;
     Result[id.xy] = toHeightmap(height, road_constraint.x);
     //Result[id.xy] = toHeightmap(height, 0.0);
-    heights[id.x * 17 * 8 + id.y] = height;
+    heights[id.x * height_buffer_row_size + id.y] = height;
     //Constraintsmap[id.xy] = float4(road_constraint.x, 0, 0, 1);
     progress[0] = 1;
 }

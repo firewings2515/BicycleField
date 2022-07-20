@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class TerrainView : MonoBehaviour
 {
@@ -107,9 +108,12 @@ public class TerrainView : MonoBehaviour
             Debug.Log(TerrainGenerator.power + ": " + mse);
         }
         TerrainGenerator.power = min_error_power;
+        TimeSpan ts1 = new TimeSpan(DateTime.Now.Ticks);
         yield return StartCoroutine(TerrainGenerator.generateTerrainPatchTex(x_index, z_index, x_piece_num, z_piece_num));
         yield return StartCoroutine(TerrainGenerator.generateTerrainPatchWithTex(x_index, z_index, x_piece_num, z_piece_num));
-        Debug.Log("The best power: " + min_error_power + " MSE = " + min_mse);
+        TimeSpan ts2 = new TimeSpan(DateTime.Now.Ticks);
+        TimeSpan ts = ts1.Subtract(ts2).Duration();
+        Debug.Log("The best power: " + min_error_power + " MSE = " + min_mse + " time cost: " + ts.TotalMilliseconds + "ms");
         yield return null;
     }
 }

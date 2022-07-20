@@ -19,7 +19,9 @@ public class IDWGenerator : MonoBehaviour
     public bool mse_analyze;
     public float power;
     public bool clean;
-    public Terrain terrain;
+    public int terrain_case;
+    public Terrain hill;
+    public Terrain cliff;
     // Start is called before the first frame update
     void Start()
     {
@@ -44,7 +46,10 @@ public class IDWGenerator : MonoBehaviour
             TerrainGenerator.building_polygon_mat = building_polygon_mat;
             TerrainGenerator.power = power;
             TerrainGenerator.need_mse = mse_analyze;
-            TerrainGenerator.origin_terrain = terrain;
+            if (terrain_case == 0)
+                TerrainGenerator.origin_terrain = hill;
+            else
+                TerrainGenerator.origin_terrain = cliff;
             TerrainGenerator.loadTerrain();
             int x_index = 0;
             int z_index = 0;

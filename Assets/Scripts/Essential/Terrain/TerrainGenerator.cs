@@ -664,8 +664,10 @@ static public class TerrainGenerator
         // ================================== fetch feature points ===================================================
         var area_features_constraints = getAreaFeaturesForPatch(min_x + x_index * PublicOutputInfo.patch_length, min_z + z_index * PublicOutputInfo.patch_length);
         Vector4[] area_features = area_features_constraints.Item1;
-        if (area_features.Length > 1024)
+        if (area_features.Length > 2048)
             Debug.LogError("Warning! Compute shader features size is not enough");
+        else
+            Debug.Log(area_features.Length);
         Vector4[] area_road_constraints = area_features_constraints.Item2;
         if (area_road_constraints.Length > 512)
             Debug.LogError("Warning! Compute shader road_constraints size is not enough");
@@ -713,6 +715,7 @@ static public class TerrainGenerator
         compute_shader.SetFloat("z", min_z + z_index * PublicOutputInfo.patch_length);
         compute_shader.SetFloat("power", power);
         compute_shader.SetFloat("resolution", PublicOutputInfo.patch_length / (PublicOutputInfo.tex_size - 1)); // patch_length / tex_length
+        compute_shader.SetFloat("height_buffer_row_size", PublicOutputInfo.height_buffer_row_size);
         //compute_shader.SetInt("gaussian_m", PublicOutputInfo.gaussian_m); // gaussian filter M
         height_buffer[x_index * z_patch_num + z_index] = new ComputeBuffer(PublicOutputInfo.height_buffer_row_size * PublicOutputInfo.height_buffer_row_size, 4);
         heights[x_index * z_patch_num + z_index] = new float[PublicOutputInfo.height_buffer_row_size * PublicOutputInfo.height_buffer_row_size];
