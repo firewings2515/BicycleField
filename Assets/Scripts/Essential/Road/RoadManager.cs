@@ -67,8 +67,10 @@ public class RoadManager : MonoBehaviour
 
     private void initializeRoad()
     {
-        
-        while (path_creator.bezierPath.NumSegments < Info.MAX_SEGMENTS) generateNextSegment();
+        while (path_creator.bezierPath.NumSegments < Info.MAX_SEGMENTS)
+        {
+            generateNextSegment();
+        }
 
         //remove both default segment
         removeFirstSegment(false);
@@ -158,7 +160,8 @@ public class RoadManager : MonoBehaviour
     {
         rendered_segments++;
         current_segment++;
-
+        StartCoroutine(house_manager.generate_next_segment());
+        house_manager.destroy_previous_segment();
         Info.total_length -= (Functions.StrToVec3(data_lines[current_segment]) - Functions.StrToVec3(data_lines[current_segment - 1])).magnitude;
     }
 }

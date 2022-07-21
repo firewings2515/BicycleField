@@ -10,11 +10,10 @@ public class HouseManager : MonoBehaviour
     List<List<Vector3>> house_polygons;
     List<List<int>> house_show;
 
-    Dictionary<int,GameObject> exist_buildings;
-    HashSet<int> now_shows;
+    Dictionary<int,GameObject> exist_buildings = new Dictionary<int, GameObject>();
 
     int local_segment_index = 0;
-    Queue<int> exist_segments; 
+    Queue<int> exist_segments = new Queue<int>(); 
 
     void get_house_polygons() {
         string[] house_info_lines = System.IO.File.ReadAllLines(house_info_file);
@@ -58,11 +57,12 @@ public class HouseManager : MonoBehaviour
         buildings = new GameObject("buildings");
     }
 
-    public void generate_next_segment(int count = 1) {
+    public IEnumerator generate_next_segment(int count = 1) {
         for (int i = 0; i < count; i++)
         {
             exist_segments.Enqueue(local_segment_index);
             generate_segment(local_segment_index);
+            yield return new WaitForSeconds(0.3f);
             local_segment_index++;
         }
     }
@@ -71,12 +71,12 @@ public class HouseManager : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             int seg = exist_segments.Dequeue();
+            Debug.Log("destroy seg:" + seg);
             destroy_segment(seg);
         }
     }
 
     public void generate_segment(int index) {
-        now_shows.Clear();
         List<int> shows = house_show[index];
         for (int i = 0; i < shows.Count; i++) {
             if (exist_buildings.ContainsKey(shows[i])) continue;
@@ -85,10 +85,6 @@ public class HouseManager : MonoBehaviour
             Vector3 total = new Vector3();
             for (int j = 0; j < polygon.Count; j++) {
                 Vector3 point = polygon[j];
-                if (TerrainGenerator.is_initial)
-                {
-                    point.y = TerrainGenerator.getHeightWithBais(point.x, point.z);
-                }
                 if (point.y < min_y) min_y = point.y;
                 total.x += point.x;
                 total.y += point.y;
@@ -107,28 +103,17 @@ public class HouseManager : MonoBehaviour
             gobj.transform.parent = buildings.transform;
 
             exist_buildings.Add(shows[i],gobj);
-            now_shows.Add(shows[i]);
         }
     }
 
-    bool need_destroy(int index) {
-        if (!exist_buildings.ContainsKey(index)) return false;
-        Queue<int> _exist_segments = exist_segments;
-        while (_exist_segments.Count > 0) {
-            List<int> shows = house_show[_exist_segments.Dequeue()];
-            if (shows.Contains(index)) return false;
-        }
-        return true;
-    }
 
-    public void destroy_segment(int index)
-    {
-        List<int> shows = house_show[index];
-        for (int i = 0; i < shows.Count; i++)
-        {
-            if (need_destroy(shows[i])) {
-                Destroy(exist_buildings[shows[i]]);
-                exist_buildings.Remove(shows[i]);
+    public void destroy_segment(int index) {
+        List<int> seg1 = house_show[index];
+        List<int> seg2 = house_show[(index + 1) % house_show.Count];
+        for (int i = 0; i < seg1.Count; i++) {
+            if (!seg2.Contains(seg1[i])) {
+                Destroy(exist_buildings[seg1[i]]);
+                exist_buildings.Remove(seg1[i]);
             }
         }
     }
