@@ -128,8 +128,7 @@ public class HgtReader
             int result = byte1 << 8 | byte2;
             if (result > 9000.0f || result < 0.0f)
             { //if strange value shows
-                results.Add(0.0f);
-                continue;
+                result = 0;
             }
             if (interpolation)
                 results_x.Add((float)result);
@@ -139,7 +138,7 @@ public class HgtReader
 
         if (interpolation)
         {
-            for (int i = 0; i < rows.Count / 4; i++)
+            for (int i = 0; i < results_x.Count / 4; i++)
             {
                 double result = results_x[i * 4] * ratio_lats[i] * ratio_lons[i] + results_x[i * 4 + 1] * ratio_lats[i] * (1 - ratio_lons[i]) + results_x[i * 4 + 2] * (1 - ratio_lats[i]) * (1 - ratio_lons[i]) + results_x[i * 4 + 3] * (1 - ratio_lats[i]) * ratio_lons[i];
                 results.Add((float)result);

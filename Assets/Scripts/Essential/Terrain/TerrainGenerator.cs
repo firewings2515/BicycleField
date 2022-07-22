@@ -15,11 +15,11 @@ static public class TerrainGenerator
     static public float max_x;                                          // The maximum of whole terrains x
     static public float max_y;
     static public float max_z;                                          // The maximum of whole terrains z
-    static float boundary_min_x;
-    static float boundary_min_z;
-    static float origin_x;
-    static float origin_y;
-    static float origin_z;
+    static public float boundary_min_x;
+    static public float boundary_min_z;
+    static public float origin_x;
+    static public float origin_y;
+    static public float origin_z;
     static public WVec3[] features;
     static public Material terrain_mat;                                 // Use the standard material. The vertices are calculated by CPU
     static public Material terrain_idw_mat;                             // Use the material with IDW shader
@@ -562,6 +562,20 @@ static public class TerrainGenerator
         List<EarthCoord> all_coords = new List<EarthCoord>();
         all_coords.Add(new EarthCoord(lon, lat));
         return HgtReader.getElevations(all_coords, interpolation)[0];
+    }
+
+    static public float[] getDEMHeights(float[] xs, float[] zs, bool interpolation = true)
+    {
+        List<EarthCoord> all_coords = new List<EarthCoord>();
+        for (int i = 0; i < xs.Length; i++)
+        {
+            float x = xs[i] + boundary_min_x + origin_x;
+            float z = zs[i] + boundary_min_z + origin_z;
+            float lon = (float)MercatorProjection.xToLon(x);
+            float lat = (float)MercatorProjection.yToLat(z);
+            all_coords.Add(new EarthCoord(lon, lat));
+        }
+        return HgtReader.getElevations(all_coords, interpolation).ToArray();
     }
 
     static public float getIDWHeight(float x, float z, float old_base = 0.0f)

@@ -4,7 +4,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
-
+// url: https://github.com/gamemachine/QuadTerrainSystem
 namespace QuadTerrain
 {
     [ExecuteAlways]
