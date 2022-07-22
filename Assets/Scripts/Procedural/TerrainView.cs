@@ -15,6 +15,7 @@ public class TerrainView : MonoBehaviour
     public int x_piece_num;
     public int z_piece_num;
     public bool need_mse = false;
+    public bool use_gaussian = false;
     public Terrain origin_terrain;
     void Start()
     {
@@ -38,7 +39,7 @@ public class TerrainView : MonoBehaviour
         {
             int[] progress = new int[1];
             TerrainGenerator.progress_buffer[x_index * TerrainGenerator.z_patch_num + z_index].GetData(progress);
-            if (progress[0] == 1)
+            if ((progress[0] == 1 && !use_gaussian) || (progress[0] == 2 && use_gaussian))
             {
                 is_idw_ok = true;
                 TerrainGenerator.progress_buffer[x_index * TerrainGenerator.z_patch_num + z_index].Release();

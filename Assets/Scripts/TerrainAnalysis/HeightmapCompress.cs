@@ -98,9 +98,9 @@ public class HeightmapCompress : MonoBehaviour
                 directions[d] = new Vector3(Mathf.Cos(d * ang_step), 0, Mathf.Sin(d * ang_step));
             }
             if (terrain_case == 0)
-                StartCoroutine(getPointCloud(hill, hill.transform.position + min_sample_vec3a, hill.transform.position + min_sample_vec3a + sample_length, true, true));
+                StartCoroutine(getPointCloud(hill, hill.transform.position + min_sample_vec3a - new Vector3(PublicOutputInfo.gaussian_m, 0, PublicOutputInfo.gaussian_m), hill.transform.position + min_sample_vec3a + sample_length + new Vector3(PublicOutputInfo.gaussian_m, 0, PublicOutputInfo.gaussian_m), true, true));
             else
-                StartCoroutine(getPointCloud(cliff, cliff.transform.position + min_sample_vec3b, cliff.transform.position + min_sample_vec3a + sample_length, true, true));
+                StartCoroutine(getPointCloud(cliff, cliff.transform.position + min_sample_vec3b - new Vector3(PublicOutputInfo.gaussian_m, 0, PublicOutputInfo.gaussian_m), cliff.transform.position + min_sample_vec3a + sample_length + new Vector3(PublicOutputInfo.gaussian_m, 0, PublicOutputInfo.gaussian_m), true, true));
         }
 
         if (add_constraints)
@@ -218,7 +218,7 @@ public class HeightmapCompress : MonoBehaviour
                     Vector3[] w8d_center = new Vector3[1];
                     w8d_center[0] = custom_center[custom_center_index];
                     if (show_points)
-                        showPoint(w8d_center, "Feature_Center", feature_manager.transform, red_ball, 16.0f);
+                        showPoint(w8d_center, "Feature_Center", feature_manager.transform, red_ball, 4.0f);
                     for (int w8d_index = 0; w8d_index < w8d.Count; w8d_index++)
                     {
                         //for (int w8d_point_index = 0; w8d_point_index < w8d[w8d_index].Count; w8d_point_index++)
@@ -247,7 +247,7 @@ public class HeightmapCompress : MonoBehaviour
         }
 
         if (show_points)
-            showPoint(point_cloud_list.ToArray(), "Feature", feature_manager.transform, blue_ball, 8.0f);
+            showPoint(point_cloud_list.ToArray(), "Feature", feature_manager.transform, blue_ball, 2.0f);
 
         is_finished = true;
         yield return null;
@@ -332,6 +332,8 @@ public class HeightmapCompress : MonoBehaviour
             {
                 Vector3 current_vec3 = new Vector3(x, 0, z);
                 current_vec3.y = terrain.SampleHeight(current_vec3);
+                //Vector2 coord = getTerrainCoord(terrain, current_vec3);
+                //current_vec3.y = terrain.terrainData.GetSteepness(coord.x, coord.y);
                 terrain_feature_points.Add(current_vec3);
             }
         }

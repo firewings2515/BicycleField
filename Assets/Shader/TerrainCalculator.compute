@@ -13,10 +13,12 @@ float x;
 float z;
 float power;
 float resolution;
-float height_buffer_row_size;
+uint height_buffer_row_size;
+uint height_with_gaussian_buffer_row_size;
 uint gaussian_m;
 RWStructuredBuffer<int> progress;
 RWStructuredBuffer<float> heights;
+RWStructuredBuffer<float> heights_input;
 
 float getWeight(float d, float w)
 {
@@ -68,6 +70,7 @@ float decodeHeight(float4 raw)
     //return raw.g;
 }
 
+// https://homepages.inf.ed.ac.uk/rbf/HIPR2/gsmooth.htm
 // sigma = 10
 static const float coeffs[] = {
     0.012318109844189502,
@@ -243,9 +246,12 @@ void GaussianFilter(uint3 id : SV_DispatchThreadID)
         {
             float2 tc = new_coord + float2(i - gaussian_m, j - gaussian_m);
             sum += coeffs[i] * coeffs[j] * decodeHeight(input[tc]);
+            //sum += coeffs[i] * coeffs[j] * heights_input[tc.x * height_with_gaussian_buffer_row_size + tc.y];
         }
     }
     Result[id.xy] = toHeightmap(sum, input[new_coord].x); //input[new_coord].r
+    heights[id.x * height_buffer_row_size + id.y] = sum;
+    progress[0] = 2;
 }
 
 [numthreads(8, 8, 1)]
