@@ -6,7 +6,7 @@ using System.IO;
 public static class PublicOutputInfo
 {
     public static Vector3 origin_pos;
-    static public int piece_num = 64;                                                                   // The number of piece in a patch    ver2 = 8 ver3 = 64
+    static public int piece_num = 32;                                                                   // The number of piece in a patch    ver2 = 8 ver3 = 64
     public static float piece_length = 1.0f;                                                            // 2
     public static float patch_length = piece_num * piece_length;                                        // 128 is well
     public static int piece_num_in_chunk = 192;

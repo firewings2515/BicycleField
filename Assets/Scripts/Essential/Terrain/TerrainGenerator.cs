@@ -1147,6 +1147,64 @@ static public class TerrainGenerator
         }
     }
 
+    static public IEnumerator generateClearPlane(int x_index, int z_index, int x_piece_num, int z_piece_num)
+    {
+        Mesh mesh = new Mesh();
+        float[,,] terrain_points = new float[x_piece_num + 1, (z_piece_num + 1), 3];
+        Vector3[] vertice = new Vector3[(x_piece_num + 1) * (z_piece_num + 1)];
+        Vector2[] uv = new Vector2[(x_piece_num + 1) * (z_piece_num + 1)];
+        int[] indices = new int[6 * x_piece_num * z_piece_num];
+        int indices_index = 0;
+        float center_x = (2 * x_index + 1) * PublicOutputInfo.patch_length / 2;
+        float center_z = (2 * z_index + 1) * PublicOutputInfo.patch_length / 2;
+        float center_y = 0;
+
+        Vector3 center = new Vector3(center_x, center_y, center_z);
+        for (int i = 0; i <= x_piece_num; i++)
+        {
+            for (int j = 0; j <= z_piece_num; j++)
+            {
+                uv[i * (z_piece_num + 1) + j] = new Vector2((float)i / x_piece_num, (float)j / z_piece_num);
+                terrain_points[i, j, 0] = x_index * PublicOutputInfo.patch_length + i * PublicOutputInfo.piece_length;
+                terrain_points[i, j, 1] = 0;
+                terrain_points[i, j, 2] = z_index * PublicOutputInfo.patch_length + j * PublicOutputInfo.piece_length;
+                vertice[i * (z_piece_num + 1) + j] = new Vector3(terrain_points[i, j, 0], terrain_points[i, j, 1], terrain_points[i, j, 2]);
+            }
+        }
+
+        for (int i = 0; i < x_piece_num; i++)
+        {
+            for (int j = 0; j < z_piece_num; j++)
+            {
+                // counter-clockwise
+                indices[indices_index++] = i * (z_piece_num + 1) + j;
+                indices[indices_index++] = (i + 1) * (z_piece_num + 1) + j + 1;
+                indices[indices_index++] = (i + 1) * (z_piece_num + 1) + j;
+                indices[indices_index++] = i * (z_piece_num + 1) + j;
+                indices[indices_index++] = i * (z_piece_num + 1) + j + 1;
+                indices[indices_index++] = (i + 1) * (z_piece_num + 1) + j + 1;
+            }
+        }
+
+        mesh.vertices = vertice;
+        mesh.uv = uv;
+        mesh.triangles = indices;
+        //Recalculations
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        mesh.Optimize();
+        //Name the mesh
+        mesh.name = "terrain_mesh";
+        GameObject terrain = new GameObject("terrain_peice_" + x_index + "_" + z_index);
+        MeshRenderer mr = terrain.AddComponent<MeshRenderer>();
+        mr.material = terrain_mat;
+        MeshFilter mf = terrain.AddComponent<MeshFilter>();
+        mf.mesh = mesh;
+
+        terrain.transform.position = new Vector3();
+        yield return null;
+    }
+
     //static void getHightFromShader(float x, float z)
     //{
     //    //first Make sure you're using RGB24 as your texture format
