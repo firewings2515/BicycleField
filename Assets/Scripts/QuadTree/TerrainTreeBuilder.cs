@@ -116,6 +116,7 @@ namespace QuadTerrain
         {
             float distance = math.distance(node.Bounds.Center, CameraPosition);
             float lod = GetLod(distance);
+
             if (node.Bounds.Size.x <= lod + 1)
             {
                 return true;

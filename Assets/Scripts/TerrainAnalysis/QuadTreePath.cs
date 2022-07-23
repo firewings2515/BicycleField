@@ -17,6 +17,8 @@ namespace QuadTerrain
         private bool DebugMode;
 
         [SerializeField]
+        private GameObject cyclist;
+        [SerializeField]
         private GameObject camera;
         private Camera cam;
         [SerializeField]
@@ -26,11 +28,16 @@ namespace QuadTerrain
         [SerializeField]
         private GameObject plane_prefab;
         [SerializeField]
-        private bool debug;
+        private bool build;
+        [SerializeField]
+        private bool generate;
+        [SerializeField]
+        private bool stop_build;
 
         private GameObject terrain_manager;
         private NativeArray<float4> Planes;
         private NativeList<RenderNode> RenderNodes;
+        private bool is_initial = false;
         // Start is called before the first frame update
         void Start()
         {
@@ -40,16 +47,26 @@ namespace QuadTerrain
             RenderNodes = new NativeList<RenderNode>(Allocator.Persistent);
             readBoundaryMin(Application.streamingAssetsPath + "//" + TerrainGenerator.file_path);
             TerrainGenerator.is_initial = true;
+            QuadTreePatch.initial();
+            cyclist.GetComponent<PathCreation.Examples.PathFollower>().speed = 20;
+            is_initial = true;
+            InvokeRepeating("buildQuadTree", 0, 1);
         }
 
         // Update is called once per frame
         void Update()
         {
-            if (debug)
+            if (build)
             {
-                debug = false;
+                build = false;
                 buildQuadTree();
-                displayRenderNodes();
+                //displayRenderNodes();
+            }
+
+            if (generate)
+            {
+                generate = false;
+                generateByQuadTreePatch();
             }
         }
 
@@ -69,6 +86,12 @@ namespace QuadTerrain
 
         public void buildQuadTree()
         {
+            if (stop_build)
+            {
+                cyclist.GetComponent<PathCreation.Examples.PathFollower>().speed = 0;
+                return;
+            }
+
             FrustumPlanes2.FromCamera(cam, SourcePlanes, Planes);
 
             RenderNodes.Clear();
@@ -98,9 +121,24 @@ namespace QuadTerrain
             }
         }
 
+        public void generateByQuadTreePatch()
+        {
+            //string ans = "";
+            foreach (var node in QuadTreePatch.node_dic)
+            {
+                //ans += $"{node.Key} {node.Value}\n";
+                GameObject plane = Instantiate(plane_prefab);
+                plane.transform.SetParent(terrain_manager.transform);
+                plane.transform.localPosition = new Vector3(node.Key.x, 0, node.Key.y);
+                plane.transform.localScale = new Vector3(node.Value / 32, 1, node.Value / 32);
+                plane.AddComponent<DEMFetcher>();
+            }
+            //Debug.Log(ans);
+        }
+
         private void OnDrawGizmos()
         {
-            if (!DebugMode)
+            if (!DebugMode || !is_initial)
             {
                 return;
             }
@@ -109,9 +147,10 @@ namespace QuadTerrain
             float2 camPosition = new float2(cam.transform.position.x, cam.transform.position.z);
 
             GUIStyle style = new GUIStyle();
-            style.fontSize = 24;
+            style.fontSize = 12;
 
             Gizmos.color = Color.green;
+            
             for (int i = 0; i < RenderNodes.Length; i++)
             {
 
@@ -127,9 +166,10 @@ namespace QuadTerrain
                 Gizmos.DrawWireCube(center, size);
 
                 float distance = math.distance(camPosition, node.Bounds.Center);
-                if (distance < 1024)
+                if (distance < 2048)
                 {
-                    UnityEditor.Handles.Label(center, node.Bounds.Size.x.ToString(), style);
+                    //UnityEditor.Handles.Label(center, node.Bounds.Size.x.ToString(), style);
+                    UnityEditor.Handles.Label(center, $"{i}", style);
                 }
 
             }
