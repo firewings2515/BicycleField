@@ -670,6 +670,19 @@ static public class TerrainGenerator
         }
     }
 
+    static public void showPoint(Vector3[] points, string tag, Transform parent, GameObject ball_prefab, float ball_size)
+    {
+        for (int point_index = 0; point_index < points.Length; point_index++)
+        {
+            GameObject ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            ball.transform.position = points[point_index];
+            ball.transform.localScale = new Vector3(ball_size, ball_size, ball_size);
+            ball.GetComponent<MeshRenderer>().material.color= Color.red;
+            ball.name = tag;
+            ball.transform.parent = parent;
+        }
+    }
+
     /// <summary>
     /// generate terrain patch texture in compute shader
     /// </summary>
@@ -1217,6 +1230,48 @@ static public class TerrainGenerator
 
         terrain.transform.position = new Vector3();
         yield return null;
+    }
+
+    static public void displayDEMPoints()
+    {
+        //double x_min = MercatorProjection.lonToX(121);
+        //double z_min = MercatorProjection.latToY(25);
+        //double x_max = MercatorProjection.lonToX(122);
+        //double z_max = MercatorProjection.latToY(26);
+        //Debug.Log($"{(x_max - x_min) / 3600} {(z_max - z_min) / 3600}");
+        float x = 0 + boundary_min_x + origin_x;
+        float z = 0 + boundary_min_z + origin_z;
+        float longitude = (float)MercatorProjection.xToLon(x);
+        float latitude = (float)MercatorProjection.yToLat(z);
+        int lon_int = (int)Mathf.Floor(longitude);
+        int lat_int = (int)Mathf.Floor(latitude);
+        int resolution = 3601;
+        int lon_row_low = (int)Mathf.Floor((longitude - lon_int) * (resolution - 1));
+        int lat_row_low = (int)Mathf.Floor((latitude - lat_int) * (resolution - 1));
+        float lon_step = 1.0f / (resolution - 1);
+        float lat_step = 1.0f / (resolution - 1);
+        int dem_extend = 40;
+        Vector3[] dem_points = new Vector3[(dem_extend + 1) * (dem_extend + 1)];
+        List<EarthCoord> all_coords = new List<EarthCoord>();
+        for (int i = 0; i <= dem_extend; i++)
+        {
+            for (int j = 0; j <= dem_extend; j++)
+            {
+                dem_points[i * (dem_extend + 1) + j].x = lon_int + (i + lon_row_low) * lon_step;
+                dem_points[i * (dem_extend + 1) + j].z = lat_int + (j + lat_row_low) * lat_step;
+                all_coords.Add(new EarthCoord(dem_points[i * (dem_extend + 1) + j].x, dem_points[i * (dem_extend + 1) + j].z));
+            }
+        }
+        float[] ys = HgtReader.getElevations(all_coords).ToArray();
+        for (int i = 0; i <= dem_extend; i++)
+        {
+            for (int j = 0; j <= dem_extend; j++)
+            {
+                dem_points[i * (dem_extend + 1) + j] = new Vector3((float)MercatorProjection.lonToX(dem_points[i * (dem_extend + 1) + j].x) - boundary_min_x - origin_x, ys[i * (dem_extend + 1) + j], (float)MercatorProjection.latToY(dem_points[i * (dem_extend + 1) + j].z) - boundary_min_z - origin_z);
+            }
+        }
+        GameObject dem_points_manager = new GameObject("DEM Points");
+        showPoint(dem_points, "DEM Points", dem_points_manager.transform, feature_ball_prefab, 4.0f);
     }
 
     //static void getHightFromShader(float x, float z)

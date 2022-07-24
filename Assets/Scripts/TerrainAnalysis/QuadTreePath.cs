@@ -33,6 +33,8 @@ namespace QuadTerrain
         private bool generate;
         [SerializeField]
         private bool stop_build;
+        [SerializeField]
+        private bool display_dem_points;
 
         private GameObject terrain_manager;
         private NativeArray<float4> Planes;
@@ -51,6 +53,8 @@ namespace QuadTerrain
             cyclist.GetComponent<PathCreation.Examples.PathFollower>().speed = 20;
             is_initial = true;
             InvokeRepeating("buildQuadTree", 0, 1);
+
+            
         }
 
         // Update is called once per frame
@@ -67,6 +71,12 @@ namespace QuadTerrain
             {
                 generate = false;
                 generateByQuadTreePatch();
+            }
+
+            if (display_dem_points)
+            {
+                display_dem_points = false;
+                TerrainGenerator.displayDEMPoints();
             }
         }
 
