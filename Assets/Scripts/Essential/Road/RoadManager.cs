@@ -27,8 +27,6 @@ public class RoadManager : MonoBehaviour
     private GameObject trigger_manager;
     private int trigger_index = 0;
 
-
-    public HouseManager house_manager;
     private void Start()
     {
         trigger_manager = new GameObject("TriggerManager");
@@ -40,7 +38,9 @@ public class RoadManager : MonoBehaviour
 
     private void readRoadData()
     {
-        reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name);
+        reader = new StreamReader(Application.dataPath + "/StreamingAssets/" + file_name + "/" + file_name + ".bpf");
+
+        //TerrainGenerator.file_path = file_name + "/features.f";
         string data = reader.ReadToEnd();
         data_lines = data.Split('\n');
     }
@@ -67,10 +67,8 @@ public class RoadManager : MonoBehaviour
 
     private void initializeRoad()
     {
-        while (path_creator.bezierPath.NumSegments < Info.MAX_SEGMENTS)
-        {
-            generateNextSegment();
-        }
+        
+        while (path_creator.bezierPath.NumSegments < Info.MAX_SEGMENTS) generateNextSegment();
 
         //remove both default segment
         removeFirstSegment(false);
@@ -123,7 +121,6 @@ public class RoadManager : MonoBehaviour
         }
 
         point_data = data_lines[current_line++];
-
         return point_data != null;
     }
 
@@ -160,8 +157,7 @@ public class RoadManager : MonoBehaviour
     {
         rendered_segments++;
         current_segment++;
-        StartCoroutine(house_manager.generate_next_segment());
-        house_manager.destroy_previous_segment();
+
         Info.total_length -= (Functions.StrToVec3(data_lines[current_segment]) - Functions.StrToVec3(data_lines[current_segment - 1])).magnitude;
     }
 }
