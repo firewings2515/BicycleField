@@ -27,8 +27,43 @@ public class RoadManager : MonoBehaviour
     private GameObject trigger_manager;
     private int trigger_index = 0;
 
+    public string calc_path = null;
+    private bool calc_path_check = false;
+
     private void Start()
     {
+        if (calc_path_check)
+        {
+            StreamReader reader1 = new StreamReader(Application.dataPath + "/StreamingAssets/" + calc_path);
+            string data = reader1.ReadToEnd();
+            data_lines = data.Split('\n');
+            Debug.Log("#" + data_lines[data_lines.Length - 1]);
+            List<Vector3> vec3_lines = new List<Vector3>();
+            for (int id = 0; id < data_lines.Length; id++)
+            {
+                vec3_lines.Add(Functions.StrToVec3(data_lines[id]));
+            }
+            Vector3 old_check = vec3_lines[0];
+            for (int id = 1; id < vec3_lines.Count; id++)
+            {
+                if ((vec3_lines[id] - old_check).magnitude < 100)
+                {
+                    vec3_lines.RemoveAt(id);
+                    id--;
+                }
+                else old_check = vec3_lines[id];
+            }
+
+            Debug.Log(vec3_lines[vec3_lines.Count - 1]);
+
+            StreamWriter writer = new StreamWriter(Application.dataPath + "/StreamingAssets/new.bpf", true);
+            for (int id = 0; id < vec3_lines.Count; id++)
+            {
+                writer.WriteLine(vec3_lines[id].x + " " + vec3_lines[id].y + " " + vec3_lines[id].z);
+            }
+            writer.Close();
+        }
+
         trigger_manager = new GameObject("TriggerManager");
         readRoadData();
         initializeRoad();
