@@ -335,10 +335,6 @@ arcade_house():Building(){
 
 
 test_roof():Roof(1,1.5,Flat){
-	pos(0,1,0)
-	air_conditioner()
-	pos(3,1,0)
-	home_flower()
 }
 
 

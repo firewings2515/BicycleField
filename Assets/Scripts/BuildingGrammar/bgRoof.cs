@@ -61,7 +61,6 @@ public class bgRoof : bgComponent
         if (roofPlanner != null && roofConstructor != null)
         {
             var roofConstructible = roofPlanner.Plan(vertexs2D, config);
-
             var trans = go.transform;
             trans.localRotation = Quaternion.identity;
             roofConstructor.Construct(roofConstructible, trans);

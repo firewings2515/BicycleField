@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class HouseManager : MonoBehaviour
 {
@@ -67,14 +68,14 @@ public class HouseManager : MonoBehaviour
                 house_showing[house_index] = true;
                 Debug.Log("\tgenerate_house " + house_index);
                 generate_house(house_index);                
-                yield return 0;
+                yield return new WaitForSeconds(1.0f);
             }
             else if (house_showing[house_index] == true){
                 house_showing[house_index] = false;
                 Debug.Log("\tdestroy_house " + house_index);
                 Destroy(buildings[house_index]);
                 buildings.Remove(house_index);
-                yield return 0;
+                yield return new WaitForSeconds(1.0f);
             }
         }
         
