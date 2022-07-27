@@ -194,8 +194,7 @@ public class RoadManager : MonoBehaviour
     {
         rendered_segments++;
         current_segment++;
-        StartCoroutine(house_manager.generate_next_segment());
-        house_manager.destroy_previous_segment();
+        StartCoroutine(house_manager.go_next_segment());
         Info.total_length -= (Functions.StrToVec3(data_lines[current_segment]) - Functions.StrToVec3(data_lines[current_segment - 1])).magnitude;
     }
 }

@@ -132,23 +132,23 @@ static public class HouseGenerator
         Object.Destroy(gobj_db[segment_id][house_id]);
         gobj_db[segment_id].Remove(house_id);
     }
-
-    static public GameObject build_polygon_house(List<Vector3> vertexs,float width_per_facade)
-    {
+    static public GameObject build_polygon_house(Vector3[] vertexs, float width_per_facade) {
         if (!determine_clock_wise(vertexs))
         {
-            vertexs.Reverse();
+            System.Array.Reverse(vertexs);
         }
         List<List<string>> component_names = new List<List<string>>();
-        for (int i = 0; i < vertexs.Count; i++)
+        for (int i = 0; i < vertexs.Length; i++)
         {
             component_names.Add(new List<string>());
             //int facade_count = Random.Range(1,3);
             float dis;
-            if (i != vertexs.Count - 1) {
+            if (i != vertexs.Length - 1)
+            {
                 dis = Vector3.Distance(vertexs[i], vertexs[i + 1]);
             }
-            else { 
+            else
+            {
                 dis = Vector3.Distance(vertexs[i], vertexs[0]);
             }
             int facade_count = (int)Mathf.Floor(dis / width_per_facade);
@@ -166,12 +166,18 @@ static public class HouseGenerator
         builder.load_base_coords("runtime_base", vertexs);
         builder.load_base_facades("runtime_base", component_names);
         return builder.build("runtime_base");
+
     }
 
-    static bool determine_clock_wise(List<Vector3> points)
+    static public GameObject build_polygon_house(List<Vector3> vertexs,float width_per_facade)
+    {
+        return build_polygon_house(vertexs.ToArray(), width_per_facade);
+    }
+
+    static bool determine_clock_wise(Vector3[] points)
     { //§PÂ_¶¶®É°wOR°f®É°w
         //https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
-        int coords_size = points.Count;
+        int coords_size = points.Length;
         float result = 0.0f;
         for (int index = 0; index < coords_size; index++)
         {

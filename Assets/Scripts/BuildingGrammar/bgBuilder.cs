@@ -188,6 +188,16 @@ public class bgBuilder
             }
         }
     }
+    public void load_base_coords(string name, Vector3[] vertexs)
+    {
+        for (int i = 0; i < parser.bases.Count; i++)
+        {
+            if (parser.bases[i].name == name)
+            {
+                parser.bases[i].vertexs = new List<Vector3>(vertexs);
+            }
+        }
+    }
 
     public void load_base_facades(string name, List<List<string>> component_names)
     {

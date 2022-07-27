@@ -56,13 +56,26 @@ public class calcHouseShow : EditorWindow
     void calc(string output_filename) {
         Vector3[] road_points = get_road_points();
         Vector3[] house_centers = get_house_centers();
+        bool[] house_showing = new bool[house_centers.Length];
         StreamWriter writer = new StreamWriter(output_filename);
         for (int i = 0; i < road_points.Length; i++) {
             Vector3 road_point = road_points[i];
             string line = "";
             for (int j = 0; j < house_centers.Length; j++) {
-                if (Vector3.Distance(road_point, house_centers[j]) < max_distance) {
-                    line += (j.ToString() + " ");
+                if (Vector3.Distance(road_point, house_centers[j]) < max_distance)
+                {
+                    if (!house_showing[j])
+                    {
+                        line += (j.ToString() + " ");
+                        house_showing[j] = true;
+                    }
+                }
+                else {
+                    if (house_showing[j])
+                    {
+                        line += (j.ToString() + " ");
+                        house_showing[j] = false;
+                    }
                 }
             }
             writer.WriteLine(line);
