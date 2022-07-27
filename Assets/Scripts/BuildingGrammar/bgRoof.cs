@@ -76,6 +76,7 @@ public class bgRoof : bgComponent
             else { 
                 bgAsset model = builder.get_asset(commands[i]);
                 GameObject obj = model.build();
+                GameObject.Destroy(obj.GetComponent<TriLibCore.AssetUnloader>());
                 obj.transform.parent = go.transform;
                 obj.transform.localPosition = model_pos;
             }
