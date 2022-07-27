@@ -98,7 +98,7 @@ public class RoadManager : MonoBehaviour
             Vector3 vec3_point = Functions.StrToVec3(str_point);
 
             //terrain
-            TerrainGenerator.generateTerrain(vec3_point);
+            //TerrainGenerator.generateTerrain(vec3_point);
 
             //checkpoint
             spawnCheckpoint(vec3_point);
@@ -134,7 +134,7 @@ public class RoadManager : MonoBehaviour
     {
         //terrain
         Vector3 remove_pos = path_creator.bezierPath.GetPoint(0);
-        StartCoroutine(TerrainGenerator.removeAreaTerrain(remove_pos.x, remove_pos.z));
+        //StartCoroutine(TerrainGenerator.removeAreaTerrain(remove_pos.x, remove_pos.z));
 
         //road
         path_creator.bezierPath.DeleteSegment(0);
