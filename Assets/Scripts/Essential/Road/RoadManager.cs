@@ -30,6 +30,8 @@ public class RoadManager : MonoBehaviour
     public string calc_path = null;
     private bool calc_path_check = false;
 
+    public HouseManager house_manager;
+
     private void Start()
     {
         if (calc_path_check)
@@ -192,7 +194,8 @@ public class RoadManager : MonoBehaviour
     {
         rendered_segments++;
         current_segment++;
-
+        StartCoroutine(house_manager.generate_next_segment());
+        house_manager.destroy_previous_segment();
         Info.total_length -= (Functions.StrToVec3(data_lines[current_segment]) - Functions.StrToVec3(data_lines[current_segment - 1])).magnitude;
     }
 }
