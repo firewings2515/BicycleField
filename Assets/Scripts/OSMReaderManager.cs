@@ -1056,6 +1056,6 @@ public struct BuildingCreationJob : IJob
     public int _context_id;
     public void Execute()
     {
-        ShapeGrammarBuilder.buildShape(this._context_id);
+        //ShapeGrammarBuilder.buildShape(this._context_id);
     }
 }

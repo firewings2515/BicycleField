@@ -98,6 +98,7 @@ public class HouseManager : MonoBehaviour
             polygon[j] = new Vector3(polygon[j].x - averge.x, 0, polygon[j].z - averge.z);
         }
         GameObject gobj = HouseGenerator.build_polygon_house(polygon, Random.Range(3, 6));
+        //GameObject gobj = new GameObject();
         gobj.transform.position = averge;
         gobj.transform.parent = buildings_parent.transform;
         buildings.Add(house_index, gobj);
