@@ -10,7 +10,7 @@ namespace QuadTerrain
         public Node Node;
         public MeshType MeshType;
 
-        public float MeshScale => Node.Bounds.Size.x / 32f;
+        public float MeshScale => Node.Bounds.Size.x; // / 32.f
 
         public Vector3 WorldScale
         {
@@ -24,7 +24,9 @@ namespace QuadTerrain
         {
             get
             {
-                return new Vector3(Node.Bounds.min.x, 0f, Node.Bounds.min.y);
+                //return new Vector3(Node.Bounds.min.x, 0f, Node.Bounds.min.y);
+                var position = TerrainGenerator.demToXAndZ(Node.Bounds.min.x, Node.Bounds.min.y);
+                return new Vector3((float)position.x, 0, (float)position.z);
             }
         }
 

@@ -1177,25 +1177,25 @@ static public class TerrainGenerator
     static public IEnumerator generateClearPlane(int x_index, int z_index, int x_piece_num, int z_piece_num)
     {
         Mesh mesh = new Mesh();
-        float[,,] terrain_points = new float[x_piece_num + 1, (z_piece_num + 1), 3];
+        double[,,] terrain_points = new double[x_piece_num + 1, (z_piece_num + 1), 3];
         Vector3[] vertice = new Vector3[(x_piece_num + 1) * (z_piece_num + 1)];
         Vector2[] uv = new Vector2[(x_piece_num + 1) * (z_piece_num + 1)];
         int[] indices = new int[6 * x_piece_num * z_piece_num];
         int indices_index = 0;
-        float center_x = (2 * x_index + 1) * PublicOutputInfo.patch_length / 2;
-        float center_z = (2 * z_index + 1) * PublicOutputInfo.patch_length / 2;
+        double center_x = (2 * x_index + 1) * QuadTreePatch.x_dem_interval / 2;
+        double center_z = (2 * z_index + 1) * QuadTreePatch.z_dem_interval / 2;
         float center_y = 0;
 
-        Vector3 center = new Vector3(center_x, center_y, center_z);
+        Vector3 center = new Vector3((float)center_x, center_y, (float)center_z);
         for (int i = 0; i <= x_piece_num; i++)
         {
             for (int j = 0; j <= z_piece_num; j++)
             {
                 uv[i * (z_piece_num + 1) + j] = new Vector2((float)i / x_piece_num, (float)j / z_piece_num);
-                terrain_points[i, j, 0] = x_index * PublicOutputInfo.patch_length + i * PublicOutputInfo.piece_length;
+                terrain_points[i, j, 0] = x_index * QuadTreePatch.x_dem_interval + i * QuadTreePatch.x_dem_step;
                 terrain_points[i, j, 1] = 0;
-                terrain_points[i, j, 2] = z_index * PublicOutputInfo.patch_length + j * PublicOutputInfo.piece_length;
-                vertice[i * (z_piece_num + 1) + j] = new Vector3(terrain_points[i, j, 0], terrain_points[i, j, 1], terrain_points[i, j, 2]);
+                terrain_points[i, j, 2] = z_index * QuadTreePatch.z_dem_interval + j * QuadTreePatch.z_dem_step;
+                vertice[i * (z_piece_num + 1) + j] = new Vector3((float)terrain_points[i, j, 0], (float)terrain_points[i, j, 1], (float)terrain_points[i, j, 2]);
             }
         }
 
@@ -1232,6 +1232,26 @@ static public class TerrainGenerator
         yield return null;
     }
 
+    static public (int x, int z) getIndex(float x, float z)
+    {
+        x += boundary_min_x + origin_x;
+        z += boundary_min_z + origin_z;
+        float longitude = (float)MercatorProjection.xToLon(x);
+        float latitude = (float)MercatorProjection.yToLat(z);
+        int lon_int = (int)Mathf.Floor(longitude);
+        int lat_int = (int)Mathf.Floor(latitude);
+        int resolution = 3601;
+        int lon_row_low = (int)Mathf.Floor((longitude - lon_int) * (resolution - 1));
+        int lat_row_low = (int)Mathf.Floor((latitude - lat_int) * (resolution - 1));
+        return (lon_row_low, lat_row_low);
+        //return (Mathf.FloorToInt(x / x_dem_interval) * x_dem_interval, Mathf.FloorToInt(z / z_dem_interval) * z_dem_interval);
+    }
+
+    static public (float x, float z) getN25E121Location() // default N25E121
+    {
+        return ((float)MercatorProjection.lonToX(121) - boundary_min_x - origin_x, (float)MercatorProjection.latToY(25) - boundary_min_z - origin_z);
+    }
+
     static public void displayDEMPoints()
     {
         //double x_min = MercatorProjection.lonToX(121);
@@ -1240,7 +1260,7 @@ static public class TerrainGenerator
         //double z_max = MercatorProjection.latToY(26);
         //Debug.Log($"{(x_max - x_min) / 3600} {(z_max - z_min) / 3600}");
         float x = 0 + boundary_min_x + origin_x;
-        float z = 0 + boundary_min_z + origin_z;
+        float z = 1 + boundary_min_z + origin_z;
         float longitude = (float)MercatorProjection.xToLon(x);
         float latitude = (float)MercatorProjection.yToLat(z);
         int lon_int = (int)Mathf.Floor(longitude);
@@ -1257,9 +1277,7 @@ static public class TerrainGenerator
         {
             for (int j = 0; j <= dem_extend; j++)
             {
-                dem_points[i * (dem_extend + 1) + j].x = lon_int + (i + lon_row_low) * lon_step;
-                dem_points[i * (dem_extend + 1) + j].z = lat_int + (j + lat_row_low) * lat_step;
-                all_coords.Add(new EarthCoord(dem_points[i * (dem_extend + 1) + j].x, dem_points[i * (dem_extend + 1) + j].z));
+                all_coords.Add(new EarthCoord(lon_int + (i + lon_row_low) * lon_step, lat_int + (j + lat_row_low) * lat_step));
             }
         }
         float[] ys = HgtReader.getElevations(all_coords).ToArray();
@@ -1267,11 +1285,49 @@ static public class TerrainGenerator
         {
             for (int j = 0; j <= dem_extend; j++)
             {
-                dem_points[i * (dem_extend + 1) + j] = new Vector3((float)MercatorProjection.lonToX(dem_points[i * (dem_extend + 1) + j].x) - boundary_min_x - origin_x, ys[i * (dem_extend + 1) + j], (float)MercatorProjection.latToY(dem_points[i * (dem_extend + 1) + j].z) - boundary_min_z - origin_z);
+                dem_points[i * (dem_extend + 1) + j] = new Vector3((float)(MercatorProjection.lonToX(all_coords[i * (dem_extend + 1) + j].longitude) - boundary_min_x - origin_x), ys[i * (dem_extend + 1) + j], (float)(MercatorProjection.latToY(all_coords[i * (dem_extend + 1) + j].latitude) - boundary_min_z - origin_z));
             }
         }
         GameObject dem_points_manager = new GameObject("DEM Points");
         showPoint(dem_points, "DEM Points", dem_points_manager.transform, feature_ball_prefab, 4.0f);
+    }
+
+    static public (double lon, double lat) toLonAndLat (float x, float z)
+    {
+        x += boundary_min_x + origin_x;
+        z += boundary_min_z + origin_z;
+        return (MercatorProjection.xToLon(x), MercatorProjection.yToLat(z));
+    }
+
+    static public (double x, double z) toXAndZ(double lon, double lat)
+    {
+        return (MercatorProjection.lonToX(lon) - boundary_min_x - origin_x, MercatorProjection.latToY(lat) - boundary_min_z - origin_z);
+    }
+
+    static public (double lon, double lat) mapToDEM(int x_index, int z_index) // default
+    {
+        int resolution = 3601;
+        double step = 1.0 / (resolution - 1);
+        return (121 + x_index * step, 25 + z_index * step);
+    }
+
+    static public (double x, double z) demToXAndZ(int x_index, int z_index)
+    {
+        var dem_coord = mapToDEM(x_index, z_index);
+        return toXAndZ(dem_coord.lon, dem_coord.lat);
+    }
+
+    static public (float x, float z) getXAndZInDEM(float x, float z)
+    {
+        var lon_lat = toLonAndLat(x, z);
+        int resolution = 3601;
+        //Debug.Log($"{lon_lat.lon} {lon_lat.lat}");
+        return ((float)((lon_lat.lon - 121) * (resolution - 1)), (float)((lon_lat.lat - 25) * (resolution - 1)));
+    }
+
+    static public void meow(string s) //-8.526772 34.41344
+    {
+        Debug.Log(s);
     }
 
     //static void getHightFromShader(float x, float z)

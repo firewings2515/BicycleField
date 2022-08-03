@@ -207,7 +207,7 @@ namespace QuadTerrain
 
         public void generateClearPlane()
         {
-            StartCoroutine(TerrainGenerator.generateClearPlane(0, 0, PublicOutputInfo.piece_num, PublicOutputInfo.piece_num));
+            StartCoroutine(TerrainGenerator.generateClearPlane(0, 0, QuadTreePatch.interval_peice_num, QuadTreePatch.interval_peice_num));
         }
 
         private void OnDrawGizmosSelected()

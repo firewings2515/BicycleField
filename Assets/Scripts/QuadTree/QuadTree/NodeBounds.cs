@@ -6,12 +6,12 @@ namespace QuadTerrain
     [Serializable]
     public struct NodeBounds
     {
-        public float2 min;
-        public float2 max;
+        public int2 min;
+        public int2 max;
 
-        public float2 Center => min + Extents;
-        public float2 Extents => Size * 0.5f;
-        public float2 Size => (max - min);
+        public float2 Center => min + new float2(Size.x / 2.0f, Size.y / 2.0f);
+        public int2 Extents => Size / 2;
+        public int2 Size => (max - min);
 
         public bool Contains(float2 point)
         {
@@ -33,10 +33,10 @@ namespace QuadTerrain
             return true;
         }
 
-        public void Expand(float amount)
+        public void Expand(int amount)
         {
-            min = new float2(min.x - amount, min.y - amount);
-            max = new float2(max.x + amount, max.y + amount);
+            min = new int2(min.x - amount, min.y - amount);
+            max = new int2(max.x + amount, max.y + amount);
         }
 
         public FourNodeBounds Subdivide()
@@ -51,16 +51,16 @@ namespace QuadTerrain
             };
 
             bounds.Tl = new NodeBounds();
-            bounds.Tl.min = new float2(min.x, min.y + extents.y);
+            bounds.Tl.min = new int2(min.x, min.y + extents.y);
             bounds.Tl.max = bounds.Tl.min + extents;
 
 
             bounds.Br = new NodeBounds();
-            bounds.Br.min = new float2(min.x + extents.x, min.y);
+            bounds.Br.min = new int2(min.x + extents.x, min.y);
             bounds.Br.max = bounds.Br.min + extents;
 
             bounds.Tr = new NodeBounds();
-            bounds.Tr.min = new float2(min.x + extents.x, min.y + extents.y);
+            bounds.Tr.min = new int2(min.x + extents.x, min.y + extents.y);
             bounds.Tr.max = max;
 
             return bounds;

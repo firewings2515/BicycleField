@@ -43,6 +43,7 @@ namespace QuadTerrain
             if (id > m_Nodes.Length - 1)
             {
                 //Debug.LogFormat("AddNode {0} out of nodes", bounds);
+                TerrainGenerator.meow($"AddNode {bounds} out of nodes");
                 throw new Exception();
             }
             m_Nodes[id] = node;

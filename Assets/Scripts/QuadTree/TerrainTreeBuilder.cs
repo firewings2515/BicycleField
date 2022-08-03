@@ -25,10 +25,10 @@ namespace QuadTerrain
                 }
 
                 NodeBounds bounds = node.Bounds;
-                bounds.Expand(2f);
+                bounds.Expand(1); // 2
 
                 float2 center = bounds.Center;
-                float2 extents = bounds.Extents;
+                int2 extents = bounds.Extents;
                 Bounds frustumBounds = new Bounds();
                 frustumBounds.center = new Vector3(center.x, 0f, center.y);
                 frustumBounds.extents = new Vector3(extents.x, 1000f, extents.y);
@@ -110,14 +110,14 @@ namespace QuadTerrain
             return other.Contains(point);
         }
 
-        
-
         public bool IsLeaf(Node node)
         {
             float distance = math.distance(node.Bounds.Center, CameraPosition);
-            float lod = GetLod(distance);
-
-            if (node.Bounds.Size.x <= lod + 1)
+            int lod = getLod(distance);
+            int level = node.Bounds.Size.x;
+            //int level = QuadTreePatch.calcLevel(node.Bounds.Size.x);
+            //Debug.Log($"{node.Bounds.Center.x} {node.Bounds.Center.y} {lod} {level}");
+            if (level <= lod || level == 1)
             {
                 return true;
             }
@@ -125,6 +125,16 @@ namespace QuadTerrain
             {
                 return false;
             }
+            //float lod = GetLod(distance);
+
+            //if (node.Bounds.Size.x <= lod + 1)
+            //{
+            //    return true;
+            //}
+            //else
+            //{
+            //    return false;
+            //}
         }
 
         public float GetLod(float distance)
@@ -148,10 +158,29 @@ namespace QuadTerrain
             
             return 512f;
         }
+
+        public int getLod(float distance)
+        {
+            if (QuadTreePatch.always_level_one)
+                return 1;
+
+            if (distance <= 4)
+            {
+                return 1;
+            }
+            if (distance <= 8)
+            {
+                return 2;
+            }
+            if (distance <= 16)
+            {
+                return 4;
+            }
+            if (distance <= 32)
+            {
+                return 8;
+            }
+            return 16;
+        }
     }
-
-    
-
-    
-
 }

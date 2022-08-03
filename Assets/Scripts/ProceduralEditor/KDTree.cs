@@ -8,6 +8,14 @@ public struct WVec3
     public float y;
     public float z;
     public float w;
+
+    public WVec3(float x, float y, float z, float w)
+    {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.w = w;
+    }
 }
 
 public class KDTree
