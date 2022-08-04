@@ -45,17 +45,33 @@ namespace QuadTerrain
         [SerializeField]
         private string feature_file;
         [SerializeField]
-        private bool save_node_level_file;
-        [SerializeField]
         private bool load_node_level_file;
         [SerializeField]
-        private bool save_feature_file;
+        private bool save_node_level_file;
         [SerializeField]
         private bool load_feature_file;
+        [SerializeField]
+        private bool save_feature_file;
         [SerializeField]
         private bool generate_idw;
         [SerializeField]
         private bool evaluate;
+        [SerializeField]
+        private string dense_feature_file;
+        [SerializeField]
+        private int subdivide;
+        [SerializeField]
+        private bool load_dense_feature_file;
+        [SerializeField]
+        private bool save_dense_feature_file;
+        [SerializeField]
+        private string sparse_feature_file;
+        [SerializeField]
+        private int interval;
+        [SerializeField]
+        private bool load_sparse_feature_file;
+        [SerializeField]
+        private bool save_sparse_feature_file;
 
         private GameObject terrain_manager;
         private NativeArray<float4> Planes;
@@ -125,17 +141,41 @@ namespace QuadTerrain
                 loadFeature(Application.streamingAssetsPath + "//" + feature_file);
             }
 
+            if (save_dense_feature_file)
+            {
+                save_dense_feature_file = false;
+                saveDenseFeacture(Application.streamingAssetsPath + "//" + dense_feature_file, subdivide);
+            }
+
+            if (load_dense_feature_file)
+            {
+                load_dense_feature_file = false;
+                loadFeature(Application.streamingAssetsPath + "//" + dense_feature_file);
+            }
+
+            if (save_sparse_feature_file)
+            {
+                save_sparse_feature_file = false;
+                saveSparseFeacture(Application.streamingAssetsPath + "//" + sparse_feature_file, interval);
+            }
+
+            if (load_sparse_feature_file)
+            {
+                load_sparse_feature_file = false;
+                loadFeature(Application.streamingAssetsPath + "//" + sparse_feature_file);
+            }
+
             if (generate_idw)
             {
                 generate_idw = false;
                 generateIDWs();
             }
 
-            if (display_dem_points)
-            {
-                display_dem_points = false;
-                TerrainGenerator.displayDEMPoints();
-            }
+            //if (display_dem_points)
+            //{
+            //    display_dem_points = false;
+            //    TerrainGenerator.displayDEMPoints();
+            //}
 
             if (evaluate)
             {
@@ -278,20 +318,25 @@ namespace QuadTerrain
                     int r = int.Parse(inputs[6]);
                     kdtree.right[f_i] = r;
 
-                    born_corners[f_i] = new Vector3(x, y, z);
+                    if (w < 0)
+                        born_corners[f_i] = new Vector3(x, y, z);
 
-                    if (w != -1)
-                    {
-                        x = float.Parse(inputs[7]);
-                        y = float.Parse(inputs[8]);
-                        z = float.Parse(inputs[9]);
-                        opposite_corners[f_i] = new Vector3(x, y, z);
-                    }
+                    //if (w != -1)
+                    //{
+                    //    x = float.Parse(inputs[7]);
+                    //    y = float.Parse(inputs[8]);
+                    //    z = float.Parse(inputs[9]);
+                    //    opposite_corners[f_i] = new Vector3(x, y, z);
+                    //}
                 }
             }
             Debug.Log("Read Feature File " + file_path + " Successfully");
-            //sGameObject dem_points_manager = new GameObject("DEM Corner");
-            //TerrainGenerator.showPoint(born_corners, "DEM Corner", dem_points_manager.transform, TerrainGenerator.feature_ball_prefab, 4.0f);
+            
+            if (display_dem_points)
+            {
+                GameObject dem_points_manager = new GameObject("DEM Corner");
+                TerrainGenerator.showPoint(born_corners, "DEM Corner", dem_points_manager.transform, TerrainGenerator.feature_ball_prefab, 4.0f);
+            }
         }
 
         public void saveFeacture(string file_path)
@@ -387,6 +432,96 @@ namespace QuadTerrain
             //Vector3 terrain_min = new Vector3();
             //Vector3 terrain_max = new Vector3();
             //PublicOutputInfo.writeFeatureFile(file_path, features, new int[0], boundary_min, terrain_min, terrain_max);
+        }
+
+        public void saveDenseFeacture(string file_path, int subdivide)
+        {
+            QuadTreePatch.getAllNode();
+            QuadTreePatch.denseNode(subdivide);
+
+            List<EarthCoord> all_coords = new List<EarthCoord>();
+            List<float> xs_list = new List<float>();
+            List<float> zs_list = new List<float>();
+            List<bool> is_corners_list = new List<bool>();
+            float[] xs, zs;
+            bool[] is_corners;
+            int index = 0;
+            foreach (var node in QuadTreePatch.dense_node_set)
+            {
+                var lon_lat = TerrainGenerator.mapToDEMF(node.x, node.z);
+                all_coords.Add(new EarthCoord((float)lon_lat.lon, (float)lon_lat.lat));
+                var unity_loc = TerrainGenerator.demFToXAndZ(node.x, node.z);
+                xs_list.Add((float)unity_loc.x);
+                zs_list.Add((float)unity_loc.z);
+                is_corners_list.Add(node.is_corner);
+            }
+            xs = xs_list.ToArray();
+            float[] ys = HgtReader.getElevations(all_coords, true).ToArray();
+            zs = zs_list.ToArray();
+            is_corners = is_corners_list.ToArray();
+            WVec3[] features = new WVec3[ys.Length];
+            for (int i = 0; i < xs.Length; i++)
+            {
+                features[index] = new WVec3(xs[index], ys[index], zs[index], is_corners[i] ? -1 : 1);
+                index++;
+            }
+
+            KDTree kdtree = new KDTree();
+            kdtree.buildKDTree(features);
+
+            Debug.Log("Writing " + file_path);
+            using (StreamWriter sw = new StreamWriter(file_path))
+            {
+                sw.WriteLine(features.Length);
+                for (int point_index = 0; point_index < features.Length; point_index++)
+                {
+                    sw.WriteLine($"{kdtree.nodes[point_index].x} {kdtree.nodes[point_index].y} {kdtree.nodes[point_index].z} {kdtree.nodes[point_index].w} {kdtree.parent[point_index]} {kdtree.left[point_index]} {kdtree.right[point_index]}");
+                }
+            }
+            Debug.Log("Write " + file_path + " Successfully!");
+        }
+
+        public void saveSparseFeacture(string file_path, int interval)
+        {
+            QuadTreePatch.getAllNode();
+            QuadTreePatch.sparseNode(interval);
+
+            List<EarthCoord> all_coords = new List<EarthCoord>();
+            List<float> xs_list = new List<float>();
+            List<float> zs_list = new List<float>();
+            float[] xs, zs;
+            int index = 0;
+            foreach (var node in QuadTreePatch.sparse_node_set)
+            {
+                var lon_lat = TerrainGenerator.mapToDEMF(node.x, node.z);
+                all_coords.Add(new EarthCoord((float)lon_lat.lon, (float)lon_lat.lat));
+                var unity_loc = TerrainGenerator.demFToXAndZ(node.x, node.z);
+                xs_list.Add((float)unity_loc.x);
+                zs_list.Add((float)unity_loc.z);
+            }
+            xs = xs_list.ToArray();
+            float[] ys = HgtReader.getElevations(all_coords, true).ToArray();
+            zs = zs_list.ToArray();
+            WVec3[] features = new WVec3[ys.Length];
+            for (int i = 0; i < xs.Length; i++)
+            {
+                features[index] = new WVec3(xs[index], ys[index], zs[index], -1);
+                index++;
+            }
+
+            KDTree kdtree = new KDTree();
+            kdtree.buildKDTree(features);
+
+            Debug.Log("Writing " + file_path);
+            using (StreamWriter sw = new StreamWriter(file_path))
+            {
+                sw.WriteLine(features.Length);
+                for (int point_index = 0; point_index < features.Length; point_index++)
+                {
+                    sw.WriteLine($"{kdtree.nodes[point_index].x} {kdtree.nodes[point_index].y} {kdtree.nodes[point_index].z} {kdtree.nodes[point_index].w} {kdtree.parent[point_index]} {kdtree.left[point_index]} {kdtree.right[point_index]}");
+                }
+            }
+            Debug.Log("Write " + file_path + " Successfully!");
         }
 
         void generateIDWs()

@@ -1311,9 +1311,22 @@ static public class TerrainGenerator
         return (121 + x_index * step, 25 + z_index * step);
     }
 
+    static public (double lon, double lat) mapToDEMF(float u, float v)
+    {
+        int resolution = 3601;
+        double step = 1.0 / (resolution - 1);
+        return (121 + u * step, 25 + v * step);
+    }
+
     static public (double x, double z) demToXAndZ(int x_index, int z_index)
     {
         var dem_coord = mapToDEM(x_index, z_index);
+        return toXAndZ(dem_coord.lon, dem_coord.lat);
+    }
+
+    static public (double x, double z) demFToXAndZ(float u, float v)
+    {
+        var dem_coord = mapToDEMF(u, v);
         return toXAndZ(dem_coord.lon, dem_coord.lat);
     }
 

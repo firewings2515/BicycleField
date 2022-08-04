@@ -11,6 +11,8 @@ static public class QuadTreePatch
     static public double z_dem_step = z_dem_interval / interval_peice_num;
     static public Dictionary<DEMCoord, int> node_level_dic;
     static public HashSet<(DEMCoord born_corner, DEMCoord opposite_corner)> node_set;
+    static public HashSet<(float x, float z, bool is_corner)> dense_node_set;
+    static public HashSet<(float x, float z)> sparse_node_set;
     static public bool always_level_one = true;
 
     static public void initial()
@@ -156,6 +158,34 @@ static public class QuadTreePatch
             node_set.Add((new DEMCoord(node_level.Key.x + 1, node_level.Key.z), new DEMCoord(node_level.Key.x + 1 + 1, node_level.Key.z + 1)));
             node_set.Add((new DEMCoord(node_level.Key.x, node_level.Key.z + 1), new DEMCoord(node_level.Key.x + 1, node_level.Key.z + 1 + 1)));
             node_set.Add((new DEMCoord(node_level.Key.x + 1, node_level.Key.z + 1), new DEMCoord(node_level.Key.x + 1 + 1, node_level.Key.z + 1 + 1)));
+        }
+    }
+
+    static public void denseNode(int subdivide)
+    {
+        dense_node_set = new HashSet<(float x, float z, bool is_corner)>();
+        float step = 1.0f / subdivide;
+        foreach (var node in node_set)
+        {
+            for (int i = 0; i < subdivide; i++)
+            {
+                for (int j = 0; j < subdivide; j++)
+                {
+                    dense_node_set.Add((node.born_corner.x + i * step, node.born_corner.z + j * step, i == 0 && j == 0));
+                }
+            }
+        }
+    }
+
+    static public void sparseNode(int interval)
+    {
+        sparse_node_set = new HashSet<(float x, float z)>();
+        foreach (var node in node_set)
+        {
+            if (node.born_corner.x % interval == 0 && node.born_corner.z % interval == 0)
+            {
+                sparse_node_set.Add((node.born_corner.x, node.born_corner.z));
+            }
         }
     }
 }
