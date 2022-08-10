@@ -14,6 +14,7 @@ static public class QuadTreePatch
     static public HashSet<(float x, float z, bool is_corner)> dense_node_set;
     static public HashSet<(float x, float z)> sparse_node_set;
     static public bool always_level_one = false;
+    static public int NATIVENUM = 512;
 
     static public void initial()
     {

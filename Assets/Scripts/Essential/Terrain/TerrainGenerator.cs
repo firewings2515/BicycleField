@@ -1340,7 +1340,7 @@ static public class TerrainGenerator
 
     static public void meow(string s) //-8.526772 34.41344
     {
-        Debug.Log(s);
+        Debug.LogWarning(s);
     }
 
     //static void getHightFromShader(float x, float z)

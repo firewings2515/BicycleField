@@ -75,6 +75,8 @@ namespace QuadTerrain
 
         private GameObject terrain_manager;
         private NativeArray<float4> Planes;
+        private int observation_index;
+        private NativeArray<float3> observation_pos;
         private NativeList<RenderNode> RenderNodes;
         private bool is_initial = false;
         private KDTree kdtree;
@@ -85,7 +87,9 @@ namespace QuadTerrain
         {
             cam = camera.GetComponent<Camera>();
             terrain_manager = new GameObject("TerrainManager");
-            Planes = new NativeArray<float4>(6, Allocator.Persistent);
+            Planes = new NativeArray<float4>(QuadTreePatch.NATIVENUM * 6, Allocator.Persistent); //6
+            observation_pos = new NativeArray<float3>(QuadTreePatch.NATIVENUM, Allocator.Persistent);
+            observation_index = 0;
             RenderNodes = new NativeList<RenderNode>(Allocator.Persistent);
             readBoundaryMin(Application.streamingAssetsPath + "//" + TerrainGenerator.file_path);
             TerrainGenerator.is_initial = true;
@@ -96,7 +100,7 @@ namespace QuadTerrain
             evaluate_cam = evaluate_camera.GetComponent<Camera>();
             evaluate_cam.depthTextureMode |= DepthTextureMode.Depth;
             is_initial = true;
-            InvokeRepeating("buildQuadTree", 0, 1);
+            InvokeRepeating("buildQuadTree", 0, 2);
             //buildQuadTree(); // for testing
         }
 
@@ -113,6 +117,8 @@ namespace QuadTerrain
             if (generate)
             {
                 generate = false;
+                Debug.Log("build tree...");
+                buildMixedQuadTree();
                 Debug.Log("Generating...");
                 generateByQuadTreePatch();
             }
@@ -199,14 +205,23 @@ namespace QuadTerrain
             }
         }
 
-        public void buildQuadTree()
+        public void buildQuadTree() // call by InvokeRepeating
         {
             if (stop_build)
             {
                 cyclist.GetComponent<PathCreation.Examples.PathFollower>().speed = 0;
                 return;
             }
-            
+
+            if (observation_index >= QuadTreePatch.NATIVENUM)
+            {
+                Debug.LogWarning($"reach max {observation_index}!");
+                stop_build = true;
+                generate = true;
+                return;
+            }
+            Debug.Log($"record {observation_index} camera");
+
             var virtual_pos = TerrainGenerator.getXAndZInDEM(cam.transform.position.x, cam.transform.position.z);
             virtual_cam.transform.position = new Vector3(virtual_pos.x, cam.transform.position.y, virtual_pos.z);
             virtual_cam.transform.eulerAngles = new Vector3(0, cam.transform.eulerAngles.y, 0);
@@ -215,14 +230,32 @@ namespace QuadTerrain
             virtual_cam.nearClipPlane = cam.nearClipPlane / 32.0f;
             virtual_cam.targetDisplay = 2;
             //virtual_cam.depth = cam.depth;
-            FrustumPlanes2.FromCamera(virtual_cam, SourcePlanes, Planes);
+            observation_pos[observation_index] = virtual_cam.transform.position;
+            FrustumPlanes2.FromCamera(virtual_cam, SourcePlanes, Planes, observation_index);
+            observation_index++;
+            //RenderNodes.Clear();
+            //BuildTerrainJob job = BuildTerrainJob.Create(x_extents, z_extents, virtual_cam.transform.position, Planes, RenderNodes);
 
+
+            //var watch = System.Diagnostics.Stopwatch.StartNew();
+            //job.Run();
+
+            //watch.Stop();
+            //Debug.LogFormat("Construct: {0}", watch.ElapsedTicks);
+
+
+            //Debug.LogFormat("RenderNode count {0}", RenderNodes.Length);
+        }
+
+        public void buildMixedQuadTree()
+        {
             RenderNodes.Clear();
-            BuildTerrainJob job = BuildTerrainJob.Create(x_extents, z_extents, virtual_cam.transform.position, Planes, RenderNodes);
-
+           
+            BuildTerrainJob job = BuildTerrainJob.Create(1024/*x_extents*/, 1024/*z_extents*/, observation_pos, Planes, RenderNodes, observation_index);
 
             var watch = System.Diagnostics.Stopwatch.StartNew();
             job.Run();
+            job.CameraPositions.Dispose();
 
             watch.Stop();
             Debug.LogFormat("Construct: {0}", watch.ElapsedTicks);
@@ -627,6 +660,7 @@ namespace QuadTerrain
         {
             Planes.Dispose();
             RenderNodes.Dispose();
+            observation_pos.Dispose();
         }
 
         void exportDepthTexture()

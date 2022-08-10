@@ -7,10 +7,10 @@ namespace QuadTerrain
 {
     public struct TerrainTreeBuilder
     {
-        public float2 CameraPosition;
+        public NativeArray<float2> CameraPositions;
 
         [BurstCompile]
-        public void GetRenderNodes(QuadTree tree, NativeList<RenderNode> renderNodes, NativeArray<float4> planes)
+        public void GetRenderNodes(QuadTree tree, NativeList<RenderNode> renderNodes, NativeArray<float4> planess)
         {
             
             NativeList<int> results = new NativeList<int>(Allocator.Temp);
@@ -32,9 +32,23 @@ namespace QuadTerrain
                 Bounds frustumBounds = new Bounds();
                 frustumBounds.center = new Vector3(center.x, 0f, center.y);
                 frustumBounds.extents = new Vector3(extents.x, 1000f, extents.y);
-               
-                var intersectResult = FrustumPlanes2.Intersect(planes, frustumBounds);
-                if (intersectResult == FrustumPlanes2.IntersectResult.Out)
+
+                bool intersect_out = true;
+                NativeArray<float4> planes = new NativeArray<float4>(6, Allocator.Temp);
+                for (int observation_index = 0; observation_index < planess.Length / 6; observation_index++)
+                {
+                    for (int offset = 0; offset < 6; offset++)
+                    {
+                        planes[offset] = planess[observation_index * 6 + offset];
+                    }
+                    var intersectResult = FrustumPlanes2.Intersect(planes, frustumBounds);
+                    if (intersectResult != FrustumPlanes2.IntersectResult.Out)
+                    {
+                        intersect_out = false;
+                        break;
+                    }
+                }
+                if (intersect_out)
                 {
                     continue;
                 }
@@ -112,7 +126,11 @@ namespace QuadTerrain
 
         public bool IsLeaf(Node node)
         {
-            float distance = math.distance(node.Bounds.Center, CameraPosition);
+            float distance = float.MaxValue;
+            for (int observaion_index = 0; observaion_index < CameraPositions.Length; observaion_index++)
+            {
+                distance = math.min(distance, math.distance(node.Bounds.Center, CameraPositions[observaion_index]));
+            }
             int lod = getLod(distance);
             int level = node.Bounds.Size.x;
             //int level = QuadTreePatch.calcLevel(node.Bounds.Size.x);

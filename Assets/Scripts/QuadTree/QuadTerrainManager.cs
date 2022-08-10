@@ -68,7 +68,7 @@ namespace QuadTerrain
                 LastCameraRotation = cam.transform.rotation;
                 LastCameraPosition = cam.transform.position;
 
-                FrustumPlanes2.FromCamera(cam, SourcePlanes, Planes);
+                //FrustumPlanes2.FromCamera(cam, SourcePlanes, Planes); //origin code
 
                 RenderNodes.Clear();
                 BuildTerrainJob job = BuildTerrainJob.Create(Extents, cam.transform.position, Planes, RenderNodes);
@@ -171,7 +171,7 @@ namespace QuadTerrain
         public void Build()
         {
             Camera cam = camera.GetComponent<Camera>();
-            FrustumPlanes2.FromCamera(cam, SourcePlanes, Planes);
+            //FrustumPlanes2.FromCamera(cam, SourcePlanes, Planes); //origin code
 
             RenderNodes.Clear();
             BuildTerrainJob job = BuildTerrainJob.Create(Extents, cam.transform.position, Planes, RenderNodes);

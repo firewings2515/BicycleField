@@ -24,11 +24,11 @@ namespace QuadTerrain
             }
         }
 
-        static public void FromCamera(Camera camera, Plane[] sourcePlanes, NativeArray<float4> planes)
+        static public void FromCamera(Camera camera, Plane[] sourcePlanes, NativeArray<float4> planes, int observation_index)
         {
             if (planes == null)
                 throw new ArgumentNullException("The argument planes cannot be null.");
-            if (planes.Length != 6)
+            if (planes.Length % 6 != 0)
                 throw new ArgumentException("The argument planes does not have the expected length 6.");
 
             GeometryUtility.CalculateFrustumPlanes(camera, sourcePlanes);
@@ -48,7 +48,7 @@ namespace QuadTerrain
 
             for (int i = 0; i < 6; ++i)
             {
-                planes[i] = new float4(sourcePlanes[i].normal.x, sourcePlanes[i].normal.y, sourcePlanes[i].normal.z,
+                planes[observation_index * 6 + i] = new float4(sourcePlanes[i].normal.x, sourcePlanes[i].normal.y, sourcePlanes[i].normal.z,
                     sourcePlanes[i].distance);
             }
         }
