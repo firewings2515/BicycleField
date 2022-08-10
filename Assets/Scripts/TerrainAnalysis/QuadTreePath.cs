@@ -113,6 +113,7 @@ namespace QuadTerrain
             if (generate)
             {
                 generate = false;
+                Debug.Log("Generating...");
                 generateByQuadTreePatch();
             }
 
@@ -283,6 +284,7 @@ namespace QuadTerrain
                     sw.WriteLine($"{node.Key.x} {node.Key.z} {node.Value}");
                 }
             }
+            Debug.Log("Save Node Level File " + file_path + " Successfully");
         }
 
         public void loadFeature(string file_path)

@@ -78,11 +78,11 @@ namespace QuadTerrain
 
                 DEMCoord coord = new DEMCoord(node.Bounds.min.x, node.Bounds.min.y);
                 int node_level = node.Bounds.Size.x; //  QuadTreePatch.calcLevel(node.Bounds.Size.x)
-                int lasted_level = QuadTreePatch.fetchNodeLevel(coord);
-                if (lasted_level == 0) // not contain
+                //int lasted_level = QuadTreePatch.fetchNodeLevel(coord);
+                //if (lasted_level == 0) // not contain
                     QuadTreePatch.addNodeLevel(coord, node_level);
-                else if (lasted_level > node.Bounds.Size.x) // update min value
-                    QuadTreePatch.updateNodeLevel(coord, node_level);
+                //else if (lasted_level > node.Bounds.Size.x) // update min value
+                //QuadTreePatch.updateNodeLevel(coord, node_level);
             }
         }
     }

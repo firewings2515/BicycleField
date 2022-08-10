@@ -13,7 +13,7 @@ static public class QuadTreePatch
     static public HashSet<(DEMCoord born_corner, DEMCoord opposite_corner)> node_set;
     static public HashSet<(float x, float z, bool is_corner)> dense_node_set;
     static public HashSet<(float x, float z)> sparse_node_set;
-    static public bool always_level_one = true;
+    static public bool always_level_one = false;
 
     static public void initial()
     {
@@ -101,36 +101,69 @@ static public class QuadTreePatch
 
     static public void updateNodeLevel(DEMCoord coord, int level)
     {
+        int fetch_level = fetchNodeLevel(coord);
+        if (fetch_level == 0)
+            node_level_dic[coord] = level;
+        expandLargerNodeLevel(coord, level);
+        fillSmallNodeLevel(coord, level);
+    }
+
+    static void expandLargerNodeLevel(DEMCoord coord, int level)
+    {
         int upper_level = level * 2;
-        int upper_x_min = (coord.x / upper_level) * upper_level;
-        int upper_z_min = (coord.z / upper_level) * upper_level;
-        if (fetchNodeLevel(upper_x_min, upper_z_min) == upper_level)
+        if (upper_level > 16)
+            return;
+
+        DEMCoord upper_min = new DEMCoord((coord.x / upper_level) * upper_level, (coord.z / upper_level) * upper_level);
+        int fetch_level = fetchNodeLevel(upper_min);
+        if (fetch_level == upper_level)
         {
             for (int i = 0; i < 2; i++)
             {
                 for (int j = 0; j < 2; j++)
                 {
-                    node_level_dic[(upper_x_min + i, upper_z_min + j)] = level;
+                    int small_fetch_level = fetchNodeLevel(new DEMCoord(upper_min.x + i, upper_min.z + j));
+                    if (small_fetch_level < level && small_fetch_level != 0)
+                    {
+                        fillSmallNodeLevel(new DEMCoord(upper_min.x + i, upper_min.z + j), level);
+                        continue;
+                    }
+
+                    node_level_dic[(upper_min.x + i, upper_min.z + j)] = level;
                 }
             }
+            return;
         }
+        if (fetch_level == level)
+        {
+            node_level_dic[coord] = level;
+            return;
+        }
+        expandLargerNodeLevel(upper_min, upper_level);
+    }
 
+    static void fillSmallNodeLevel(DEMCoord coord, int level)
+    {
         int lower_level = level / 2;
         if (lower_level < 1)
             return;
 
-        int lower_x_min = (coord.x / lower_level) * lower_level;
-        int lower_z_min = (coord.z / lower_level) * lower_level;
+        DEMCoord lower_min = new DEMCoord((coord.x / lower_level) * lower_level, (coord.z / lower_level) * lower_level);
         bool find_smaller = false;
-        for (int i = 0; i < 2 && !find_smaller; i++)
+        for (int i = 0; i < 2/* && !find_smaller*/; i++)
         {
-            for (int j = 0; j < 2 && !find_smaller; j++)
+            for (int j = 0; j < 2/* && !find_smaller*/; j++)
             {
-                if (fetchNodeLevel(lower_x_min + i, lower_z_min + j) == lower_level)
+                int fetch_level = fetchNodeLevel(new DEMCoord(lower_min.x + i, lower_min.z + j));
+                if (fetch_level != 0 && fetch_level < lower_level)
                 {
-                    node_level_dic[(lower_x_min + i, lower_z_min + j)] = lower_level;
+                    fillSmallNodeLevel(new DEMCoord(lower_min.x + i, lower_min.z + j), lower_level);
                     find_smaller = true;
                 }
+                //else
+                //{
+                //    node_level_dic[(lower_x_min + i, lower_z_min + j)] = lower_level;
+                //}
             }
         }
         if (find_smaller)
@@ -139,7 +172,11 @@ static public class QuadTreePatch
             {
                 for (int j = 0; j < 2; j++)
                 {
-                    node_level_dic[(lower_x_min + i, lower_z_min + j)] = lower_level;
+                    int fetch_level = fetchNodeLevel(new DEMCoord(lower_min.x + i, lower_min.z + j));
+                    if (fetch_level == 0)
+                    {
+                        node_level_dic[new DEMCoord(lower_min.x + i, lower_min.z + j)] = lower_level;
+                    }
                 }
             }
         }
