@@ -141,7 +141,17 @@ public class RoadManager : MonoBehaviour
 
             string[] split = str_point.Split(' ');
             Vector3 vec3_point = new Vector3(float.Parse(split[0]), float.Parse(split[1]), float.Parse(split[2]));
-            if (split.Length > 3) adjustRoad(int.Parse(split[3]), vec3_point);
+            if (split.Length > 3)
+            {
+                if (int.Parse(split[3]) == 0) createBridge(vec3_point);
+                else 
+                {
+                    for (int id = 0; id < int.Parse(split[3]); id++)
+                    {
+                        createBranch(float.Parse(split[4 + id]), vec3_point);
+                    }
+                }
+            }
 
             //terrain
             if (using_terrain) TerrainGenerator.generateTerrain(vec3_point);
@@ -152,25 +162,6 @@ public class RoadManager : MonoBehaviour
             //road
             addRoadSegment(vec3_point);
             if (path_creator.bezierPath.NumSegments > Info.MAX_SEGMENTS) removeFirstSegment();
-        }
-    }
-
-    private void adjustRoad(int variation, Vector3 point)
-    {
-        switch (variation)
-        {
-            case 0:
-                createBridge(point);
-                break;
-            case 1:
-                Debug.Log("Intersection");
-                break;
-            case 2:
-                Debug.Log("Merge");
-                break;
-            case 3:
-                Debug.Log("Split");
-                break;
         }
     }
 
@@ -208,19 +199,27 @@ public class RoadManager : MonoBehaviour
 
             landmarks[landmarks.Count - 1].Add(right_rail);
         }
+    }
 
-        /*
-         GameObject rail = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            rail.transform.position = (point + Functions.StrToVec3(data_lines[current_line + 2])) / 2;
-            rail.transform.position += (Vector3.Cross(Vector3.up, direction)).normalized * Info.road_width;
-            rail.transform.localScale = new Vector3(rail_length, 5, 1);
-            rail.GetComponent<MeshRenderer>().material.color = new Color(Random.Range(0, 255), Random.Range(0, 255), Random.Range(0, 255));
+    private void createBranch(float angle, Vector3 point)
+    {
+        //placeholder
+        float branch_length = 50.0f;
 
-            //rotation
-            rail.transform.RotateAround(rail.transform.position, new Vector3(0, 1, 0), Vector3.Angle(new Vector3(1, 0, 0), direction));
+        Vector3 direction = Functions.StrToVec3(data_lines[current_line + 2]) - point;
 
-            landmarks[landmarks.Count - 1].Add(rail);
-         */
+        //right
+        GameObject branch = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        branch.transform.position = (Functions.StrToVec3(data_lines[current_line + 2]) + point) / 2;
+        branch.transform.RotateAround((Functions.StrToVec3(data_lines[current_line + 2]) + point) / 2, new Vector3(0, 1, 0), Vector3.Angle(new Vector3(1, 0, 0), direction));
+        branch.transform.position += direction.normalized * (branch_length / 2);
+        branch.transform.localScale = new Vector3(branch_length, 2.001f, Info.road_width * 2);
+        branch.GetComponent<MeshRenderer>().material.color = new Color(0, 0, 0);
+
+        //rotation
+        branch.transform.RotateAround((Functions.StrToVec3(data_lines[current_line + 2]) + point) / 2, new Vector3(0, 1, 0), angle);
+
+        landmarks[landmarks.Count - 1].Add(branch);
     }
 
     private bool getNextSegment(out string point_data)

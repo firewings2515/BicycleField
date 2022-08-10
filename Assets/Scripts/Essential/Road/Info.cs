@@ -11,7 +11,7 @@ static public class Info
     static public float mapview_height = 20.0f;
     static public float slope = 0f;
     static public float total_length = 0;
-    static public float road_width = 5;
+    static public float road_width = 4;
 
     static public float speed = 0;
 
