@@ -34,7 +34,7 @@ public class RoadManager : MonoBehaviour
     public HouseManager house_manager;
 
     //debug
-    private bool using_house = true;
+    private bool using_house = false;
     private bool using_terrain = false;
 
     private void Start()
@@ -169,34 +169,33 @@ public class RoadManager : MonoBehaviour
     {
         //placeholder
         float rail_length = 10;
-
-        Vector3 direction = Functions.StrToVec3(data_lines[current_line + 2]) - point;
+        Vector3 direction = Functions.StrToVec3(data_lines[current_line + 3]) - point;
         int rail_segment = (int)(direction.magnitude / rail_length);
 
         for (int id = 1; id < rail_segment; id++)
         {
             //left
             GameObject left_rail = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            left_rail.transform.position = point + (((Functions.StrToVec3(data_lines[current_line + 2]) - point) / rail_segment) * id);
+            left_rail.transform.position = point + (((Functions.StrToVec3(data_lines[current_line + 3]) - point) / rail_segment) * id);
             left_rail.transform.position -= (Vector3.Cross(Vector3.up, direction)).normalized * Info.road_width;
-            left_rail.transform.localScale = new Vector3(rail_length, 5, 1);
+            left_rail.transform.localScale = new Vector3(rail_length, 10, 1);
             left_rail.GetComponent<MeshRenderer>().material.color = new Color(Random.Range(0, 255) / 255.0f, Random.Range(0, 255) / 255.0f, Random.Range(0, 255) / 255.0f);
 
             //rotation
-            left_rail.transform.RotateAround(left_rail.transform.position, new Vector3(0, 1, 0), Vector3.Angle(new Vector3(1, 0, 0), direction));
-
+            left_rail.transform.RotateAround(left_rail.transform.position, new Vector3(0, -1, 0), Vector3.Angle(new Vector3(1, 0, 0), new Vector3(direction.x, 0, direction.z)));
+            left_rail.transform.position += left_rail.transform.up * 5;
             landmarks[landmarks.Count - 1].Add(left_rail);
 
             //right
             GameObject right_rail = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            right_rail.transform.position = point + (((Functions.StrToVec3(data_lines[current_line + 2]) - point) / rail_segment) * id);
+            right_rail.transform.position = point + (((Functions.StrToVec3(data_lines[current_line + 3]) - point) / rail_segment) * id);
             right_rail.transform.position += (Vector3.Cross(Vector3.up, direction)).normalized * Info.road_width;
-            right_rail.transform.localScale = new Vector3(rail_length, 5, 1);
+            right_rail.transform.localScale = new Vector3(rail_length, 10, 1);
             right_rail.GetComponent<MeshRenderer>().material.color = new Color(Random.Range(0, 255) / 255.0f, Random.Range(0, 255) / 255.0f, Random.Range(0, 255) / 255.0f);
 
             //rotation
-            right_rail.transform.RotateAround(right_rail.transform.position, new Vector3(0, 1, 0), Vector3.Angle(new Vector3(1, 0, 0), direction));
-
+            right_rail.transform.RotateAround(right_rail.transform.position, new Vector3(0, -1, 0), Vector3.Angle(new Vector3(1, 0, 0), new Vector3(direction.x, 0, direction.z)));
+            right_rail.transform.position += right_rail.transform.up * 5;
             landmarks[landmarks.Count - 1].Add(right_rail);
         }
     }
@@ -206,18 +205,20 @@ public class RoadManager : MonoBehaviour
         //placeholder
         float branch_length = 50.0f;
 
-        Vector3 direction = Functions.StrToVec3(data_lines[current_line + 2]) - point;
+        Vector3 direction = Functions.StrToVec3(data_lines[current_line + 1]) - point;
 
         //right
         GameObject branch = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        branch.transform.position = (Functions.StrToVec3(data_lines[current_line + 2]) + point) / 2;
-        branch.transform.RotateAround((Functions.StrToVec3(data_lines[current_line + 2]) + point) / 2, new Vector3(0, 1, 0), Vector3.Angle(new Vector3(1, 0, 0), direction));
-        branch.transform.position += direction.normalized * (branch_length / 2);
-        branch.transform.localScale = new Vector3(branch_length, 2.001f, Info.road_width * 2);
+        branch.transform.localScale = new Vector3(branch_length, 2f, Info.road_width * 2);
+        branch.transform.position = (Functions.StrToVec3(data_lines[current_line + 1]) + point) / 2;
+        Vector3 flat_direction = new Vector3(direction.x, 0, direction.z);
+        branch.transform.RotateAround((Functions.StrToVec3(data_lines[current_line + 1]) + point) / 2, branch.transform.up, Vector3.Angle(new Vector3(1, 0, 0), flat_direction) + 90.0f);
+        branch.transform.RotateAround((Functions.StrToVec3(data_lines[current_line + 1]) + point) / 2, -branch.transform.forward, Vector3.Angle(new Vector3(direction.x, 0, direction.z), direction));
+        branch.transform.position += direction.normalized * (branch_length / 2.0f);
         branch.GetComponent<MeshRenderer>().material.color = new Color(0, 0, 0);
 
         //rotation
-        branch.transform.RotateAround((Functions.StrToVec3(data_lines[current_line + 2]) + point) / 2, new Vector3(0, 1, 0), angle);
+        branch.transform.RotateAround((Functions.StrToVec3(data_lines[current_line + 1]) + point) / 2, branch.transform.up, angle);
 
         landmarks[landmarks.Count - 1].Add(branch);
     }
