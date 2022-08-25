@@ -22,7 +22,7 @@ namespace PathCreation {
  #region Fields
 
  [SerializeField, HideInInspector]
- List<Vector3> points;
+ public List<Vector3> points;
  [SerializeField, HideInInspector]
  bool isClosed;
  [SerializeField, HideInInspector]
@@ -244,6 +244,7 @@ namespace PathCreation {
             points.Add (secondControlForOldLastAnchor);
             points.Add (controlForNewAnchor);
             points.Add (anchorPos);
+
             perAnchorNormalsAngle.Add (perAnchorNormalsAngle[perAnchorNormalsAngle.Count - 1]);
 
             if (controlMode == ControlMode.Automatic) {
@@ -334,7 +335,6 @@ namespace PathCreation {
                 if (controlMode == ControlMode.Automatic) {
                     AutoSetAllControlPoints ();
                 }
-
                 //NotifyPathModified ();
             }
         }

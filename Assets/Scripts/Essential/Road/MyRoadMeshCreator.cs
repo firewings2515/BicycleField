@@ -25,11 +25,11 @@ namespace PathCreation.Examples
         Mesh mesh;
 
         private bool loaded = false;
-        private float road_y_offset = 1.0f;
+        private float road_y_offset = 0.0f;
 
         public override void PathUpdated()
         {
-            if (pathCreator != null && TerrainGenerator.is_initial)
+            if (pathCreator != null)
             {
                 AssignMeshComponents();
                 AssignMaterials();
@@ -63,6 +63,9 @@ namespace PathCreation.Examples
 
             bool usePathNormals = !(path.space == PathSpace.xyz && flattenSurface);
 
+            Vector3 cacheUp = Vector3.zero;
+            Vector3 cacheRight = Vector3.zero;
+
             //float last_y = TerrainGenerator.getHeightWithBais(path.GetPoint(0).x, path.GetPoint(0).z);
 
             for (int i = 0; i < path.NumPoints; i++)
@@ -70,19 +73,29 @@ namespace PathCreation.Examples
                 Vector3 localUp = (usePathNormals) ? Vector3.Cross(path.GetTangent(i), path.GetNormal(i)) : path.up;
                 Vector3 localRight = (usePathNormals) ? path.GetNormal(i) : Vector3.Cross(localUp, path.GetTangent(i));
 
-                // Find position to left and right of current path vertex
-                //float x = (i < 2 || i > path.NumPoints - 3) ? path.GetPoint(i).x : ((path.GetPoint(i - 1).x + path.GetPoint(i + 1).x + path.GetPoint(i - 2).x + path.GetPoint(i + 2).x) / 4);
-                //float y = TerrainGenerator.getHeightWithBais(path.GetPoint(i).x, path.GetPoint(i).z) + road_y_offset;
-                //float z = (i < 2 || i > path.NumPoints - 3) ? path.GetPoint(i).z : ((path.GetPoint(i - 1).z + path.GetPoint(i + 1).z + path.GetPoint(i - 2).z + path.GetPoint(i + 2).z) / 4);
+                if (localUp == new Vector3(0, 0, -1))
+                {
+                    localUp = new Vector3(0, 1, 0);
+                    localRight = new Vector3(0, 0, -1);
+                }
 
-                //Vector3 vertSideA = new Vector3(x, y, z) - localRight * Mathf.Abs(roadWidth);
-                //Vector3 vertSideB = new Vector3(x, y, z) + localRight * Mathf.Abs(roadWidth);
+                //if (i == 0 && cacheUp != Vector3.zero) { localUp = cacheUp;  localRight = cacheRight; }
+                //cacheUp = localUp;
+                //cacheRight = localRight;
 
-                //Vector3 vertSideA = new Vector3(path.GetPoint(i).x, TerrainGenerator.getHeightWithBais(path.GetPoint(i).x, path.GetPoint(i).z) + road_y_offset, path.GetPoint(i).z) - localRight * Mathf.Abs(roadWidth);
-                //Vector3 vertSideB = new Vector3(path.GetPoint(i).x, TerrainGenerator.getHeightWithBais(path.GetPoint(i).x, path.GetPoint(i).z) + road_y_offset, path.GetPoint(i).z) + localRight * Mathf.Abs(roadWidth);
-                Vector3 vertSideA = new Vector3(path.GetPoint(i).x, path.GetPoint(i).y + road_y_offset, path.GetPoint(i).z) - localRight * Mathf.Abs(roadWidth);
+                    // Find position to left and right of current path vertex
+                    //float x = (i < 2 || i > path.NumPoints - 3) ? path.GetPoint(i).x : ((path.GetPoint(i - 1).x + path.GetPoint(i + 1).x + path.GetPoint(i - 2).x + path.GetPoint(i + 2).x) / 4);
+                    //float y = TerrainGenerator.getHeightWithBais(path.GetPoint(i).x, path.GetPoint(i).z) + road_y_offset;
+                    //float z = (i < 2 || i > path.NumPoints - 3) ? path.GetPoint(i).z : ((path.GetPoint(i - 1).z + path.GetPoint(i + 1).z + path.GetPoint(i - 2).z + path.GetPoint(i + 2).z) / 4);
+
+                    //Vector3 vertSideA = new Vector3(x, y, z) - localRight * Mathf.Abs(roadWidth);
+                    //Vector3 vertSideB = new Vector3(x, y, z) + localRight * Mathf.Abs(roadWidth);
+
+                    //Vector3 vertSideA = new Vector3(path.GetPoint(i).x, TerrainGenerator.getHeightWithBais(path.GetPoint(i).x, path.GetPoint(i).z) + road_y_offset, path.GetPoint(i).z) - localRight * Mathf.Abs(roadWidth);
+                    //Vector3 vertSideB = new Vector3(path.GetPoint(i).x, TerrainGenerator.getHeightWithBais(path.GetPoint(i).x, path.GetPoint(i).z) + road_y_offset, path.GetPoint(i).z) + localRight * Mathf.Abs(roadWidth);
+                    Vector3 vertSideA = new Vector3(path.GetPoint(i).x, path.GetPoint(i).y + road_y_offset, path.GetPoint(i).z) - localRight * Mathf.Abs(roadWidth);
                 Vector3 vertSideB = new Vector3(path.GetPoint(i).x, path.GetPoint(i).y + road_y_offset, path.GetPoint(i).z) + localRight * Mathf.Abs(roadWidth);
-
+                Debug.Log(localRight);
                 // Add top of road vertices
                 verts[vertIndex + 0] = vertSideA;
                 verts[vertIndex + 1] = vertSideB;
