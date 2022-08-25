@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ce58035a221cef4e9f89ce0e83ee118, type: 3}
+  m_Name: bushe1
+  m_EditorClassIdentifier: 
+  rendererScale: {x: 1.6473393, y: 0.6085259, z: 1}
+  uvCoordinates:
+  - bottomLeft: {x: 0, y: 0}
+    bottomRight: {x: 0.30991736, y: 0}
+    topRight: {x: 0.30991736, y: 0.33103448}
+    topLeft: {x: 0, y: 0.33103448}
+  - bottomLeft: {x: 0.30991736, y: 0}
+    bottomRight: {x: 0.6219008, y: 0}
+    topRight: {x: 0.6219008, y: 0.33103448}
+    topLeft: {x: 0.30991736, y: 0.33103448}
+  - bottomLeft: {x: 0.6219008, y: 0}
+    bottomRight: {x: 0.96900827, y: 0}
+    topRight: {x: 0.96900827, y: 0.33448276}
+    topLeft: {x: 0.6219008, y: 0.33448276}
+  - bottomLeft: {x: 0, y: 0.33103448}
+    bottomRight: {x: 0.34504133, y: 0.33103448}
+    topRight: {x: 0.34504133, y: 0.6655173}
+    topLeft: {x: 0, y: 0.6655173}
+  - bottomLeft: {x: 0.34504133, y: 0.33448276}
+    bottomRight: {x: 0.6528926, y: 0.33448276}
+    topRight: {x: 0.6528926, y: 0.6689655}
+    topLeft: {x: 0.34504133, y: 0.6689655}
+  - bottomLeft: {x: 0.6528926, y: 0.33448276}
+    bottomRight: {x: 0.96694213, y: 0.33448276}
+    topRight: {x: 0.96694213, y: 0.66206896}
+    topLeft: {x: 0.6528926, y: 0.66206896}
+  - bottomLeft: {x: 0.6528926, y: 0.66206896}
+    bottomRight: {x: 1, y: 0.66206896}
+    topRight: {x: 1, y: 0.99655175}
+    topLeft: {x: 0.6528926, y: 0.99655175}
+  - bottomLeft: {x: 0, y: 0.6655173}
+    bottomRight: {x: 0.34504133, y: 0.6655173}
+    topRight: {x: 0.34504133, y: 1}
+    topLeft: {x: 0, y: 1}

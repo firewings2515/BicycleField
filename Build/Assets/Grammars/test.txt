@@ -1,0 +1,333 @@
+background():Asset(image){
+	Location("Assets/Image/window.jpg")
+}
+
+door():Asset(image){
+	Location("Assets/Image/door.jpg")
+	Scale(1,0.9)
+}
+
+window():Asset(image){
+	Location("Assets/Image/window.jpg")
+	Scale(1,1.5)
+	Extrude(0.1)
+}
+
+window2():Asset(image){
+	Location("Assets/Image/window2.jpg")
+	Scale(1,1)
+	Extrude(0.1)
+}
+
+
+window3():Asset(image){
+	Location("Assets/Image/window3.png")
+	Scale(0.5,0.5)
+	Extrude(0.1)
+}
+
+window4():Asset(image){
+	Location("Assets/Image/window4.png")
+	Scale(0.5,0.5)
+	Extrude(0.1)
+}
+
+
+balconyFBX():Asset(model){
+	Location("Assets/Model/BALCONY.fbx")
+	Scale(1,1,1)
+	Extrude(0.1)
+	
+}
+
+doorFBX():Asset(model){
+	Location("Assets/Model/balcony_door.fbx")
+	Rotate(0,90,0)
+
+	Scale(1.36,1.36,1.36)
+}
+
+
+air_conditioner():Asset(model){
+	Location("Assets/Model/Air Conditioner.fbx")
+	Scale(50,50,50)
+}
+
+home_flower():Asset(model){
+	Location("Assets/Model/PLANTS ON TABLE.fbx")
+	Scale(0.5,0.5,0.5)
+}
+
+wall_balconyFBX():Asset(model){
+	Location("Assets/Model/fbxBalcony.fbx")
+	Rotate(0,180,0)
+
+	Scale(50,50,50)
+	Scael(1.5,1.5,1.5)
+}
+
+hello_wall():Wall(vertical,const,4.0){
+	background()
+	pos(0.25,0.25)
+	window()
+	pos(0.75,0.5)
+	window()
+}
+
+hello_wall2():Wall(vertical,const,4.0){
+	background()
+	pos(0.25,0)
+	balc()
+	pos(0.75,0.5)
+	window3()
+}
+
+hello_wall3():Wall(vertical,const,4.0){
+	background()
+	pos(0.25,0.5)
+	window2()
+	pos(0.75,0.5)
+	window4()
+}
+
+hello_wall4():Wall(vertical,const,4.0){
+	background()
+	pos(0.25,0.5)
+	window2()
+	pos(0.75,0.5)
+	window3()
+}
+
+hello_wall5():Wall(vertical,const,4.0){
+	background()
+	pos(0.25,0.5)
+	window4()
+	pos(0.75,0.5)
+	window_frame3D()
+}
+
+
+
+balcony():Asset(image){
+	Location("Assets/Image/balcony.png")
+}
+
+balcony_wall():Wall(vertical,const,4.0){
+
+	background()
+	pos(0.5,0.5)
+	balcony()
+
+}
+
+
+first_floor_wall():Wall(vertical,const,4){
+	background()
+	pos(0.25,0.5)
+	window()
+	pos(0.75,0.45)
+	door()
+}
+
+3D_door_wall():Wall(vertical,const,4){
+	background()
+	pos(0.25,0.5)
+	window()
+	pos(0.75,0)
+	doorFBX()
+}
+
+nothing_wall():Wall(vertical,const,4){
+	background()
+}
+
+roof_wall():Wall(vertical,ratio,0.2){
+	background()
+}
+	
+hello_facade():Facade(){
+	first_floor_wall()
+	nothing_wall()
+	hello_wall2()
+	hello_wall()
+}
+
+hello_facade2():Facade(){
+	first_floor_wall()
+	balcony_wall()
+	hello_wall()
+	hello_wall3()
+}
+
+hello_facade3():Facade(){
+	first_floor_wall()
+	balcony_wall()
+	nothing_wall()
+	hello_wall4()
+}
+
+hello_facade4():Facade(){
+	first_floor_wall()
+	hello_wall5()
+	hello_wall2()
+	hello_wall3()
+}
+
+hello_facade5():Facade(){
+	first_floor_wall()
+	hello_wall()
+	hello_wall4()
+	hello_wall5()
+}
+
+nothing_facade():Facade(){
+	first_floor_wall()
+	nothing_wall()
+	nothing_wall()
+	nothing_wall()
+}
+
+roof_facade():Facade(horizontal){
+	roof_wall()
+	roof_wall()
+}
+
+floors_base():Base(null,test_roof){
+	vertex(0,0,0)
+	hello_facade()
+	hello_facade()
+	hello_facade()
+	vertex(0,0,10)
+	nothing_facade()
+	nothing_facade()
+	vertex(10,0,10)
+	hello_facade()
+	vertex(10,0,0)
+	hello_facade()
+	hello_facade()
+}
+
+tri_base():Base(){
+	vertex(10,0,0)
+	hello_facade()
+	hello_facade()
+	hello_facade()
+	vertex(-10,0,0)
+	nothing_facade()
+	nothing_facade()
+	vertex(0,0,5)
+	hello_facade()
+}
+
+
+roof_base():Base(){
+	vertex(-5,0,-5)
+	roof_facade()
+	vertex(-5,0,15)
+	roof_facade()
+	vertex(15,0,15)
+	roof_facade()
+	vertex(15,0,-5)
+	roof_facade()
+}	
+
+hello_house():Building(){
+	floors_base()	
+}
+
+
+runtime_base():Base(runtime_vertex,test_roof){
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+	vertex()
+	hello_facade()
+}
+
+arcade_4_floor():Wall(vertical,const,4.0){
+	background()
+	pos(0.5,0.5)
+	wall_balconyFBX()
+}
+
+real_nothing():Facade(){
+	nothing_wall()
+	nothing_wall()
+	nothing_wall()
+	nothing_wall()
+}
+
+arcade_front_facade():Facade(){
+	empty(vertical,const,4)
+	balcony_wall()
+	hello_wall()
+	arcade_4_floor()
+}
+
+first_floor_empty():Facade(){
+	empty(vertical,const,4)
+	nothing_wall()
+	nothing_wall()
+	nothing_wall()
+}
+
+arcade_back():Base(){
+	vertex(-3,0,8)
+	real_nothing()
+	vertex(3,0,8)
+	real_nothing()
+	vertex(3,0,0)
+	nothing_facade()
+	vertex(-3,0,0)
+	real_nothing()
+}
+
+arcade_front():Base(null,test_roof){
+	vertex(-3,0,0)
+	first_floor_empty()
+	vertex(3,0,0)
+	first_floor_empty()
+	vertex(3,0,-4)
+	arcade_front_facade()
+	vertex(-3,0,-4)
+	first_floor_empty()
+}
+
+arcade_house():Building(){
+	center(0,0,0)
+	arcade_back()
+	center(0,0,0)
+	arcade_front()
+}
+
+
+test_roof():Roof(1,1.5,Hipped){
+	pos(0,1,0)
+	air_conditioner()
+	pos(3,1,0)
+	home_flower()
+}
+
+
+balc():Balcony(){
+
+}

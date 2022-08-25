@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ce58035a221cef4e9f89ce0e83ee118, type: 3}
+  m_Name: old_oak
+  m_EditorClassIdentifier: 
+  rendererScale: {x: 0.9774711, y: 1.0242898, z: 1}
+  uvCoordinates:
+  - bottomLeft: {x: 0, y: 0}
+    bottomRight: {x: 0.31893313, y: 0}
+    topRight: {x: 0.31893313, y: 0.33308157}
+    topLeft: {x: 0, y: 0.33308157}
+  - bottomLeft: {x: 0.31893313, y: 0}
+    bottomRight: {x: 0.6273479, y: 0}
+    topRight: {x: 0.6273479, y: 0.33345923}
+    topLeft: {x: 0.31893313, y: 0.33345923}
+  - bottomLeft: {x: 0.6273479, y: 0}
+    bottomRight: {x: 0.9654395, y: 0}
+    topRight: {x: 0.9654395, y: 0.33345923}
+    topLeft: {x: 0.6273479, y: 0.33345923}
+  - bottomLeft: {x: 0, y: 0.33345923}
+    bottomRight: {x: 0.33095416, y: 0.33345923}
+    topRight: {x: 0.33095416, y: 0.66691846}
+    topLeft: {x: 0, y: 0.66691846}
+  - bottomLeft: {x: 0.33095416, y: 0.33345923}
+    bottomRight: {x: 0.6498873, y: 0.33345923}
+    topRight: {x: 0.6498873, y: 0.6665408}
+    topLeft: {x: 0.33095416, y: 0.6665408}
+  - bottomLeft: {x: 0.6498873, y: 0.33345923}
+    bottomRight: {x: 0.958302, y: 0.33345923}
+    topRight: {x: 0.958302, y: 0.6665408}
+    topLeft: {x: 0.6498873, y: 0.6665408}
+  - bottomLeft: {x: 0.33095416, y: 0.6665408}
+    bottomRight: {x: 0.6690458, y: 0.6665408}
+    topRight: {x: 0.6690458, y: 1}
+    topLeft: {x: 0.33095416, y: 1}
+  - bottomLeft: {x: 0.6690458, y: 0.6665408}
+    bottomRight: {x: 1, y: 0.6665408}
+    topRight: {x: 1, y: 1}
+    topLeft: {x: 0.6690458, y: 1}

@@ -5,7 +5,10 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/testBuildingGrammar.unity
     guid: d3702682648ccd94288c28d7f9a07cac
+  - enabled: 1
+    path: Assets/Scenes/ProceduralScenes/Testing.unity
+    guid: 43d0405e3d703aa49bc1f26bf828ff79
   m_configObjects: {}
