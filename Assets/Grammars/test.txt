@@ -32,13 +32,6 @@ window4():Asset(image){
 	Extrude(0.1)
 }
 
-balcony3D():Asset(model){
-	Location("Assets/Model/BALCONY.obj")
-	Scale(0.0007772131,0.0007772131,0.0007772131)
-	Extrude(0.1)
-	Rotate(0,180,0)
-	Scale(3,3,3)
-}
 
 balconyFBX():Asset(model){
 	Location("Assets/Model/BALCONY.fbx")
@@ -73,17 +66,10 @@ wall_balconyFBX():Asset(model){
 	Scael(1.5,1.5,1.5)
 }
 
-window_frame3D():Asset(model){
-	Location("Assets/Model/window_frame1.obj")
-	Scale(0.03707742,0.03707742,0.03707742)
-	Extrude(0.1)
-	Rotate(0,180,0)
-}
-
 hello_wall():Wall(vertical,const,4.0){
 	background()
 	pos(0.25,0.25)
-	window_frame3D()
+	window()
 	pos(0.75,0.5)
 	window()
 }

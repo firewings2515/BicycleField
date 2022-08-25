@@ -754,14 +754,14 @@ public class OSMReaderManager : MonoBehaviour
         Vector3 center = new Vector3(center2d.x, ele_min, center2d.y);
 
         // Init house and set parameters
-        ShapeGrammarBuilder.InitObject(context_id);
-        ShapeGrammarBuilder.setIdLength(3, context_id);
-        ShapeGrammarBuilder.AddPolygon("001", polygon, context_id);
-        string filename = ".\\grammars\\hello_house.shp";
-        ShapeGrammarBuilder.loadShape(filename, context_id);
-        ShapeGrammarBuilder.setParam("height", building_height.ToString(), context_id);
-        ShapeGrammarBuilder.setParam("splitfacade", Random.Range(2, 6).ToString(), context_id);
-        ShapeGrammarBuilder.setParam("maxSize", Mathf.Max(Mathf.Abs(maxSize.x), Mathf.Abs(maxSize.y)).ToString(), context_id);
+        //ShapeGrammarBuilder.InitObject(context_id);
+        //ShapeGrammarBuilder.setIdLength(3, context_id);
+        //ShapeGrammarBuilder.AddPolygon("001", polygon, context_id);
+        //string filename = ".\\grammars\\hello_house.shp";
+        //ShapeGrammarBuilder.loadShape(filename, context_id);
+        //ShapeGrammarBuilder.setParam("height", building_height.ToString(), context_id);
+        //ShapeGrammarBuilder.setParam("splitfacade", Random.Range(2, 6).ToString(), context_id);
+        //ShapeGrammarBuilder.setParam("maxSize", Mathf.Max(Mathf.Abs(maxSize.x), Mathf.Abs(maxSize.y)).ToString(), context_id);
         
         yield return null;
         // build the house mesh
@@ -774,17 +774,17 @@ public class OSMReaderManager : MonoBehaviour
         //});
 
 
-        BuildingCreationJob job = new BuildingCreationJob {
-            _context_id = context_id
-        };
+        //BuildingCreationJob job = new BuildingCreationJob {
+        //    _context_id = context_id
+        //};
 
-        var jobHandle = job.Schedule();
+        //var jobHandle = job.Schedule();
 
         for (int i = 0; i < house_index / 3; i++)
         {
             yield return null;
         }
-        jobHandle.Complete();
+        //jobHandle.Complete();
         /*
         Thread thread = new Thread(() =>
         {
@@ -804,8 +804,8 @@ public class OSMReaderManager : MonoBehaviour
 
         // record the mesh in obj and mtl format
         string obj = "", mtl = "";
-        ShapeGrammarBuilder.buildMesh(ref obj, ref mtl, context_id);
-        ShapeGrammarBuilder.destroyContext(context_id);
+        //ShapeGrammarBuilder.buildMesh(ref obj, ref mtl, context_id);
+        //ShapeGrammarBuilder.destroyContext(context_id);
         // Procedural Modeling of house
         // ======================================================
 
@@ -837,16 +837,17 @@ public class OSMReaderManager : MonoBehaviour
 
     IEnumerator getIndexCreateMesh(int index)
     {
+        yield return null;
         Debug.Log("A building creation Init-----");
         // wait for the free builder to build mesh
-        int context_index = ShapeGrammarBuilder.getFreeStack();
-        while (context_index == -1)
-        {
-            context_index = ShapeGrammarBuilder.getFreeStack();
-            yield return null;
-        }
+        //int context_index = ShapeGrammarBuilder.getFreeStack();
+        //while (context_index == -1)
+        //{
+        //    context_index = ShapeGrammarBuilder.getFreeStack();
+        //    yield return null;
+        //}
         Debug.Log("A building creation start");
-        StartCoroutine(createHousePolygon(osm_reader.houses[index].ref_node, index, osm_reader.houses[index].id, context_index));
+        //StartCoroutine(createHousePolygon(osm_reader.houses[index].ref_node, index, osm_reader.houses[index].id, context_index));
     }
 
     //void createVirtualCam()
@@ -881,7 +882,7 @@ public class OSMReaderManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        ShapeGrammarBuilder.InitClass();
+        //ShapeGrammarBuilder.InitClass();
         osm_reader = new OSMReader();
         osm_reader.readOSM(Application.streamingAssetsPath + "//" + file_name, need_write_osm3d, Application.streamingAssetsPath + "//" + osm3d_file_name);
         if (!need_write_osm3d)
@@ -1050,12 +1051,12 @@ public class OSMReaderManager : MonoBehaviour
     //}
 }
 
-[BurstCompile]
-public struct BuildingCreationJob : IJob
-{
-    public int _context_id;
-    public void Execute()
-    {
-        ShapeGrammarBuilder.buildShape(this._context_id);
-    }
-}
+//[BurstCompile]
+//public struct BuildingCreationJob : IJob
+//{
+//    public int _context_id;
+//    public void Execute()
+//    {
+//        ShapeGrammarBuilder.buildShape(this._context_id);
+//    }
+//}

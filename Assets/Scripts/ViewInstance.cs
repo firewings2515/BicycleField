@@ -136,7 +136,7 @@ public class ViewInstance : MonoBehaviour
                     {
                         //8603.1, 654.4, 10195.0
                         // build the mesh of building
-                        house_mesh = ShapeGrammarBuilder.StringToGameobject(ref obj, ref mtl);
+                        //house_mesh = ShapeGrammarBuilder.StringToGameobject(ref obj, ref mtl);
                         house_mesh.name = "house_" + house_id + center.ToString();
                         Mesh mesh = house_mesh.GetComponentInChildren<MeshFilter>().mesh;
                         

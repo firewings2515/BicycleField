@@ -77,7 +77,7 @@ public class ObjectManager : MonoBehaviour
         rmc.undersideMaterial = underside;
 
         //force display
-        Selection.activeGameObject = segment;
+        //Selection.activeGameObject = segment;
 
         Destroy(current_segment);
         current_segment = segment;

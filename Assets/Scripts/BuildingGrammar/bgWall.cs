@@ -83,7 +83,7 @@ public class bgWall : bgComponent
             }
             else
             {
-                GameObject obj;
+                GameObject obj = null;
                 bgAsset asset = builder.get_asset(commands[i]);
                 if (asset != null)
                 {
@@ -92,12 +92,18 @@ public class bgWall : bgComponent
                 else
                 {
                     bgBalcony balcony = builder.get_balcony(commands[i]);
-                    balcony.width = (width / 2.0f) - 0.2f;
-                    //balcony.height = height - 0.2f;
-                    obj = balcony.build();
+                    if (balcony != null)
+                    {
+                        balcony.width = (width / 2.0f) - 0.2f;
+                        //balcony.height = height - 0.2f;
+                        obj = balcony.build();
+                    }
                 }
-                obj.transform.parent = go.transform;
-                obj.transform.localPosition = pos;
+                if (obj != null)
+                {
+                    obj.transform.parent = go.transform;
+                    obj.transform.localPosition = pos;
+                }
             }
         }
 

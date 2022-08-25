@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/testFTMS.unity
-    guid: 3eaeab8d38413f34b8eb7e2d555da74c
+    path: Assets/Scenes/testBuildingGrammar.unity
+    guid: d3702682648ccd94288c28d7f9a07cac
   m_configObjects: {}

@@ -59,7 +59,7 @@ public class CurveSegmenter : MonoBehaviour
         rmc.undersideMaterial = underside;
 
         //force display
-        Selection.activeGameObject = segment;
+        //Selection.activeGameObject = segment;
 
         followPath();
     }

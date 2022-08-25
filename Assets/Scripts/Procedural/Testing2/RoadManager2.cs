@@ -124,7 +124,7 @@ public class RoadManager2 : MonoBehaviour
         rmc.undersideMaterial = underside;
 
         //force display
-        Selection.activeGameObject = segment;
+        //Selection.activeGameObject = segment;
 
         cyclist.GetComponent<PathFollower>().pathCreator = segments[0].GetComponent<PathCreator>();
     }
