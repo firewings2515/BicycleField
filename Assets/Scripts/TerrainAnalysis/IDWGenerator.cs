@@ -7,7 +7,6 @@ public class IDWGenerator : MonoBehaviour
     public string file_path = "featureAnalyze/features.f";
     public Material terrain_mat;                            // Setting TerrainGenerator: Use the standard material. The vertices are calculated by CPU
     public int terrain_mode = 0;                            // Setting TerrainGenerator: 0 is DEM 1 is IDW
-    public GameObject feature_ball_prefab;
     Queue<int> queue_generate_patch_x = new Queue<int>();   // Patch Queue
     Queue<int> queue_generate_patch_z = new Queue<int>();   // Patch Queue
     bool loop_begin = false;                                // Begin InvokeRepeating("generateTerrainPatch", 0.0f, 0.01666f)
@@ -22,6 +21,7 @@ public class IDWGenerator : MonoBehaviour
     public int terrain_case;
     public Terrain hill;
     public Terrain cliff;
+    public Terrain mountain;
     // Start is called before the first frame update
     void Start()
     {
@@ -38,7 +38,6 @@ public class IDWGenerator : MonoBehaviour
             TerrainGenerator.terrain_manager = new GameObject("TerrainManager");
             TerrainGenerator.terrain_mat = terrain_mat;
             TerrainGenerator.terrain_mode = terrain_mode;
-            TerrainGenerator.feature_ball_prefab = feature_ball_prefab;
             //TerrainGenerator.heightmap_mat = heightmap_mat;
             TerrainGenerator.compute_shader = compute_shader;
             TerrainGenerator.main_tex = main_tex;
@@ -48,8 +47,10 @@ public class IDWGenerator : MonoBehaviour
             TerrainGenerator.need_mse = mse_analyze;
             if (terrain_case == 0)
                 TerrainGenerator.origin_terrain = hill;
-            else
+            else if (terrain_case == 1)
                 TerrainGenerator.origin_terrain = cliff;
+            else
+                TerrainGenerator.origin_terrain = mountain;
             TerrainGenerator.loadTerrain();
             int x_index = 0;
             int z_index = 0;

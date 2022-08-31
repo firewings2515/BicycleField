@@ -6,7 +6,7 @@ static public class QuadTreePatch
 {
     static public double x_dem_interval = 30.9220807759091;
     static public double z_dem_interval = 34.0730199965134;
-    static public int interval_peice_num = 16;
+    static public int interval_peice_num = 1; //16
     static public double x_dem_step = x_dem_interval / interval_peice_num;
     static public double z_dem_step = z_dem_interval / interval_peice_num;
     static public Dictionary<DEMCoord, int> node_level_dic;

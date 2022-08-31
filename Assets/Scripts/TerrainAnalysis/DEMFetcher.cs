@@ -30,12 +30,12 @@ public class DEMFetcher : MonoBehaviour
             {
                 xs[i] = transform.position.x + vertices[i].x * transform.localScale.x;
                 zs[i] = transform.position.z + vertices[i].z * transform.localScale.z;
-                if (xs[i] > find_x_min)
+                if (xs[i] < find_x_min)
                 {
                     find_x_min = xs[i];
                     center_index = 0;
                 }
-                if (zs[i] > find_z_min)
+                if (zs[i] < find_z_min)
                 {
                     find_z_min = zs[i];
                     center_index = 0;

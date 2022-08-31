@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 public struct WVec3
 {
@@ -135,6 +136,60 @@ public class KDTree
                     getAreaPointsRec(ref area_points, x_min, z_min, x_max, z_max, right[head], !is_x);
                 if (left[head] != 0)
                     getAreaPointsRec(ref area_points, x_min, z_min, x_max, z_max, left[head], !is_x);
+            }
+        }
+    }
+
+    public bool findNearestPoint(ref WVec3 result, float x, float z)
+    {
+        for (int i = 0; i < nodes.Length; i++)
+        {
+            if (Mathf.Abs(nodes[i].x - x) < 1e-4 && Mathf.Abs(nodes[i].z - z) < 1e-4)
+            {
+                result = nodes[i];
+                return true;
+            }
+        }
+        return false;
+        //return findNearestPoint(ref result, x, z, 0, true);
+    }
+
+    bool findNearestPoint(ref WVec3 result, float x, float z, int head, bool is_x)
+    {
+        if (Mathf.Abs(nodes[head].x - x) < 1 && Mathf.Abs(nodes[head].z - z) < 1)
+        {
+            result = nodes[head];
+            return true;
+        }
+
+        if (is_x)
+        {
+            if (Mathf.RoundToInt(nodes[head].x) < Mathf.RoundToInt(x))
+            {
+                if (right[head] != 0)
+                    return findNearestPoint(ref result, x, z, right[head], !is_x);
+                return false;
+            }
+            else // if (nodes[head].x > x)
+            {
+                if (left[head] != 0)
+                    return findNearestPoint(ref result, x, z, left[head], !is_x);
+                return false;
+            }
+        }
+        else
+        {
+            if (Mathf.RoundToInt(nodes[head].z) < Mathf.RoundToInt(z))
+            {
+                if (right[head] != 0)
+                    return findNearestPoint(ref result, x, z, right[head], !is_x);
+                return false;
+            }
+            else // if (nodes[head].z > z)
+            {
+                if (left[head] != 0)
+                    return findNearestPoint(ref result, x, z, left[head], !is_x);
+                return false;
             }
         }
     }

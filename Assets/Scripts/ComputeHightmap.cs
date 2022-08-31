@@ -38,7 +38,7 @@ public class ComputeHightmap : MonoBehaviour
         if (show_feature)
         {
             show_feature = false;
-            TerrainGenerator.showPoint(features, "features", features_manager.transform, features_prefab, 8.0f);
+            TerrainGenerator.showPoint(features, "features", features_manager.transform, UnityEngine.Color.red, 8.0f);
         }
 
         if (set_cube_to_height)

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using System.Drawing;
 
 static public class TerrainGenerator
 {
@@ -198,7 +199,7 @@ static public class TerrainGenerator
             if (show_feature_ball)
             {
                 GameObject feature_manager = new GameObject("feature_manager");
-                showPoint(kdtree.nodes, "feature", feature_manager.transform, feature_ball_prefab, 1.0f);
+                showPoint(kdtree.nodes, "feature", feature_manager.transform, UnityEngine.Color.red, 1.0f);
             }
         }
     }
@@ -654,30 +655,32 @@ static public class TerrainGenerator
         //Debug.Log("Success: " + x_small_min + "_" + z_small_min);
     }
 
-    static public void showPoint(WVec3[] points, string tag, Transform parent, GameObject ball_prefab, float ball_size)
+    static public void showPoint(WVec3[] points, string tag, Transform parent, UnityEngine.Color color, float ball_size)
     {
         for (int point_index = 0; point_index < points.Length; point_index++)
         {
-            GameObject ball = GameObject.Instantiate(ball_prefab, new Vector3(points[point_index].x, points[point_index].y, points[point_index].z), Quaternion.identity); // + min_y
+            GameObject ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            ball.transform.position = new Vector3(points[point_index].x, points[point_index].y, points[point_index].z);
             ball.transform.localScale = new Vector3(ball_size, ball_size, ball_size);
-            ball.name = tag + "_" + point_index.ToString() + "w" + points[point_index].w.ToString();
+            ball.GetComponent<MeshRenderer>().material.color = color;
+            ball.name = $"{tag}_{point_index} x_{points[point_index].x} y_{points[point_index].y} z_{points[point_index].z} w_{points[point_index].w}";
             ball.transform.parent = parent;
 
             if (points[point_index].w > -1)
             {
-                ball.GetComponent<MeshRenderer>().material.color = Color.red;
+                ball.GetComponent<MeshRenderer>().material.color = UnityEngine.Color.red;
             }
         }
     }
 
-    static public void showPoint(Vector3[] points, string tag, Transform parent, GameObject ball_prefab, float ball_size)
+    static public void showPoint(Vector3[] points, string tag, Transform parent, UnityEngine.Color color, float ball_size)
     {
         for (int point_index = 0; point_index < points.Length; point_index++)
         {
             GameObject ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             ball.transform.position = points[point_index];
             ball.transform.localScale = new Vector3(ball_size, ball_size, ball_size);
-            ball.GetComponent<MeshRenderer>().material.color= Color.red;
+            ball.GetComponent<MeshRenderer>().material.color = color;
             ball.name = tag;
             ball.transform.parent = parent;
         }
@@ -940,7 +943,7 @@ static public class TerrainGenerator
             constraints_texs[x_index * z_patch_num + z_index] = new RenderTexture(PublicOutputInfo.tex_size, PublicOutputInfo.tex_size, 24);
             constraints_cam.targetTexture = constraints_texs[x_index * z_patch_num + z_index];
             constraints_cam.clearFlags = CameraClearFlags.SolidColor;
-            constraints_cam.backgroundColor = Color.white;
+            constraints_cam.backgroundColor = UnityEngine.Color.white;
             constraints_cam.Render();
         }
         // ===========================================================================================================
@@ -1058,7 +1061,7 @@ static public class TerrainGenerator
 
     static float getHeightFromTex(int x_index, int z_index, int peice_x_index, int peice_z_index)
     {
-        Color raw = heightmaps[x_index * z_patch_num + z_index].GetPixel(peice_x_index * Mathf.FloorToInt(PublicOutputInfo.piece_length), peice_z_index * Mathf.FloorToInt(PublicOutputInfo.piece_length));
+        UnityEngine.Color raw = heightmaps[x_index * z_patch_num + z_index].GetPixel(peice_x_index * Mathf.FloorToInt(PublicOutputInfo.piece_length), peice_z_index * Mathf.FloorToInt(PublicOutputInfo.piece_length));
         return raw.g * 64 * 64 + raw.b * 64 + raw.a;
         //return raw.g;
         //int x = Mathf.FloorToInt(u * (PublicOutputInfo.tex_size - 1));
@@ -1069,7 +1072,7 @@ static public class TerrainGenerator
 
     static float getHeightFromTexBilinear(int x_index, int z_index, float u, float v)
     {
-        Color raw = heightmaps[x_index * z_patch_num + z_index].GetPixelBilinear(u, v);
+        UnityEngine.Color raw = heightmaps[x_index * z_patch_num + z_index].GetPixelBilinear(u, v);
         return raw.g * 64 * 64 + raw.b * 64 + raw.a;
         //return raw.g;
     }
@@ -1090,7 +1093,7 @@ static public class TerrainGenerator
 
     static float getHeightFromBufferAndConstraintsmap(int x_index, int z_index, int peice_x_index, int peice_z_index)
     {
-        Color raw = constraintsmap[x_index * z_patch_num + z_index].GetPixel(peice_x_index * (int)PublicOutputInfo.piece_length, peice_z_index * (int)PublicOutputInfo.piece_length);
+        UnityEngine.Color raw = constraintsmap[x_index * z_patch_num + z_index].GetPixel(peice_x_index * (int)PublicOutputInfo.piece_length, peice_z_index * (int)PublicOutputInfo.piece_length);
         int building_id = Mathf.FloorToInt(raw.r * 64 * 64 * 64 + raw.g * 64 * 64 + raw.b * 64 + 0.5f);
         if (building_id >= 0 && building_id < building_constraints_points_count.Length)
             return building_constraints[building_constraints_accumulate_index[building_id]].y;
@@ -1289,7 +1292,7 @@ static public class TerrainGenerator
             }
         }
         GameObject dem_points_manager = new GameObject("DEM Points");
-        showPoint(dem_points, "DEM Points", dem_points_manager.transform, feature_ball_prefab, 4.0f);
+        showPoint(dem_points, "DEM Points", dem_points_manager.transform, UnityEngine.Color.red, 4.0f);
     }
 
     static public (double lon, double lat) toLonAndLat (float x, float z)

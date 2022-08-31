@@ -4,6 +4,7 @@ using UnityEngine;
 
 public static class IDW
 {
+    static public float dist_threshold = 50.0f;
     static public float getWeight(float d, float w)
     {
         float f = Mathf.Pow(d, w);
@@ -24,7 +25,7 @@ public static class IDW
             float dist = Mathf.Sqrt(Mathf.Pow(point_cloud[point_index].x - x, 2) + Mathf.Pow(point_cloud[point_index].z - z, 2));
             if (Mathf.Pow(dist, 2) < 0.000001)
                 return point_cloud[point_index].y;
-            if (dist < 50)
+            if (dist < dist_threshold)
             {
                 //if (point_cloud[point_index].w > 8 && dist < 8.0f)
                 //{

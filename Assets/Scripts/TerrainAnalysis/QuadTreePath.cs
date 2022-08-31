@@ -72,6 +72,11 @@ namespace QuadTerrain
         private bool load_sparse_feature_file;
         [SerializeField]
         private bool save_sparse_feature_file;
+        [SerializeField]
+        private bool get_info_mode;
+        private bool print_lon_lat;
+        [SerializeField]
+        private bool combine_mesh;
 
         private GameObject terrain_manager;
         private NativeArray<float4> Planes;
@@ -82,6 +87,8 @@ namespace QuadTerrain
         private KDTree kdtree;
         private Vector3[] born_corners;
         private Vector3[] opposite_corners;
+        private double min_d = 100;
+        private GameObject[] planes;
         // Start is called before the first frame update
         void Start()
         {
@@ -97,16 +104,128 @@ namespace QuadTerrain
             cyclist.GetComponent<PathCreation.Examples.PathFollower>().speed = 20;
             GameObject virtual_camera = new GameObject("VirtualCamera");
             virtual_cam = virtual_camera.AddComponent<Camera>();
+            virtual_cam.fieldOfView = cam.fieldOfView;
+            virtual_cam.farClipPlane = cam.farClipPlane / 32.0f;
+            virtual_cam.nearClipPlane = cam.nearClipPlane / 32.0f;
+            virtual_cam.targetDisplay = 4;
             evaluate_cam = evaluate_camera.GetComponent<Camera>();
             evaluate_cam.depthTextureMode |= DepthTextureMode.Depth;
             is_initial = true;
-            InvokeRepeating("buildQuadTree", 0, 2);
+            //InvokeRepeating("buildQuadTree", 0, 2);
             //buildQuadTree(); // for testing
         }
 
         // Update is called once per frame
         void Update()
         {
+            if (get_info_mode)
+            {
+                if (!stop_build)
+                {
+                    stop_build = true;
+                    //load_node_level_file = true;
+                    QuadTreePatch.node_level_dic.Clear();
+                    for (int i = 0; i < 128; i++)
+                    {
+                        for (int j = 0; j < 128; j++)
+                        {
+                            QuadTreePatch.node_level_dic.Add(new DEMCoord(1962 + i, 323 + j), 1);
+                        }
+                    }
+                }
+                else
+                {
+                    get_info_mode = false;
+                    generate = true;
+                    print_lon_lat = true;
+                    //var posXandZ = TerrainGenerator.demToXAndZ(1962, 323);
+                    //Debug.Log($"pos {posXandZ.x} {posXandZ.z}"); // -1059.492 -1676.904
+
+                    //List<EarthCoord> all_coords = new List<EarthCoord>();
+                    //for (int i = 0; i < 129; i++)
+                    //{
+                    //    for (int j = 0; j < 129; j++)
+                    //    {
+                    //        var lon_lat = TerrainGenerator.mapToDEM(1962 + i, 323 + j);
+                    //        all_coords.Add(new EarthCoord((float)lon_lat.lon, (float)lon_lat.lat));
+                    //    }
+                    //}
+                    //float[] ys = HgtReader.getElevations(all_coords, true).ToArray();
+                    //Texture2D texture2D = new Texture2D(129, 129, TextureFormat.RGBA32, false);
+                    //float y_min = float.MaxValue;
+                    //float y_max = float.MinValue;
+                    //int y_index = 0;
+                    //for (int i = 0; i < 129; i++)
+                    //{
+                    //    for (int j = 0; j < 129; j++)
+                    //    {
+                    //        y_min = Mathf.Min(y_min, ys[y_index]);
+                    //        y_max = Mathf.Max(y_max, ys[y_index]);
+                    //        Color c = new Color(ys[y_index] / 600.0f, ys[y_index] / 600.0f, ys[y_index] / 600.0f);
+                    //        texture2D.SetPixel(i, j, c);
+                    //        y_index++;
+                    //    }
+                    //}
+                    ////then Save To Disk as PNG
+                    //byte[] bytes = texture2D.EncodeToPNG();
+                    //var dirPath = Application.dataPath + "/Resources/";
+                    //if (!Directory.Exists(dirPath))
+                    //{
+                    //    Directory.CreateDirectory(dirPath);
+                    //}
+                    //File.WriteAllBytes($"{dirPath}N25E121_1962_323_2091_451.png", bytes);
+                    //Debug.Log($"min:{y_min} max:{y_max}");
+                }
+            }
+
+            if (print_lon_lat)
+            {
+                var lonAndLat = TerrainGenerator.toLonAndLat(cam.transform.position.x, cam.transform.position.z);
+                //var cam_p = (121.557259, 25.1090989);
+                //var cam_p = (121.5572094, 25.1098873);
+                var cam_p = (121.5573153, 25.1103592);
+                min_d = Math.Min(min_d, Math.Abs(lonAndLat.lon - cam_p.Item1) + Math.Abs(lonAndLat.lat - cam_p.Item2));
+                //if (min_d > Math.Abs(lonAndLat.lon - cam_p.Item1) + Math.Abs(lonAndLat.lat - cam_p.Item2))
+                //{
+                //    min_d = Math.Abs(lonAndLat.lon - cam_p.Item1) + Math.Abs(lonAndLat.lat - cam_p.Item2);
+                    Debug.Log(min_d);
+                //}
+                //else
+                if (Math.Abs(lonAndLat.lon - cam_p.Item1) + Math.Abs(lonAndLat.lat - cam_p.Item2) < 0.00011)
+                {
+                    cyclist.GetComponent<PathCreation.Examples.PathFollower>().speed = 0;
+                    cyclist.GetComponent<PathCreation.Examples.PathFollower>().distanceTravelled = 0;
+                    GameObject mountain_vier = new GameObject("MountainVier");
+                    mountain_vier.transform.position = cam.transform.position;
+                    mountain_vier.AddComponent<Camera>();
+                    mountain_vier.GetComponent<Camera>().fieldOfView = 75.0f;
+                    mountain_vier.GetComponent<Camera>().targetDisplay = 3;
+                    float google_yaw = 31.8f; //h
+                    float google_heading = 90.73f; //t
+                    mountain_vier.transform.rotation = Quaternion.Euler(90.0f - google_heading, google_yaw, 0.0f);
+                    Debug.Log($"{lonAndLat.lon} {lonAndLat.lat}");
+                    print_lon_lat = false;
+                }
+            }
+
+            if (combine_mesh)
+            {
+                combine_mesh = false;
+                CombineInstance[] combine = new CombineInstance[QuadTreePatch.node_level_dic.Count];
+                for (int i = 0; i < planes.Length; i++)
+                {
+                    combine[i].mesh = planes[i].GetComponent<MeshFilter>().sharedMesh;
+                    combine[i].transform = planes[i].transform.localToWorldMatrix;
+                }
+               
+                GameObject big_mesh = new GameObject("Big Terrain");
+                big_mesh.AddComponent<MeshFilter>();
+                big_mesh.GetComponent<MeshFilter>().mesh = new Mesh();
+                big_mesh.GetComponent<MeshFilter>().mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+                big_mesh.GetComponent<MeshFilter>().mesh.CombineMeshes(combine);
+                big_mesh.AddComponent<MeshRenderer>();
+            }
+
             if (build)
             {
                 build = false;
@@ -209,7 +328,7 @@ namespace QuadTerrain
         {
             if (stop_build)
             {
-                cyclist.GetComponent<PathCreation.Examples.PathFollower>().speed = 0;
+                //cyclist.GetComponent<PathCreation.Examples.PathFollower>().speed = 0;
                 return;
             }
 
@@ -217,7 +336,7 @@ namespace QuadTerrain
             {
                 Debug.LogWarning($"reach max {observation_index}!");
                 stop_build = true;
-                generate = true;
+                //generate = true;
                 return;
             }
             Debug.Log($"record {observation_index} camera");
@@ -225,10 +344,6 @@ namespace QuadTerrain
             var virtual_pos = TerrainGenerator.getXAndZInDEM(cam.transform.position.x, cam.transform.position.z);
             virtual_cam.transform.position = new Vector3(virtual_pos.x, cam.transform.position.y, virtual_pos.z);
             virtual_cam.transform.eulerAngles = new Vector3(0, cam.transform.eulerAngles.y, 0);
-            virtual_cam.fieldOfView = cam.fieldOfView;
-            virtual_cam.farClipPlane = cam.farClipPlane / 32.0f;
-            virtual_cam.nearClipPlane = cam.nearClipPlane / 32.0f;
-            virtual_cam.targetDisplay = 2;
             //virtual_cam.depth = cam.depth;
             observation_pos[observation_index] = virtual_cam.transform.position;
             FrustumPlanes2.FromCamera(virtual_cam, SourcePlanes, Planes, observation_index);
@@ -279,18 +394,25 @@ namespace QuadTerrain
 
         public void generateByQuadTreePatch()
         {
-            //string ans = "";
+            int combine_index = 0;
+            planes = new GameObject[QuadTreePatch.node_level_dic.Count];
             foreach (var node in QuadTreePatch.node_level_dic)
             {
-                //ans += $"{node.Key} {node.Value}\n";
-                GameObject plane = Instantiate(plane_prefab);
-                plane.transform.SetParent(terrain_manager.transform);
+                planes[combine_index] = Instantiate(plane_prefab);
+                planes[combine_index].transform.SetParent(terrain_manager.transform);
+                planes[combine_index].name = $"N25E121peice_{node.Key.x}_{node.Key.z}";
                 var position = TerrainGenerator.demToXAndZ(node.Key.x, node.Key.z);
-                plane.transform.localPosition = new Vector3((float)position.x, 0, (float)position.z);
-                plane.transform.localScale = new Vector3(node.Value, 1, node.Value);
-                plane.AddComponent<DEMFetcher>();
+                planes[combine_index].transform.localPosition = new Vector3((float)position.x, 0, (float)position.z);
+                planes[combine_index].transform.localScale = new Vector3(node.Value, 1, node.Value);
+                //if (node.Value == 1)
+                //    plane.GetComponent<MeshRenderer>().material.color = Color.blue;
+                //else
+                    planes[combine_index].GetComponent<MeshRenderer>().material.color = Color.white;
+                planes[combine_index].AddComponent<DEMFetcher>();
+
+
+                combine_index++;
             }
-            //Debug.Log(ans);
         }
 
         public void loadNodeLevel(string file_path)
@@ -370,7 +492,7 @@ namespace QuadTerrain
             if (display_dem_points)
             {
                 GameObject dem_points_manager = new GameObject("DEM Corner");
-                TerrainGenerator.showPoint(born_corners, "DEM Corner", dem_points_manager.transform, TerrainGenerator.feature_ball_prefab, 4.0f);
+                TerrainGenerator.showPoint(born_corners, "DEM Corner", dem_points_manager.transform, Color.red, 4.0f);
             }
         }
 

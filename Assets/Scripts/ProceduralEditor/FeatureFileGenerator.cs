@@ -224,8 +224,6 @@ public class FeatureFileGenerator : MonoBehaviour
         terrains[chunk_x_index * z_patch_num + chunk_z_index].GetComponent<HeightmapCompress>().map_size_width = chunk_x_piece_num * PublicOutputInfo.editor_chunk_piece_length;
         terrains[chunk_x_index * z_patch_num + chunk_z_index].GetComponent<HeightmapCompress>().map_size_height = chunk_z_piece_num * PublicOutputInfo.editor_chunk_piece_length;
         terrains[chunk_x_index * z_patch_num + chunk_z_index].GetComponent<HeightmapCompress>().gray_height = max_height;
-        terrains[chunk_x_index * z_patch_num + chunk_z_index].GetComponent<HeightmapCompress>().blue_ball = blue_ball;
-        terrains[chunk_x_index * z_patch_num + chunk_z_index].GetComponent<HeightmapCompress>().red_ball = red_ball;
         terrains[chunk_x_index * z_patch_num + chunk_z_index].GetComponent<HeightmapCompress>().threshold = threshold;
         terrains[chunk_x_index * z_patch_num + chunk_z_index].GetComponent<HeightmapCompress>().epsilon = epsilon;
         terrains[chunk_x_index * z_patch_num + chunk_z_index].transform.parent = terrain_manager.transform;
