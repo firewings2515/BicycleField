@@ -32,6 +32,7 @@ public class HeightmapCompress : MonoBehaviour
     public Terrain hill;
     public Terrain cliff;
     public Terrain mountain;
+    public GameObject simple;
     public bool get_line_feature;
     public float threshold;
     public float interval;
@@ -108,8 +109,10 @@ public class HeightmapCompress : MonoBehaviour
                 StartCoroutine(getPointCloud(hill, hill.transform.position + min_sample_vec3a - new Vector3(PublicOutputInfo.gaussian_m, 0, PublicOutputInfo.gaussian_m), hill.transform.position + min_sample_vec3a + sample_lengtha + new Vector3(PublicOutputInfo.gaussian_m, 0, PublicOutputInfo.gaussian_m), true, true));
             else if (terrain_case == 1) // for TerrainIDWAnalysis scene
                 StartCoroutine(getPointCloud(cliff, cliff.transform.position + min_sample_vec3b - new Vector3(PublicOutputInfo.gaussian_m, 0, PublicOutputInfo.gaussian_m), cliff.transform.position + min_sample_vec3a + sample_lengtha + new Vector3(PublicOutputInfo.gaussian_m, 0, PublicOutputInfo.gaussian_m), true, true));
-            else 
+            else if (terrain_case == 2) 
                 StartCoroutine(getPointCloud(mountain, mountain.transform.position + min_sample_vec3c, mountain.transform.position + min_sample_vec3c + sample_lengthb, true, true));
+            //else
+            //    StartCoroutine(getPointCloud(simple, simple.transform.position + min_sample_vec3c, simple.transform.position + min_sample_vec3c + sample_lengthb, true, true));
         }
 
         if (add_constraints)

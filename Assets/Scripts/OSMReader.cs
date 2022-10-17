@@ -314,6 +314,19 @@ public class OSMReader
         for (int pathes_index = 0; pathes_index < pathes.Count; pathes_index++)
         {
             pathes[pathes_index].updateOrient(points_lib);
+
+            for (int ref_index = 0; ref_index < pathes[pathes_index].ref_node.Count; ref_index++)
+            {
+                points_lib[pathes[pathes_index].ref_node[ref_index]].node_type = NODETYPE.road;
+            }
+        }
+
+        for (int houses_index = 0; houses_index < houses.Count; houses_index++)
+        {
+            for (int ref_index = 0; ref_index < houses[houses_index].ref_node.Count; ref_index++)
+            {
+                points_lib[houses[houses_index].ref_node[ref_index]].node_type = NODETYPE.house;
+            }
         }
 
         //mergeRoad();

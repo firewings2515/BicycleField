@@ -2,12 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum NODETYPE
+{
+    road,
+    house,
+    others
+}
+
 public class Node
 {
     public Vector3 position = Vector3.zero;
     public List<string> connect_way = new List<string>();
     public List<string> tag_k = new List<string>();
     public List<string> tag_v = new List<string>();
+    public NODETYPE node_type = NODETYPE.others;
     public bool includeAnotherWay(string way_id, out List<string> relation_ways)
     {
         relation_ways = new List<string>();

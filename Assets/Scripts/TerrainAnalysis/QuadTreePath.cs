@@ -5,6 +5,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using System.IO;
+using TriangleNet.Tools;
 
 namespace QuadTerrain
 {
@@ -136,10 +137,22 @@ namespace QuadTerrain
                 else
                 {
                     get_info_mode = false;
-                    generate = true;
+                    //generate = true;
                     print_lon_lat = true;
                     //var posXandZ = TerrainGenerator.demToXAndZ(1962, 323);
                     //Debug.Log($"pos {posXandZ.x} {posXandZ.z}"); // -1059.492 -1676.904
+                    //var posXandZ = TerrainGenerator.toXAndZ(121.5574373, 25.108078);
+                    //var posXandZ = TerrainGenerator.toXAndZ(121.557259, 25.1090989);
+                    //var posXandZ = TerrainGenerator.toXAndZ(121.5573153, 25.1103592);
+                    var posXandZ = TerrainGenerator.toXAndZ(121.5584918, 25.1119715);
+                    List<EarthCoord> all_coords = new List<EarthCoord>();
+                    all_coords.Add(new EarthCoord(121.5584918f, 25.1119715f));
+                    float cam_height = HgtReader.getElevations(all_coords)[0];
+                    Debug.Log($"pos {posXandZ.x} {posXandZ.z} {cam_height}");
+                    float google_yaw = 74.73f; //h 5.86 13.3 31.8 74.73
+                    float google_heading = 92.89f; //t 90.37 91.5 90.73 92.89
+                    GameObject.Find("Camera4").transform.position = new Vector3((float)posXandZ.x, cam_height, (float)posXandZ.z);
+                    GameObject.Find("Camera4").transform.rotation = Quaternion.Euler(90.0f - google_heading, google_yaw, 0.0f);
 
                     //List<EarthCoord> all_coords = new List<EarthCoord>();
                     //for (int i = 0; i < 129; i++)
@@ -183,7 +196,8 @@ namespace QuadTerrain
                 var lonAndLat = TerrainGenerator.toLonAndLat(cam.transform.position.x, cam.transform.position.z);
                 //var cam_p = (121.557259, 25.1090989);
                 //var cam_p = (121.5572094, 25.1098873);
-                var cam_p = (121.5573153, 25.1103592);
+                //var cam_p = (121.5573153, 25.1103592);
+                var cam_p = (121.5574373, 25.108078);
                 min_d = Math.Min(min_d, Math.Abs(lonAndLat.lon - cam_p.Item1) + Math.Abs(lonAndLat.lat - cam_p.Item2));
                 //if (min_d > Math.Abs(lonAndLat.lon - cam_p.Item1) + Math.Abs(lonAndLat.lat - cam_p.Item2))
                 //{
@@ -200,10 +214,13 @@ namespace QuadTerrain
                     mountain_vier.AddComponent<Camera>();
                     mountain_vier.GetComponent<Camera>().fieldOfView = 75.0f;
                     mountain_vier.GetComponent<Camera>().targetDisplay = 3;
-                    float google_yaw = 31.8f; //h
-                    float google_heading = 90.73f; //t
+                    float google_yaw = 5.86f; //h
+                    float google_heading = 90.37f; //t
                     mountain_vier.transform.rotation = Quaternion.Euler(90.0f - google_heading, google_yaw, 0.0f);
-                    Debug.Log($"{lonAndLat.lon} {lonAndLat.lat}");
+                    List<EarthCoord> all_coords = new List<EarthCoord>();
+                    all_coords.Add(new EarthCoord((float)lonAndLat.lon, (float)lonAndLat.lat));
+                    float cam_height = HgtReader.getElevations(all_coords)[0];
+                    Debug.Log($"cam {lonAndLat.lon} {lonAndLat.lat} {cam_height}");
                     print_lon_lat = false;
                 }
             }

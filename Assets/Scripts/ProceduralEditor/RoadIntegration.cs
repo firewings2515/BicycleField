@@ -26,6 +26,9 @@ public class RoadIntegration : MonoBehaviour
     public string file_path = "NTUSTCG.bpf";
     public bool write_file = false;
 
+    [SerializeField]
+    bool new_bicycle;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -183,14 +186,32 @@ public class RoadIntegration : MonoBehaviour
             //double begin_ele = PublicOutputInfo.origin_pos.y;
             //double begin_lat = MercatorProjection.yToLat(osm_reader.points_lib[bicycle_points_list[0]].position.z + osm_reader.boundary_min.y);
             //sw.WriteLine($"{begin_lon} {begin_ele} {begin_lat}");
-            Vector3 end_pos = osm_reader.points_lib[bicycle_points_array[bicycle_points_array.Length - 1]].position - PublicOutputInfo.origin_pos;
-            sw.WriteLine($"{end_pos.x} {end_pos.y} {end_pos.z}");
+            if (!new_bicycle)
+            {
+                Vector3 end_pos = osm_reader.points_lib[bicycle_points_array[bicycle_points_array.Length - 1]].position - PublicOutputInfo.origin_pos;
+                sw.WriteLine($"{end_pos.x} {end_pos.y} {end_pos.z}");
+            }
+            HashSet<string> bicycle_points_dict = new HashSet<string>();
             for (int bicycle_points_list_index = 0; bicycle_points_list_index < bicycle_points_array.Length; bicycle_points_list_index++)
             {
-                Vector3 pos = osm_reader.points_lib[bicycle_points_array[bicycle_points_list_index]].position - PublicOutputInfo.origin_pos;
-                sw.WriteLine($"{pos.x} {pos.y} {pos.z}");
+                Node node = osm_reader.points_lib[bicycle_points_array[bicycle_points_list_index]];
+                Vector3 pos = node.position - PublicOutputInfo.origin_pos;
+                bicycle_points_dict.Add(bicycle_points_array[bicycle_points_list_index]);
+                if (!new_bicycle)
+                    sw.WriteLine($"{pos.x} {pos.y} {pos.z}");
+                else
+                {
+                    sw.Write($"{pos.x} {pos.y} {pos.z} Mainroad ");
+                    //for (int i = 0; i < node.; i++)
+                    //{
+
+                    //}
+                    sw.Write("\n");
+                }
                 if (bicycle_points_list_index + 1 == bicycle_points_array.Length)
                     break;
+                if (new_bicycle)
+                    continue;
                 List<string> house_polygon_ids = HouseIntegration.house_polygons_object_index[bicycle_points_list_index];
                 for (int house_polygon_ids_index = 0; house_polygon_ids_index < house_polygon_ids.Count; house_polygon_ids_index++)
                 {
@@ -202,6 +223,29 @@ public class RoadIntegration : MonoBehaviour
                         sw.Write($"{vertex.x} {vertex.y} {vertex.z} ");
                     }
                     sw.Write("\n");
+                }
+            }
+            if (new_bicycle)
+            {
+                foreach (var point in osm_reader.points_lib)
+                {
+                    if (!bicycle_points_dict.Contains(point.Key))
+                    {
+                        Vector3 pos = point.Value.position - PublicOutputInfo.origin_pos;
+                        if (point.Value.node_type == NODETYPE.road)
+                        {
+                            sw.Write($"{pos.x} {pos.y} {pos.z} Branch ");
+                        }
+                        else if (point.Value.node_type == NODETYPE.house)
+                        {
+                            sw.Write($"{pos.x} {pos.y} {pos.z} House ");
+                        }
+                        else
+                        {
+                            sw.Write($"{pos.x} {pos.y} {pos.z} Other ");
+                        }
+                        sw.Write("\n");
+                    }
                 }
             }
         }
